@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { 
   Search, Bell, BookOpen, Heart,
   Play, Pause, SkipBack, SkipForward, Music,
@@ -49,7 +50,7 @@ export default function HomeExperience() {
             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           </div>
           <div className="header-avatar">
-            <img src="https://placeholder.co/100x100/d33c46/fff?text=R" alt="avatar" />
+            <Image src="https://placeholder.co/100x100/d33c46/fff?text=R" alt="avatar" width={100} height={100} />
           </div>
         </div>
       </header>
@@ -202,7 +203,7 @@ export default function HomeExperience() {
             />
             <div className="collection-list">
               <div className="collection-item">
-                <img src="https://placeholder.co/60x40" alt="东方雅乐集" className="collection-img" />
+                <Image src="https://placeholder.co/60x40" alt="东方雅乐集" width={60} height={40} className="collection-img" />
                 <div className="collection-info">
                   <div className="collection-title">东方雅乐集 · Vol.4</div>
                   <div className="collection-desc">森罗万象 / 神灵庙</div>
@@ -210,21 +211,21 @@ export default function HomeExperience() {
                 <Heart size={16} className="collection-like" fill="var(--accent)" />
               </div>
               <div className="collection-item">
-                <img src="https://placeholder.co/60x40" alt="幻想乡缘起" className="collection-img" />
+                <Image src="https://placeholder.co/60x40" alt="幻想乡缘起" width={60} height={40} className="collection-img" />
                 <div className="collection-info">
                   <div className="collection-title">幻想乡缘起</div>
                   <div className="collection-desc">ZUN / 官方设定集</div>
                 </div>
               </div>
               <div className="collection-item">
-                <img src="https://placeholder.co/60x40" alt="东方梦想" className="collection-img" />
+                <Image src="https://placeholder.co/60x40" alt="东方梦想" width={60} height={40} className="collection-img" />
                 <div className="collection-info">
                   <div className="collection-title">东方梦想</div>
                   <div className="collection-desc">黄昏Frontier / 同人音乐</div>
                 </div>
               </div>
               <div className="collection-item">
-                <img src="https://placeholder.co/60x40" alt="异变解读笔记" className="collection-img" />
+                <Image src="https://placeholder.co/60x40" alt="异变解读笔记" width={60} height={40} className="collection-img" />
                 <div className="collection-info">
                   <div className="collection-title">异变解读笔记</div>
                   <div className="collection-desc">个人笔记 / 研究记录</div>
@@ -243,7 +244,7 @@ export default function HomeExperience() {
               />
               <div className="music-cover-wrapper">
                 <div className="music-vinyl"></div>
-                <img src="https://placeholder.co/140x140" alt="Album Cover" className="music-cover" />
+                <Image src="https://placeholder.co/140x140" alt="Album Cover" width={140} height={140} className="music-cover" />
               </div>
               <div className="music-title">幻梦的风 🍃</div>
               <div className="music-artist">幽闭サテライト</div>
@@ -281,7 +282,7 @@ export default function HomeExperience() {
                 <div className="weather-detail">东风 2级 · 湿度 58%</div>
               </div>
             </div>
-            <img src="https://placeholder.co/140x140" className="time-weather-bg" alt="Shrine" />
+            <Image src="https://placeholder.co/140x140" width={140} height={140} className="time-weather-bg" alt="Shrine" />
           </GlassPanel>
 
           {/* Row 2: 日历 */}
@@ -399,7 +400,7 @@ export default function HomeExperience() {
 
           {/* Row 2: Decorative Omamori */}
           <div className="decorative-widget">
-            <img src={theme === 'light' ? "https://placeholder.co/120x180/d33c46/fff?text=Omamori" : "https://placeholder.co/120x120/11162d/5e84f5?text=Butterfly"} alt="Decoration" className="decorative-img" />
+            <Image src={theme === 'light' ? "https://placeholder.co/120x180/d33c46/fff?text=Omamori" : "https://placeholder.co/120x120/11162d/5e84f5?text=Butterfly"} alt="Decoration" width={120} height={180} className="decorative-img" />
           </div>
 
         </section>
