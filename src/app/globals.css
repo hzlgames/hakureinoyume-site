@@ -566,6 +566,8 @@ ul {
   box-shadow: 0 8px 20px rgba(0,0,0,0.2);
   z-index: 2;
   position: relative;
+  background-color: var(--bg-color);
+  display: block;
 }
 
 .music-vinyl {

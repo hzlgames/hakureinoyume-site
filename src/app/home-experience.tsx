@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Search, Bell, BookOpen, Clock, Settings, Heart, 
-  Play, Pause, SkipBack, SkipForward, Music, PlayCircle,
-  CloudSun, CalendarDays, Folder, Book, Timer, CheckSquare, 
+  Search, Bell, BookOpen, Heart,
+  Play, Pause, SkipBack, SkipForward, Music,
+  CloudSun, CalendarDays, Book, Timer, CheckSquare,
   Languages, Calculator, Dices, Palette, MoreHorizontal,
   ChevronRight, Star, Moon, Sun, Target, AlignLeft, MapPin, Menu, X
 } from 'lucide-react';
+import { CardHeader, DashboardCard, GlassPanel, ProgressBar } from "./_components/ui";
 
 export default function HomeExperience() {
   const [theme, setTheme] = useState('light');
@@ -72,7 +73,7 @@ export default function HomeExperience() {
             <div className="hero-motto">结缘东方 · 博丽神社 · 梦想常在</div>
           </div>
           
-          <div className="glass-panel tools-entry">
+          <GlassPanel className="tools-entry">
             <div className="tools-entry-icon">
               <div className="torii-icon">⛩</div>
             </div>
@@ -81,17 +82,18 @@ export default function HomeExperience() {
               <p>进入工具箱</p>
             </div>
             <ChevronRight size={20} color="var(--text-tertiary)" style={{marginLeft: 'auto'}} />
-          </div>
+          </GlassPanel>
         </section>
 
         {/* Dashboard Grid */}
         <section className="dashboard-grid">
           {/* Card 1: 今日任务 */}
-          <div className="glass-panel p-24">
-            <div className="card-header">
-              <div className="card-title"><CheckSquare className="card-title-icon" size={18} /> 今日任务</div>
-              <div className="card-more" style={{fontWeight: 'bold', color: 'var(--text-primary)'}}>3/6</div>
-            </div>
+          <DashboardCard>
+            <CardHeader
+              action={<div className="card-more" style={{fontWeight: 'bold', color: 'var(--text-primary)'}}>3/6</div>}
+              icon={<CheckSquare className="card-title-icon" size={18} />}
+              title="今日任务"
+            />
             <div className="task-list">
               <div className="task-item">
                 <div className="task-item-left"><div className="task-checkbox"></div><span className="task-text">复习线性代数</span></div>
@@ -119,13 +121,11 @@ export default function HomeExperience() {
               </div>
             </div>
             <div className="task-view-all">查看全部任务 &gt;</div>
-          </div>
+          </DashboardCard>
 
           {/* Card 2: 学习轨迹 */}
-          <div className="glass-panel p-24">
-            <div className="card-header">
-              <div className="card-title"><Target className="card-title-icon" size={18} /> 学习轨迹</div>
-            </div>
+          <DashboardCard>
+            <CardHeader icon={<Target className="card-title-icon" size={18} />} title="学习轨迹" />
             <div className="chart-stats">
               <span>本周学习时长</span>
               <h2>18.6 <span>h</span></h2>
@@ -147,14 +147,15 @@ export default function HomeExperience() {
               <span className="chart-tag">🇯🇵 日语学习 2.8h</span>
               <span className="chart-tag">💻 操作系统 2.3h</span>
             </div>
-          </div>
+          </DashboardCard>
 
           {/* Card 3: 日记碎片 */}
-          <div className="glass-panel p-24">
-            <div className="card-header">
-              <div className="card-title"><AlignLeft className="card-title-icon" size={18} /> 日记碎片</div>
-              <div className="card-more">更多 &gt;</div>
-            </div>
+          <DashboardCard>
+            <CardHeader
+              action={<div className="card-more">更多 &gt;</div>}
+              icon={<AlignLeft className="card-title-icon" size={18} />}
+              title="日记碎片"
+            />
             <div className="diary-list">
               <div className="diary-item">
                 <div className="diary-item-header">
@@ -190,14 +191,15 @@ export default function HomeExperience() {
                 </div>
               </div>
             </div>
-          </div>
+          </DashboardCard>
 
           {/* Card 4: 最近收藏 */}
-          <div className="glass-panel p-24">
-            <div className="card-header">
-              <div className="card-title"><Heart className="card-title-icon" size={18} /> 最近收藏</div>
-              <div className="card-more">更多 &gt;</div>
-            </div>
+          <DashboardCard>
+            <CardHeader
+              action={<div className="card-more">更多 &gt;</div>}
+              icon={<Heart className="card-title-icon" size={18} />}
+              title="最近收藏"
+            />
             <div className="collection-list">
               <div className="collection-item">
                 <img src="https://placeholder.co/60x40" alt="东方雅乐集" className="collection-img" />
@@ -229,15 +231,16 @@ export default function HomeExperience() {
                 </div>
               </div>
             </div>
-          </div>
+          </DashboardCard>
 
           {/* Card 5: 正在播放 & 装饰 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div className="glass-panel p-24 music-player">
-              <div className="card-header">
-                <div className="card-title"><Music className="card-title-icon" size={18} /> 正在播放</div>
-                <ChevronRight size={16} color="var(--text-tertiary)" />
-              </div>
+            <DashboardCard className="music-player">
+              <CardHeader
+                action={<ChevronRight size={16} color="var(--text-tertiary)" />}
+                icon={<Music className="card-title-icon" size={18} />}
+                title="正在播放"
+              />
               <div className="music-cover-wrapper">
                 <div className="music-vinyl"></div>
                 <img src="https://placeholder.co/140x140" alt="Album Cover" className="music-cover" />
@@ -256,18 +259,18 @@ export default function HomeExperience() {
                 <div className="music-bar"><div className="music-bar-fill"></div></div>
                 <span>04:36</span>
               </div>
-            </div>
+            </DashboardCard>
             
-            <div className="glass-panel p-24">
+            <DashboardCard>
               <div className="quote-card">
                 <div className="quote-icon">☯</div>
                 <div className="quote-text">境界既定，<br/>缘起缘灭，<br/>一切皆在博丽之梦。</div>
               </div>
-            </div>
+            </DashboardCard>
           </div>
 
           {/* Row 2: 时间/天气 */}
-          <div className="glass-panel time-weather-card">
+          <GlassPanel className="time-weather-card">
             <div className="time-content">
               <div className="card-title" style={{marginBottom: 0}}><MapPin className="card-title-icon" size={18} /> 时间/天气</div>
               <div style={{fontSize: '12px', color: 'var(--text-tertiary)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4}}><MapPin size={12} /> 幻想乡 · 博丽神社</div>
@@ -279,14 +282,15 @@ export default function HomeExperience() {
               </div>
             </div>
             <img src="https://placeholder.co/140x140" className="time-weather-bg" alt="Shrine" />
-          </div>
+          </GlassPanel>
 
           {/* Row 2: 日历 */}
-          <div className="glass-panel p-24">
-            <div className="card-header">
-              <div className="card-title"><CalendarDays className="card-title-icon" size={18} /> 日历</div>
-              <div className="card-more" style={{color: 'var(--text-primary)', fontWeight: 600}}>2025年5月 &gt;</div>
-            </div>
+          <DashboardCard>
+            <CardHeader
+              action={<div className="card-more" style={{color: 'var(--text-primary)', fontWeight: 600}}>2025年5月 &gt;</div>}
+              icon={<CalendarDays className="card-title-icon" size={18} />}
+              title="日历"
+            />
             <div className="calendar-grid">
               <div className="calendar-day-name">日</div>
               <div className="calendar-day-name">一</div>
@@ -325,39 +329,38 @@ export default function HomeExperience() {
               <div className="calendar-day">23</div>
               <div className="calendar-day">24</div>
             </div>
-          </div>
+          </DashboardCard>
 
           {/* Row 2: 项目进度 */}
-          <div className="glass-panel p-24">
-            <div className="card-header">
-              <div className="card-title"><Target className="card-title-icon" size={18} /> 项目进度</div>
-              <div className="card-more">更多 &gt;</div>
-            </div>
+          <DashboardCard>
+            <CardHeader
+              action={<div className="card-more">更多 &gt;</div>}
+              icon={<Target className="card-title-icon" size={18} />}
+              title="项目进度"
+            />
             <div className="project-list">
               <div className="project-item">
                 <div className="project-info"><span>个人网站重构</span> <span className="project-percent">75%</span></div>
-                <div className="project-bar"><div className="project-bar-fill" style={{width: '75%'}}></div></div>
+                <ProgressBar value={75} />
               </div>
               <div className="project-item">
                 <div className="project-info"><span>毕业设计</span> <span className="project-percent">60%</span></div>
-                <div className="project-bar"><div className="project-bar-fill" style={{width: '60%'}}></div></div>
+                <ProgressBar value={60} />
               </div>
               <div className="project-item">
                 <div className="project-info"><span>日语N2备考</span> <span className="project-percent">40%</span></div>
-                <div className="project-bar"><div className="project-bar-fill" style={{width: '40%'}}></div></div>
+                <ProgressBar value={40} />
               </div>
               <div className="project-item">
                 <div className="project-info"><span>游戏开发练习</span> <span className="project-percent">20%</span></div>
-                <div className="project-bar"><div className="project-bar-fill" style={{width: '20%'}}></div></div>
+                <ProgressBar value={20} />
               </div>
             </div>
-          </div>
+          </DashboardCard>
 
           {/* Row 2: 工具箱 */}
-          <div className="glass-panel p-24">
-            <div className="card-header">
-              <div className="card-title"><div className="torii-icon card-title-icon">⛩️</div> 工具箱</div>
-            </div>
+          <DashboardCard>
+            <CardHeader icon={<div className="torii-icon card-title-icon">⛩️</div>} title="工具箱" />
             <div className="toolbox-grid">
               <div className="tool-item">
                 <div className="tool-icon"><Book size={20} /></div>
@@ -392,7 +395,7 @@ export default function HomeExperience() {
                 <span className="tool-name">更多工具</span>
               </div>
             </div>
-          </div>
+          </DashboardCard>
 
           {/* Row 2: Decorative Omamori */}
           <div className="decorative-widget">
