@@ -1,231 +1,418 @@
 "use client";
 
-import Link from "next/link";
-import type { CSSProperties } from "react";
-import { useEffect, useMemo, useState } from "react";
-import {
-  applyThemeVars,
-  backgrounds,
-  createCustomBackground,
-  siteName,
-  storageKeys
-} from "./site-theme";
-
-const studyItems = [
-  {
-    title: "学习笔记",
-    text: "整理课程、阅读、项目踩坑，把零散知识收束成可以复用的地图。",
-    meta: "Notes / Courses"
-  },
-  {
-    title: "今日推进",
-    text: "保留一块给近期目标：正在看的书、正在写的代码、正在补的基础。",
-    meta: "Now / Focus"
-  },
-  {
-    title: "小工具箱",
-    text: "放置自用工具、实验页面和自动化脚本入口，让学习流程更顺手。",
-    meta: "Tools / Labs"
-  }
-];
-
-const lifeItems = ["日常随笔", "读书摘记", "灵感片段", "音乐与游戏", "东方同好", "站点工事"];
-
-const updates = [
-  "主页主题重构：东方幻想风个人门户",
-  "准备接入学习笔记与生活记录入口",
-  "背景图支持预设切换与管理页上传"
-];
+import React, { useState, useEffect } from 'react';
+import { 
+  Search, Bell, BookOpen, Clock, Settings, Heart, 
+  Play, Pause, SkipBack, SkipForward, Music, PlayCircle,
+  CloudSun, CalendarDays, Folder, Book, Timer, CheckSquare, 
+  Languages, Calculator, Dices, Palette, MoreHorizontal,
+  ChevronRight, Star, Moon, Sun, Target, AlignLeft, MapPin, Menu, X
+} from 'lucide-react';
 
 export default function HomeExperience() {
-  const [selectedId, setSelectedId] = useState(backgrounds[0].id);
-  const [customBackgroundSrc, setCustomBackgroundSrc] = useState<string | null>(
-    null
-  );
+  const [theme, setTheme] = useState('light');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(storageKeys.selectedBackground);
-    const hasSavedPreference = Boolean(saved);
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
-    if (saved) {
-      setSelectedId(saved);
-    }
-
-    fetch("/api/background", { cache: "no-store" })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((payload: { custom?: { src: string } } | null) => {
-        if (!payload?.custom?.src) {
-          return;
-        }
-
-        setCustomBackgroundSrc(payload.custom.src);
-
-        if (!hasSavedPreference) {
-          setSelectedId("custom");
-        }
-      })
-      .catch(() => {
-        setCustomBackgroundSrc(null);
-      });
-  }, []);
-
-  const availableBackgrounds = useMemo(() => {
-    if (!customBackgroundSrc) {
-      return backgrounds;
-    }
-
-    return [...backgrounds, createCustomBackground(customBackgroundSrc)];
-  }, [customBackgroundSrc]);
-
-  const selectedBackground = useMemo(
-    () =>
-      availableBackgrounds.find((background) => background.id === selectedId) ??
-      backgrounds[0],
-    [availableBackgrounds, selectedId]
-  );
-
-  useEffect(() => {
-    applyThemeVars(selectedBackground.theme);
-  }, [selectedBackground]);
-
-  function chooseBackground(id: string) {
-    setSelectedId(id);
-    window.localStorage.setItem(storageKeys.selectedBackground, id);
-  }
-
-  const pageStyle = {
-    "--hero-background": `url(${selectedBackground.src})`,
-    "--theme-accent": selectedBackground.accent,
-    ...selectedBackground.theme
-  } as CSSProperties;
+  const toggleTheme = () => {
+    setTheme(t => t === 'light' ? 'dark' : 'light');
+  };
 
   return (
-    <div className="home-scene" data-theme={selectedBackground.id} style={pageStyle}>
-      <div className="ambient-layer" aria-hidden="true">
-        <span className="spell-ring spell-ring-one" />
-        <span className="spell-ring spell-ring-two" />
-        <span className="spell-ring spell-ring-three" />
-        <span className="ofuda ofuda-one" />
-        <span className="ofuda ofuda-two" />
-        <span className="energy-ribbon energy-ribbon-one" />
-        <span className="energy-ribbon energy-ribbon-two" />
-        <span className="danmaku danmaku-one" />
-        <span className="danmaku danmaku-two" />
-        <span className="petal petal-one" />
-        <span className="petal petal-two" />
-        <span className="petal petal-three" />
-      </div>
-
-      <section className="home-hero" aria-labelledby="home-title">
-        <div className="hero-copy">
-          <p className="eyebrow">{siteName}</p>
-          <h1 id="home-title">在幻想与日常之间，整理学习、生活与自己的节奏。</h1>
-          <p className="lead">
-            一个以东方 Project 氛围为底色的个人门户。这里会收纳学习笔记、生活记录、自用工具，以及一些只属于我的兴趣与表达。
-          </p>
-
-          <div className="hero-actions" aria-label="主页入口">
-            <a className="button primary-button" href="#study">
-              学习记录
-            </a>
-            <a className="button ghost-button" href="#life">
-              生活片段
-            </a>
-            <Link className="button ghost-button" href="/tools">
-              工具箱
-            </Link>
-            <Link className="button ghost-button" href="/admin">
-              管理入口
-            </Link>
+    <div className="app-container">
+      {/* Header */}
+      <header className="header">
+        <div className="header-left">
+          <div className="header-logo">☯</div>
+          <span>博麗の夢</span>
+        </div>
+        <nav className={`header-nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+          <span className="nav-item active">首页</span>
+          <span className="nav-item">学习</span>
+          <span className="nav-item">生活</span>
+          <span className="nav-item">东方</span>
+          <span className="nav-item">工具</span>
+          <span className="nav-item">关于</span>
+        </nav>
+        <div className="header-right">
+          <div className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </div>
+          <Search className="header-icon" size={20} />
+          <Bell className="header-icon" size={20} />
+          <div className="header-icon" onClick={toggleTheme}>
+            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+          </div>
+          <div className="header-avatar">
+            <img src="https://placeholder.co/100x100/d33c46/fff?text=R" alt="avatar" />
           </div>
         </div>
+      </header>
 
-        <aside className="hero-panel" aria-label="当前状态">
-          <div>
-            <p className="panel-kicker">Today's Shrine Note</p>
-            <h2>先把今天的知识整理成明天能继续前进的路标。</h2>
+      {/* Main Content */}
+      <main className="main-container">
+        
+        {/* Top Section */}
+        <section className="top-section">
+          <div className="mascot-widget">
+            <div className="mascot-img-placeholder"></div>
+            <div className="mascot-bubble">
+              <p>需要帮忙吗？</p>
+              <p>今天也要加油哦！✨</p>
+            </div>
           </div>
-          <dl className="status-grid">
-            <div>
-              <dt>主线</dt>
-              <dd>学习沉淀</dd>
+          
+          <div className="hero-text">
+            <h1 className="hero-title">博麗の夢</h1>
+            <p className="hero-subtitle">一个记录学习与生活的小站</p>
+            <div className="hero-motto">结缘东方 · 博丽神社 · 梦想常在</div>
+          </div>
+          
+          <div className="glass-panel tools-entry">
+            <div className="tools-entry-icon">
+              <div className="torii-icon">⛩</div>
             </div>
-            <div>
-              <dt>副线</dt>
-              <dd>生活记录</dd>
+            <div className="tools-entry-text">
+              <h3>工具</h3>
+              <p>进入工具箱</p>
             </div>
-            <div>
-              <dt>气质</dt>
-              <dd>明快轻盈</dd>
+            <ChevronRight size={20} color="var(--text-tertiary)" style={{marginLeft: 'auto'}} />
+          </div>
+        </section>
+
+        {/* Dashboard Grid */}
+        <section className="dashboard-grid">
+          {/* Card 1: 今日任务 */}
+          <div className="glass-panel p-24">
+            <div className="card-header">
+              <div className="card-title"><CheckSquare className="card-title-icon" size={18} /> 今日任务</div>
+              <div className="card-more" style={{fontWeight: 'bold', color: 'var(--text-primary)'}}>3/6</div>
             </div>
-          </dl>
-        </aside>
-      </section>
-
-      <section className="background-dock" aria-label="背景主题">
-        {availableBackgrounds.map((background) => (
-          <button
-            className="background-choice"
-            key={background.id}
-            onClick={() => chooseBackground(background.id)}
-            style={{ "--choice-accent": background.accent } as CSSProperties}
-            type="button"
-            aria-pressed={background.id === selectedId}
-          >
-            <span />
-            <strong>{background.label}</strong>
-            <small>{background.mood}</small>
-          </button>
-        ))}
-      </section>
-
-      <section className="content-band study-band" id="study" aria-labelledby="study-title">
-        <div className="section-heading">
-          <p className="eyebrow">Study</p>
-          <h2 id="study-title">学习记录</h2>
-          <p>
-            主页第一优先级是让学习内容更容易被看见：当前推进、沉淀入口、工具入口都放在靠前位置。
-          </p>
-        </div>
-
-        <div className="study-grid">
-          {studyItems.map((item) => (
-            <article className="portal-card study-card" key={item.title}>
-              <p>{item.meta}</p>
-              <h3>{item.title}</h3>
-              <span>{item.text}</span>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="content-band split-band" id="life" aria-labelledby="life-title">
-        <div className="section-heading compact-heading">
-          <p className="eyebrow">Life & Self</p>
-          <h2 id="life-title">生活与个性</h2>
-          <p>
-            生活记录不需要喧宾夺主，但要留出清晰入口，让随笔、兴趣和站点更新自然生长。
-          </p>
-        </div>
-
-        <div className="life-layout">
-          <div className="tag-cloud" aria-label="内容标签">
-            {lifeItems.map((item) => (
-              <span key={item}>{item}</span>
-            ))}
+            <div className="task-list">
+              <div className="task-item">
+                <div className="task-item-left"><div className="task-checkbox"></div><span className="task-text">复习线性代数</span></div>
+                <span className="task-time">09:00</span>
+              </div>
+              <div className="task-item">
+                <div className="task-item-left"><div className="task-checkbox"></div><span className="task-text">阅读《东方求闻史纪》</span></div>
+                <span className="task-time">11:30</span>
+              </div>
+              <div className="task-item completed">
+                <div className="task-item-left"><div className="task-checkbox">✓</div><span className="task-text">算法题训练</span></div>
+                <span className="task-time">14:00</span>
+              </div>
+              <div className="task-item completed">
+                <div className="task-item-left"><div className="task-checkbox">✓</div><span className="task-text">日记记录</span></div>
+                <span className="task-time">21:00</span>
+              </div>
+              <div className="task-item">
+                <div className="task-item-left"><div className="task-checkbox"></div><span className="task-text">锻炼身体</span></div>
+                <span className="task-time">未开始</span>
+              </div>
+              <div className="task-item">
+                <div className="task-item-left"><div className="task-checkbox"></div><span className="task-text">整理笔记</span></div>
+                <span className="task-time">未开始</span>
+              </div>
+            </div>
+            <div className="task-view-all">查看全部任务 &gt;</div>
           </div>
 
-          <article className="portal-card update-card">
-            <p>Recent</p>
-            <h3>最近更新</h3>
-            <ul>
-              {updates.map((update) => (
-                <li key={update}>{update}</li>
-              ))}
-            </ul>
-          </article>
+          {/* Card 2: 学习轨迹 */}
+          <div className="glass-panel p-24">
+            <div className="card-header">
+              <div className="card-title"><Target className="card-title-icon" size={18} /> 学习轨迹</div>
+            </div>
+            <div className="chart-stats">
+              <span>本周学习时长</span>
+              <h2>18.6 <span>h</span></h2>
+            </div>
+            <div className="chart-container">
+              <svg width="100%" height="100%" viewBox="0 0 200 80" preserveAspectRatio="none">
+                <path d="M0,60 Q30,50 50,40 T100,50 T150,20 T200,30" fill="none" stroke="var(--accent)" strokeWidth="3" />
+                <path d="M0,60 Q30,50 50,40 T100,50 T150,20 T200,30 L200,80 L0,80 Z" fill="var(--progress-bg)" />
+                <circle cx="50" cy="40" r="4" fill="var(--bg-color)" stroke="var(--accent)" strokeWidth="2" />
+                <circle cx="100" cy="50" r="4" fill="var(--bg-color)" stroke="var(--accent)" strokeWidth="2" />
+                <circle cx="150" cy="20" r="4" fill="var(--bg-color)" stroke="var(--accent)" strokeWidth="2" />
+                <circle cx="190" cy="28" r="4" fill="var(--bg-color)" stroke="var(--accent)" strokeWidth="2" />
+                <text x="180" y="15" fontSize="10" fill="var(--text-primary)" fontWeight="bold">3.2h</text>
+              </svg>
+            </div>
+            <div className="chart-tags">
+              <span className="chart-tag">📊 算法与数据结构</span>
+              <span className="chart-tag">📈 数学分析 4.1h</span>
+              <span className="chart-tag">🇯🇵 日语学习 2.8h</span>
+              <span className="chart-tag">💻 操作系统 2.3h</span>
+            </div>
+          </div>
+
+          {/* Card 3: 日记碎片 */}
+          <div className="glass-panel p-24">
+            <div className="card-header">
+              <div className="card-title"><AlignLeft className="card-title-icon" size={18} /> 日记碎片</div>
+              <div className="card-more">更多 &gt;</div>
+            </div>
+            <div className="diary-list">
+              <div className="diary-item">
+                <div className="diary-item-header">
+                  <span className="diary-icon">⛩️</span>
+                  <span className="diary-title">博丽神社的清晨</span>
+                </div>
+                <p className="diary-desc">清晨的阳光透过鸟居，洒在石板路上。今天也要好好努力呢。</p>
+                <div className="diary-meta">
+                  <span>05/18 · 天气晴</span>
+                  <Star size={14} color="#f0b44b" fill="#f0b44b" />
+                </div>
+              </div>
+              <div className="diary-item">
+                <div className="diary-item-header">
+                  <span className="diary-icon">🌸</span>
+                  <span className="diary-title">关于梦想的碎片</span>
+                </div>
+                <p className="diary-desc">梦想就像是远方的结界，既神秘又指引着我前进。</p>
+                <div className="diary-meta">
+                  <span>05/16 · 心情：平静</span>
+                  <span></span>
+                </div>
+              </div>
+              <div className="diary-item">
+                <div className="diary-item-header">
+                  <span className="diary-icon">✨</span>
+                  <span className="diary-title">学习使我快乐</span>
+                </div>
+                <p className="diary-desc">解决一道难题后的成就感，真是太棒了！</p>
+                <div className="diary-meta">
+                  <span>05/14 · 心情：开心</span>
+                  <span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4: 最近收藏 */}
+          <div className="glass-panel p-24">
+            <div className="card-header">
+              <div className="card-title"><Heart className="card-title-icon" size={18} /> 最近收藏</div>
+              <div className="card-more">更多 &gt;</div>
+            </div>
+            <div className="collection-list">
+              <div className="collection-item">
+                <img src="https://placeholder.co/60x40" alt="东方雅乐集" className="collection-img" />
+                <div className="collection-info">
+                  <div className="collection-title">东方雅乐集 · Vol.4</div>
+                  <div className="collection-desc">森罗万象 / 神灵庙</div>
+                </div>
+                <Heart size={16} className="collection-like" fill="var(--accent)" />
+              </div>
+              <div className="collection-item">
+                <img src="https://placeholder.co/60x40" alt="幻想乡缘起" className="collection-img" />
+                <div className="collection-info">
+                  <div className="collection-title">幻想乡缘起</div>
+                  <div className="collection-desc">ZUN / 官方设定集</div>
+                </div>
+              </div>
+              <div className="collection-item">
+                <img src="https://placeholder.co/60x40" alt="东方梦想" className="collection-img" />
+                <div className="collection-info">
+                  <div className="collection-title">东方梦想</div>
+                  <div className="collection-desc">黄昏Frontier / 同人音乐</div>
+                </div>
+              </div>
+              <div className="collection-item">
+                <img src="https://placeholder.co/60x40" alt="异变解读笔记" className="collection-img" />
+                <div className="collection-info">
+                  <div className="collection-title">异变解读笔记</div>
+                  <div className="collection-desc">个人笔记 / 研究记录</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 5: 正在播放 & 装饰 */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div className="glass-panel p-24 music-player">
+              <div className="card-header">
+                <div className="card-title"><Music className="card-title-icon" size={18} /> 正在播放</div>
+                <ChevronRight size={16} color="var(--text-tertiary)" />
+              </div>
+              <div className="music-cover-wrapper">
+                <div className="music-vinyl"></div>
+                <img src="https://placeholder.co/140x140" alt="Album Cover" className="music-cover" />
+              </div>
+              <div className="music-title">幻梦的风 🍃</div>
+              <div className="music-artist">幽闭サテライト</div>
+              <div className="music-controls">
+                <div className="music-btn"><SkipBack size={16} /></div>
+                <div className="music-btn play" onClick={() => setIsPlaying(!isPlaying)}>
+                  {isPlaying ? <Pause size={20} /> : <Play size={20} fill="currentColor" />}
+                </div>
+                <div className="music-btn"><SkipForward size={16} /></div>
+              </div>
+              <div className="music-progress">
+                <span>01:24</span>
+                <div className="music-bar"><div className="music-bar-fill"></div></div>
+                <span>04:36</span>
+              </div>
+            </div>
+            
+            <div className="glass-panel p-24">
+              <div className="quote-card">
+                <div className="quote-icon">☯</div>
+                <div className="quote-text">境界既定，<br/>缘起缘灭，<br/>一切皆在博丽之梦。</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Row 2: 时间/天气 */}
+          <div className="glass-panel time-weather-card">
+            <div className="time-content">
+              <div className="card-title" style={{marginBottom: 0}}><MapPin className="card-title-icon" size={18} /> 时间/天气</div>
+              <div style={{fontSize: '12px', color: 'var(--text-tertiary)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4}}><MapPin size={12} /> 幻想乡 · 博丽神社</div>
+              <div className="time-display">14:28:36</div>
+              <div className="date-display">2025年05月18日 星期日</div>
+              <div className="weather-display">
+                <div className="weather-main"><CloudSun size={24} /> 23°C 多云转晴</div>
+                <div className="weather-detail">东风 2级 · 湿度 58%</div>
+              </div>
+            </div>
+            <img src="https://placeholder.co/140x140" className="time-weather-bg" alt="Shrine" />
+          </div>
+
+          {/* Row 2: 日历 */}
+          <div className="glass-panel p-24">
+            <div className="card-header">
+              <div className="card-title"><CalendarDays className="card-title-icon" size={18} /> 日历</div>
+              <div className="card-more" style={{color: 'var(--text-primary)', fontWeight: 600}}>2025年5月 &gt;</div>
+            </div>
+            <div className="calendar-grid">
+              <div className="calendar-day-name">日</div>
+              <div className="calendar-day-name">一</div>
+              <div className="calendar-day-name">二</div>
+              <div className="calendar-day-name">三</div>
+              <div className="calendar-day-name">四</div>
+              <div className="calendar-day-name">五</div>
+              <div className="calendar-day-name">六</div>
+              
+              <div className="calendar-day muted">27</div>
+              <div className="calendar-day muted">28</div>
+              <div className="calendar-day muted">29</div>
+              <div className="calendar-day muted">30</div>
+              <div className="calendar-day">1</div>
+              <div className="calendar-day">2</div>
+              <div className="calendar-day">3</div>
+              <div className="calendar-day">4</div>
+              <div className="calendar-day">5</div>
+              <div className="calendar-day">6</div>
+              <div className="calendar-day">7</div>
+              <div className="calendar-day">8</div>
+              <div className="calendar-day">9</div>
+              <div className="calendar-day">10</div>
+              <div className="calendar-day">11</div>
+              <div className="calendar-day">12</div>
+              <div className="calendar-day">13</div>
+              <div className="calendar-day">14</div>
+              <div className="calendar-day">15</div>
+              <div className="calendar-day">16</div>
+              <div className="calendar-day">17</div>
+              <div className="calendar-day active">18</div>
+              <div className="calendar-day">19</div>
+              <div className="calendar-day">20</div>
+              <div className="calendar-day">21</div>
+              <div className="calendar-day">22</div>
+              <div className="calendar-day">23</div>
+              <div className="calendar-day">24</div>
+            </div>
+          </div>
+
+          {/* Row 2: 项目进度 */}
+          <div className="glass-panel p-24">
+            <div className="card-header">
+              <div className="card-title"><Target className="card-title-icon" size={18} /> 项目进度</div>
+              <div className="card-more">更多 &gt;</div>
+            </div>
+            <div className="project-list">
+              <div className="project-item">
+                <div className="project-info"><span>个人网站重构</span> <span className="project-percent">75%</span></div>
+                <div className="project-bar"><div className="project-bar-fill" style={{width: '75%'}}></div></div>
+              </div>
+              <div className="project-item">
+                <div className="project-info"><span>毕业设计</span> <span className="project-percent">60%</span></div>
+                <div className="project-bar"><div className="project-bar-fill" style={{width: '60%'}}></div></div>
+              </div>
+              <div className="project-item">
+                <div className="project-info"><span>日语N2备考</span> <span className="project-percent">40%</span></div>
+                <div className="project-bar"><div className="project-bar-fill" style={{width: '40%'}}></div></div>
+              </div>
+              <div className="project-item">
+                <div className="project-info"><span>游戏开发练习</span> <span className="project-percent">20%</span></div>
+                <div className="project-bar"><div className="project-bar-fill" style={{width: '20%'}}></div></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Row 2: 工具箱 */}
+          <div className="glass-panel p-24">
+            <div className="card-header">
+              <div className="card-title"><div className="torii-icon card-title-icon">⛩️</div> 工具箱</div>
+            </div>
+            <div className="toolbox-grid">
+              <div className="tool-item">
+                <div className="tool-icon"><Book size={20} /></div>
+                <span className="tool-name">笔记本</span>
+              </div>
+              <div className="tool-item">
+                <div className="tool-icon"><Timer size={20} /></div>
+                <span className="tool-name">番茄钟</span>
+              </div>
+              <div className="tool-item">
+                <div className="tool-icon"><CheckSquare size={20} /></div>
+                <span className="tool-name">待办清单</span>
+              </div>
+              <div className="tool-item">
+                <div className="tool-icon"><Languages size={20} /></div>
+                <span className="tool-name">翻译</span>
+              </div>
+              <div className="tool-item">
+                <div className="tool-icon"><Calculator size={20} /></div>
+                <span className="tool-name">计算器</span>
+              </div>
+              <div className="tool-item">
+                <div className="tool-icon"><Dices size={20} /></div>
+                <span className="tool-name">随机灵签</span>
+              </div>
+              <div className="tool-item">
+                <div className="tool-icon"><Palette size={20} /></div>
+                <span className="tool-name">配色助手</span>
+              </div>
+              <div className="tool-item">
+                <div className="tool-icon"><MoreHorizontal size={20} /></div>
+                <span className="tool-name">更多工具</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Row 2: Decorative Omamori */}
+          <div className="decorative-widget">
+            <img src={theme === 'light' ? "https://placeholder.co/120x180/d33c46/fff?text=Omamori" : "https://placeholder.co/120x120/11162d/5e84f5?text=Butterfly"} alt="Decoration" className="decorative-img" />
+          </div>
+
+        </section>
+
+      </main>
+
+      {/* Footer */}
+      <footer className="footer">
+        <div>© 2025 博麗の夢 · 记录学习与生活的点滴</div>
+        <div className="footer-icons">
+          <BookOpen className="footer-icon" size={16} />
+          <Heart className="footer-icon" size={16} />
+          <Star className="footer-icon" size={16} />
         </div>
-      </section>
+        <div>愿你在幻想乡的每一天都充满奇迹 ✨</div>
+      </footer>
     </div>
   );
 }
