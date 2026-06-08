@@ -79,6 +79,7 @@ const ANIMATIONS: Record<PetState, { row: number; durations: number[] }> = {
 
 const TRANSIENT_STATES = new Set<PetState>(["waving", "jumping"]);
 const WAITING_AFTER_MS = 12000;
+const DRAG_SETTLE_MS = 1000;
 const DRAG_SCREEN_MARGIN = 8;
 
 function usePrefersReducedMotion() {
@@ -110,8 +111,10 @@ export function InteractiveMascot({
   const dragStart = useRef<DragStart | null>(null);
   const lastPointerX = useRef<number | null>(null);
   const movedDuringPointer = useRef(false);
+  const activeState = useRef<PetState>("idle");
   const waitingTimer = useRef<number | null>(null);
   const transientTimer = useRef<number | null>(null);
+  const dragSettleTimer = useRef<number | null>(null);
   const reducedMotion = usePrefersReducedMotion();
 
   const animation = ANIMATIONS[petState];
@@ -150,37 +153,59 @@ export function InteractiveMascot({
     setDragOffset(nextOffset);
   }, [constrainDragOffset]);
 
+  const setVisualState = useCallback((nextState: PetState, nextMessage = STATE_MESSAGES[nextState]) => {
+    if (activeState.current !== nextState) {
+      activeState.current = nextState;
+      setFrame(0);
+      setPetState(nextState);
+    }
+
+    setMessage(nextMessage);
+  }, []);
+
   const resetWaitingTimer = useCallback(() => {
     if (waitingTimer.current) {
       window.clearTimeout(waitingTimer.current);
     }
 
     waitingTimer.current = window.setTimeout(() => {
-      setFrame(0);
-      setPetState("waiting");
-      setMessage(STATE_MESSAGES.waiting);
+      setVisualState("waiting");
     }, WAITING_AFTER_MS);
-  }, []);
+  }, [setVisualState]);
 
   const showState = useCallback((nextState: PetState, transient = false) => {
     if (transientTimer.current) {
       window.clearTimeout(transientTimer.current);
     }
 
-    setFrame(0);
-    setPetState(nextState);
-    setMessage(STATE_MESSAGES[nextState]);
+    setVisualState(nextState);
     resetWaitingTimer();
 
     if (transient) {
       const duration = ANIMATIONS[nextState].durations.reduce((sum, current) => sum + current, 0);
       transientTimer.current = window.setTimeout(() => {
-        setFrame(0);
-        setPetState("idle");
-        setMessage(initialMessage);
+        setVisualState("idle", initialMessage);
       }, duration);
     }
-  }, [initialMessage, resetWaitingTimer]);
+  }, [initialMessage, resetWaitingTimer, setVisualState]);
+
+  const clearDragSettleTimer = useCallback(() => {
+    if (dragSettleTimer.current) {
+      window.clearTimeout(dragSettleTimer.current);
+      dragSettleTimer.current = null;
+    }
+  }, []);
+
+  const scheduleDragSettle = useCallback(() => {
+    clearDragSettleTimer();
+
+    dragSettleTimer.current = window.setTimeout(() => {
+      setIsDragging(false);
+      setVisualState("idle", initialMessage);
+      movedDuringPointer.current = false;
+      dragSettleTimer.current = null;
+    }, DRAG_SETTLE_MS);
+  }, [clearDragSettleTimer, initialMessage, setVisualState]);
 
   useEffect(() => {
     resetWaitingTimer();
@@ -193,8 +218,10 @@ export function InteractiveMascot({
       if (transientTimer.current) {
         window.clearTimeout(transientTimer.current);
       }
+
+      clearDragSettleTimer();
     };
-  }, [resetWaitingTimer]);
+  }, [clearDragSettleTimer, resetWaitingTimer]);
 
   useEffect(() => {
     if (reducedMotion) {
@@ -232,6 +259,7 @@ export function InteractiveMascot({
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId);
+    clearDragSettleTimer();
     dragLimits.current = getDragLimits(event.currentTarget, dragOffsetRef.current);
     dragStart.current = {
       pointerX: event.clientX,
@@ -252,21 +280,17 @@ export function InteractiveMascot({
 
     const totalDeltaX = event.clientX - dragStart.current.pointerX;
     const totalDeltaY = event.clientY - dragStart.current.pointerY;
-    const deltaX = event.clientX - lastPointerX.current;
 
     if (Math.abs(totalDeltaX) > 8 || Math.abs(totalDeltaY) > 8) {
       movedDuringPointer.current = true;
       setIsDragging(true);
+      clearDragSettleTimer();
       updateDragOffset({
         x: dragStart.current.offsetX + totalDeltaX,
         y: dragStart.current.offsetY + totalDeltaY
       });
-
-      if (Math.abs(deltaX) > 2) {
-        showState(deltaX > 0 ? "running-right" : "running-left", false);
-      } else {
-        showState("running", false);
-      }
+      showState("running", false);
+      scheduleDragSettle();
 
       lastPointerX.current = event.clientX;
     }
@@ -281,11 +305,11 @@ export function InteractiveMascot({
     dragStart.current = null;
     dragLimits.current = null;
     lastPointerX.current = null;
-    setIsDragging(false);
 
     if (didMove) {
-      showState("idle", false);
-      setMessage(initialMessage);
+      scheduleDragSettle();
+    } else {
+      setIsDragging(false);
     }
   };
 
