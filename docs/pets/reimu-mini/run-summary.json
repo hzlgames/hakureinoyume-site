@@ -1,0 +1,9 @@
+﻿{
+    "ok":  true,
+    "asset":  "public/pets/reimu-mini/spritesheet.webp",
+    "contactSheet":  "docs/pets/reimu-mini/contact-sheet.png",
+    "validation":  "docs/pets/reimu-mini/validation.json",
+    "review":  "docs/pets/reimu-mini/review.json",
+    "generatedAt":  "2026-06-07T12:27:07Z",
+    "notes":  "Generated with hatch-pet workflow from public/reimu_exampel.png; stable-slots extraction used after visual QA; running-left frames repaired by framewise mirroring of approved running-right frames."
+}
