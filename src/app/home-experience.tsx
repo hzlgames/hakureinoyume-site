@@ -10,6 +10,7 @@ import {
   ChevronRight, Star, Moon, Sun, Target, AlignLeft, MapPin, Menu, X
 } from 'lucide-react';
 import { CardHeader, DashboardCard, GlassPanel, ProgressBar } from "./_components/ui";
+import { InteractiveMascot } from "./_components/interactive-mascot";
 
 export default function HomeExperience() {
   const [theme, setTheme] = useState('light');
@@ -60,13 +61,7 @@ export default function HomeExperience() {
         
         {/* Top Section */}
         <section className="top-section">
-          <div className="mascot-widget">
-            <div className="mascot-img-placeholder"></div>
-            <div className="mascot-bubble">
-              <p>需要帮忙吗？</p>
-              <p>今天也要加油哦！✨</p>
-            </div>
-          </div>
+          <InteractiveMascot />
           
           <div className="hero-text">
             <h1 className="hero-title">博麗の夢</h1>
