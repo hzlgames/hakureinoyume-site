@@ -36,6 +36,13 @@ type DragStart = {
   offsetY: number;
 };
 
+type DragLimits = {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+};
+
 const DEFAULT_MESSAGE: MascotMessage = {
   title: "需要帮忙吗？",
   body: "今天也要加油哦！✨"
@@ -72,12 +79,7 @@ const ANIMATIONS: Record<PetState, { row: number; durations: number[] }> = {
 
 const TRANSIENT_STATES = new Set<PetState>(["waving", "jumping"]);
 const WAITING_AFTER_MS = 12000;
-const DRAG_LIMITS = {
-  minX: -32,
-  maxX: 120,
-  minY: -24,
-  maxY: 64
-} as const;
+const DRAG_SCREEN_MARGIN = 8;
 
 function usePrefersReducedMotion() {
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -104,6 +106,7 @@ export function InteractiveMascot({
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState<DragOffset>({ x: 0, y: 0 });
   const dragOffsetRef = useRef<DragOffset>({ x: 0, y: 0 });
+  const dragLimits = useRef<DragLimits | null>(null);
   const dragStart = useRef<DragStart | null>(null);
   const lastPointerX = useRef<number | null>(null);
   const movedDuringPointer = useRef(false);
@@ -113,10 +116,33 @@ export function InteractiveMascot({
 
   const animation = ANIMATIONS[petState];
 
-  const constrainDragOffset = useCallback((offset: DragOffset) => ({
-    x: Math.min(DRAG_LIMITS.maxX, Math.max(DRAG_LIMITS.minX, offset.x)),
-    y: Math.min(DRAG_LIMITS.maxY, Math.max(DRAG_LIMITS.minY, offset.y))
-  }), []);
+  const getDragLimits = useCallback((button: HTMLButtonElement, offset: DragOffset): DragLimits => {
+    const rect = button.getBoundingClientRect();
+    const baseLeft = rect.left - offset.x;
+    const baseTop = rect.top - offset.y;
+    const viewportWidth = document.documentElement.clientWidth;
+    const viewportHeight = document.documentElement.clientHeight;
+
+    return {
+      minX: DRAG_SCREEN_MARGIN - baseLeft,
+      maxX: viewportWidth - baseLeft - rect.width - DRAG_SCREEN_MARGIN,
+      minY: DRAG_SCREEN_MARGIN - baseTop,
+      maxY: viewportHeight - baseTop - rect.height - DRAG_SCREEN_MARGIN
+    };
+  }, []);
+
+  const constrainDragOffset = useCallback((offset: DragOffset) => {
+    const limits = dragLimits.current;
+
+    if (!limits) {
+      return offset;
+    }
+
+    return {
+      x: Math.min(limits.maxX, Math.max(limits.minX, offset.x)),
+      y: Math.min(limits.maxY, Math.max(limits.minY, offset.y))
+    };
+  }, []);
 
   const updateDragOffset = useCallback((offset: DragOffset) => {
     const nextOffset = constrainDragOffset(offset);
@@ -206,6 +232,7 @@ export function InteractiveMascot({
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId);
+    dragLimits.current = getDragLimits(event.currentTarget, dragOffsetRef.current);
     dragStart.current = {
       pointerX: event.clientX,
       pointerY: event.clientY,
@@ -252,6 +279,7 @@ export function InteractiveMascot({
 
     const didMove = movedDuringPointer.current;
     dragStart.current = null;
+    dragLimits.current = null;
     lastPointerX.current = null;
     setIsDragging(false);
 
