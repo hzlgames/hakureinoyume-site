@@ -116,6 +116,7 @@ export function InteractiveMascot({
   const waitingTimer = useRef<number | null>(null);
   const transientTimer = useRef<number | null>(null);
   const dragSettleTimer = useRef<number | null>(null);
+  const viewportClampFrame = useRef<number | null>(null);
   const reducedMotion = usePrefersReducedMotion();
 
   const animation = ANIMATIONS[petState];
@@ -157,6 +158,11 @@ export function InteractiveMascot({
 
   const updateDragOffset = useCallback((offset: DragOffset) => {
     const nextOffset = constrainDragOffset(offset);
+
+    if (dragOffsetRef.current.x === nextOffset.x && dragOffsetRef.current.y === nextOffset.y) {
+      return;
+    }
+
     dragOffsetRef.current = nextOffset;
     setDragOffset(nextOffset);
   }, [constrainDragOffset]);
@@ -170,6 +176,17 @@ export function InteractiveMascot({
     updateDragOffset(dragOffsetRef.current);
     dragLimits.current = null;
   }, [getDragLimits, updateDragOffset]);
+
+  const scheduleKeepMascotInViewport = useCallback(() => {
+    if (viewportClampFrame.current) {
+      return;
+    }
+
+    viewportClampFrame.current = window.requestAnimationFrame(() => {
+      viewportClampFrame.current = null;
+      keepMascotInViewport();
+    });
+  }, [keepMascotInViewport]);
 
   const setVisualState = useCallback((nextState: PetState, nextMessage = STATE_MESSAGES[nextState]) => {
     if (activeState.current !== nextState) {
@@ -242,16 +259,23 @@ export function InteractiveMascot({
   }, [clearDragSettleTimer, resetWaitingTimer]);
 
   useEffect(() => {
-    keepMascotInViewport();
+    scheduleKeepMascotInViewport();
 
-    window.addEventListener("resize", keepMascotInViewport);
-    window.addEventListener("focus", keepMascotInViewport);
+    window.addEventListener("resize", scheduleKeepMascotInViewport);
+    window.addEventListener("focus", scheduleKeepMascotInViewport);
+    window.addEventListener("scroll", scheduleKeepMascotInViewport, { passive: true });
 
     return () => {
-      window.removeEventListener("resize", keepMascotInViewport);
-      window.removeEventListener("focus", keepMascotInViewport);
+      window.removeEventListener("resize", scheduleKeepMascotInViewport);
+      window.removeEventListener("focus", scheduleKeepMascotInViewport);
+      window.removeEventListener("scroll", scheduleKeepMascotInViewport);
+
+      if (viewportClampFrame.current) {
+        window.cancelAnimationFrame(viewportClampFrame.current);
+        viewportClampFrame.current = null;
+      }
     };
-  }, [keepMascotInViewport]);
+  }, [scheduleKeepMascotInViewport]);
 
   useEffect(() => {
     if (reducedMotion) {
