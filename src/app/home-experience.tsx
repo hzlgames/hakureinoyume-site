@@ -1,28 +1,355 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { 
   Search, Bell, BookOpen, Heart,
   Play, Pause, SkipBack, SkipForward, Music,
   CloudSun, CalendarDays, Book, Timer, CheckSquare,
   Languages, Calculator, Dices, Palette, MoreHorizontal,
-  ChevronRight, Star, Moon, Sun, Target, AlignLeft, MapPin, Menu, X
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
+  Star, Moon, Sun, Target, AlignLeft, MapPin, Menu, X
 } from 'lucide-react';
 import { CardHeader, DashboardCard, GlassPanel, ProgressBar } from "./_components/ui";
 import { InteractiveMascot } from "./_components/interactive-mascot";
+
+type WeatherState = {
+  temperature: number | null;
+  condition: string;
+  windDirection: string;
+  windSpeed: number | null;
+  humidity: number | null;
+  location: string;
+  status: "loading" | "ready" | "error";
+};
+
+type CalendarEvent = {
+  title: string;
+  type: "holiday" | "workday" | "observance";
+  description: string;
+  source: "timor.tech" | "Nager.Date" | "local-fallback";
+};
+
+type CalendarDay = {
+  key: string;
+  date: Date;
+  day: number;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  isSelected: boolean;
+  lunarLabel: string;
+  events: CalendarEvent[];
+};
+
+type CalendarApiResponse = {
+  year: number;
+  sources: Record<string, boolean>;
+  events: Record<string, CalendarEvent[]>;
+};
+
+type WeatherApiResponse = {
+  temperature: number | null;
+  weatherCode: number | null;
+  windDirection: number | null;
+  windSpeed: number | null;
+  humidity: number | null;
+  source: "Open-Meteo";
+};
+
+const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
+const DEFAULT_COORDS = { latitude: 31.2304, longitude: 121.4737, location: "上海" };
+
+const weatherDescriptions: Record<number, string> = {
+  0: "晴",
+  1: "大部晴朗",
+  2: "局部多云",
+  3: "多云",
+  45: "有雾",
+  48: "雾凇",
+  51: "小毛毛雨",
+  53: "毛毛雨",
+  55: "大毛毛雨",
+  61: "小雨",
+  63: "中雨",
+  65: "大雨",
+  71: "小雪",
+  73: "中雪",
+  75: "大雪",
+  80: "阵雨",
+  81: "强阵雨",
+  82: "暴雨",
+  95: "雷暴",
+  96: "雷暴伴冰雹",
+  99: "强雷暴伴冰雹",
+};
+
+function formatDate(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}年${month}月${day}日 星期${WEEKDAYS[date.getDay()]}`;
+}
+
+function formatTime(date: Date) {
+  return new Intl.DateTimeFormat("zh-CN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(date);
+}
+
+function formatWindDirection(degrees: number | null) {
+  if (degrees === null) return "风向未知";
+  const directions = ["北风", "东北风", "东风", "东南风", "南风", "西南风", "西风", "西北风"];
+  return directions[Math.round(degrees / 45) % 8];
+}
+
+function fullDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatLunarDate(date: Date) {
+  try {
+    return new Intl.DateTimeFormat("zh-CN-u-ca-chinese", {
+      month: "long",
+      day: "numeric",
+    }).format(date);
+  } catch {
+    return "";
+  }
+}
+
+function sameDate(left: Date, right: Date) {
+  return left.getFullYear() === right.getFullYear()
+    && left.getMonth() === right.getMonth()
+    && left.getDate() === right.getDate();
+}
+
+function moveMonth(date: Date, amount: number) {
+  return new Date(date.getFullYear(), date.getMonth() + amount, 1);
+}
+
+function moveYear(date: Date, amount: number) {
+  return new Date(date.getFullYear() + amount, date.getMonth(), 1);
+}
+
+function buildCalendarDays(
+  viewDate: Date,
+  today: Date,
+  selectedDate: Date,
+  eventsByDate: Record<string, CalendarEvent[]>
+): CalendarDay[] {
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const start = new Date(year, month, 1 - firstDay.getDay());
+
+  return Array.from({ length: 42 }, (_, index) => {
+    const cellDate = new Date(start);
+    cellDate.setDate(start.getDate() + index);
+    const key = fullDateKey(cellDate);
+    const events = eventsByDate[key] ?? [];
+    const primaryEvent = events.find((event) => event.type === "holiday")
+      ?? events.find((event) => event.type === "observance")
+      ?? events[0];
+
+    return {
+      key,
+      date: cellDate,
+      day: cellDate.getDate(),
+      isCurrentMonth: cellDate.getMonth() === month,
+      isToday: sameDate(cellDate, today),
+      isSelected: sameDate(cellDate, selectedDate),
+      lunarLabel: primaryEvent?.title ?? formatLunarDate(cellDate),
+      events,
+    };
+  });
+}
 
 export default function HomeExperience() {
   const [theme, setTheme] = useState('light');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [now, setNow] = useState(() => new Date());
+  const [calendarViewDate, setCalendarViewDate] = useState(() => new Date());
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [calendarEvents, setCalendarEvents] = useState<Record<string, CalendarEvent[]>>({});
+  const [calendarSources, setCalendarSources] = useState<Record<string, boolean>>({});
+  const [loadedCalendarYears, setLoadedCalendarYears] = useState<number[]>([]);
+  const [weather, setWeather] = useState<WeatherState>({
+    temperature: null,
+    condition: "天气获取中",
+    windDirection: "风向获取中",
+    windSpeed: null,
+    humidity: null,
+    location: "定位中",
+    status: "loading",
+  });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchWeather = async (latitude: number, longitude: number, location: string) => {
+      try {
+        const params = new URLSearchParams({
+          lat: String(latitude),
+          lon: String(longitude),
+        });
+        const response = await fetch(`/api/weather?${params.toString()}`);
+
+        if (!response.ok) {
+          throw new Error("Weather request failed");
+        }
+
+        const data = await response.json() as WeatherApiResponse;
+
+        if (!isMounted) return;
+
+        setWeather({
+          temperature: data.temperature,
+          condition: data.weatherCode === null ? "天气未知" : weatherDescriptions[data.weatherCode] ?? "天气未知",
+          windDirection: formatWindDirection(data.windDirection),
+          windSpeed: data.windSpeed,
+          humidity: data.humidity,
+          location,
+          status: "ready",
+        });
+      } catch {
+        if (!isMounted) return;
+
+        setWeather({
+          temperature: null,
+          condition: "天气暂不可用",
+          windDirection: "风向未知",
+          windSpeed: null,
+          humidity: null,
+          location,
+          status: "error",
+        });
+      }
+    };
+
+    const fallbackToDefaultLocation = () => {
+      fetchWeather(DEFAULT_COORDS.latitude, DEFAULT_COORDS.longitude, DEFAULT_COORDS.location);
+    };
+
+    if (!("geolocation" in navigator)) {
+      fallbackToDefaultLocation();
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        fetchWeather(position.coords.latitude, position.coords.longitude, "当前位置");
+      },
+      fallbackToDefaultLocation,
+      { enableHighAccuracy: false, timeout: 6000, maximumAge: 10 * 60 * 1000 }
+    );
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    const viewYear = calendarViewDate.getFullYear();
+    const yearsToLoad = new Set([viewYear]);
+
+    if (calendarViewDate.getMonth() === 0) yearsToLoad.add(viewYear - 1);
+    if (calendarViewDate.getMonth() === 11) yearsToLoad.add(viewYear + 1);
+
+    const missingYears = Array.from(yearsToLoad).filter((year) => !loadedCalendarYears.includes(year));
+
+    if (missingYears.length === 0) {
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    Promise.all(missingYears.map(async (year) => {
+      const response = await fetch(`/api/calendar?year=${year}`);
+      if (!response.ok) throw new Error("Calendar request failed");
+      return await response.json() as CalendarApiResponse;
+    }))
+      .then((payloads) => {
+        if (!isMounted) return;
+
+        setCalendarEvents((current) => {
+          const next = { ...current };
+          payloads.forEach((payload) => {
+            Object.assign(next, payload.events);
+          });
+          return next;
+        });
+        setCalendarSources((current) => {
+          const next = { ...current };
+          payloads.forEach((payload) => {
+            Object.entries(payload.sources).forEach(([source, ready]) => {
+              next[source] = Boolean(next[source] || ready);
+            });
+          });
+          return next;
+        });
+        setLoadedCalendarYears((current) => Array.from(new Set([...current, ...payloads.map((payload) => payload.year)])));
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setLoadedCalendarYears((current) => Array.from(new Set([...current, ...missingYears])));
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [calendarViewDate, loadedCalendarYears]);
+
+  const calendarDays = useMemo(
+    () => buildCalendarDays(calendarViewDate, now, selectedDate, calendarEvents),
+    [calendarViewDate, now, selectedDate, calendarEvents]
+  );
+  const selectedEvents = calendarEvents[fullDateKey(selectedDate)] ?? [];
+  const calendarTitle = `${calendarViewDate.getFullYear()}年${calendarViewDate.getMonth() + 1}月`;
+  const selectedDateLabel = `${selectedDate.getFullYear()}年${selectedDate.getMonth() + 1}月${selectedDate.getDate()}日 星期${WEEKDAYS[selectedDate.getDay()]}`;
+  const selectedLunarDate = formatLunarDate(selectedDate);
+  const dataSourceLabel = Object.entries(calendarSources)
+    .filter(([, ready]) => ready)
+    .map(([source]) => source)
+    .join(" / ") || "加载中";
+  const weatherTemperature = weather.temperature === null ? "--" : `${weather.temperature}°C`;
+  const windSpeed = weather.windSpeed === null ? "--" : `${weather.windSpeed} km/h`;
+  const humidity = weather.humidity === null ? "--" : `${weather.humidity}%`;
+
   const toggleTheme = () => {
     setTheme(t => t === 'light' ? 'dark' : 'light');
+  };
+
+  const selectCalendarDay = (day: CalendarDay) => {
+    setSelectedDate(day.date);
+
+    if (!day.isCurrentMonth) {
+      setCalendarViewDate(new Date(day.date.getFullYear(), day.date.getMonth(), 1));
+    }
+  };
+
+  const jumpToToday = () => {
+    const today = new Date();
+    setCalendarViewDate(new Date(today.getFullYear(), today.getMonth(), 1));
+    setSelectedDate(today);
   };
 
   return (
@@ -269,12 +596,12 @@ export default function HomeExperience() {
           <GlassPanel className="time-weather-card">
             <div className="time-content">
               <div className="card-title" style={{marginBottom: 0}}><MapPin className="card-title-icon" size={18} /> 时间/天气</div>
-              <div style={{fontSize: '12px', color: 'var(--text-tertiary)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4}}><MapPin size={12} /> 幻想乡 · 博丽神社</div>
-              <div className="time-display">14:28:36</div>
-              <div className="date-display">2025年05月18日 星期日</div>
+              <div style={{fontSize: '12px', color: 'var(--text-tertiary)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4}}><MapPin size={12} /> {weather.location}</div>
+              <div className="time-display">{formatTime(now)}</div>
+              <div className="date-display">{formatDate(now)}</div>
               <div className="weather-display">
-                <div className="weather-main"><CloudSun size={24} /> 23°C 多云转晴</div>
-                <div className="weather-detail">东风 2级 · 湿度 58%</div>
+                <div className="weather-main"><CloudSun size={24} /> {weatherTemperature} {weather.condition}</div>
+                <div className="weather-detail">{weather.windDirection} {windSpeed} · 湿度 {humidity}</div>
               </div>
             </div>
             <Image src="https://placeholder.co/140x140" width={140} height={140} className="time-weather-bg" alt="Shrine" />
@@ -283,47 +610,62 @@ export default function HomeExperience() {
           {/* Row 2: 日历 */}
           <DashboardCard>
             <CardHeader
-              action={<div className="card-more" style={{color: 'var(--text-primary)', fontWeight: 600}}>2025年5月 &gt;</div>}
+              action={<button className="calendar-today-button" type="button" onClick={jumpToToday}>今天</button>}
               icon={<CalendarDays className="card-title-icon" size={18} />}
               title="日历"
             />
+            <div className="calendar-toolbar">
+              <button className="calendar-nav-button" type="button" aria-label="上一年" onClick={() => setCalendarViewDate((date) => moveYear(date, -1))}>
+                <ChevronsLeft size={16} />
+              </button>
+              <button className="calendar-nav-button" type="button" aria-label="上个月" onClick={() => setCalendarViewDate((date) => moveMonth(date, -1))}>
+                <ChevronLeft size={16} />
+              </button>
+              <div className="calendar-title">{calendarTitle}</div>
+              <button className="calendar-nav-button" type="button" aria-label="下个月" onClick={() => setCalendarViewDate((date) => moveMonth(date, 1))}>
+                <ChevronRight size={16} />
+              </button>
+              <button className="calendar-nav-button" type="button" aria-label="下一年" onClick={() => setCalendarViewDate((date) => moveYear(date, 1))}>
+                <ChevronsRight size={16} />
+              </button>
+            </div>
             <div className="calendar-grid">
-              <div className="calendar-day-name">日</div>
-              <div className="calendar-day-name">一</div>
-              <div className="calendar-day-name">二</div>
-              <div className="calendar-day-name">三</div>
-              <div className="calendar-day-name">四</div>
-              <div className="calendar-day-name">五</div>
-              <div className="calendar-day-name">六</div>
-              
-              <div className="calendar-day muted">27</div>
-              <div className="calendar-day muted">28</div>
-              <div className="calendar-day muted">29</div>
-              <div className="calendar-day muted">30</div>
-              <div className="calendar-day">1</div>
-              <div className="calendar-day">2</div>
-              <div className="calendar-day">3</div>
-              <div className="calendar-day">4</div>
-              <div className="calendar-day">5</div>
-              <div className="calendar-day">6</div>
-              <div className="calendar-day">7</div>
-              <div className="calendar-day">8</div>
-              <div className="calendar-day">9</div>
-              <div className="calendar-day">10</div>
-              <div className="calendar-day">11</div>
-              <div className="calendar-day">12</div>
-              <div className="calendar-day">13</div>
-              <div className="calendar-day">14</div>
-              <div className="calendar-day">15</div>
-              <div className="calendar-day">16</div>
-              <div className="calendar-day">17</div>
-              <div className="calendar-day active">18</div>
-              <div className="calendar-day">19</div>
-              <div className="calendar-day">20</div>
-              <div className="calendar-day">21</div>
-              <div className="calendar-day">22</div>
-              <div className="calendar-day">23</div>
-              <div className="calendar-day">24</div>
+              {WEEKDAYS.map((day) => (
+                <div className="calendar-day-name" key={day}>{day}</div>
+              ))}
+              {calendarDays.map((day) => (
+                <button
+                  className={`calendar-day${day.isCurrentMonth ? "" : " muted"}${day.isToday ? " active" : ""}${day.isSelected ? " selected" : ""}${day.events.some((event) => event.type === "workday") ? " workday" : ""}`}
+                  key={day.key}
+                  type="button"
+                  onClick={() => selectCalendarDay(day)}
+                >
+                  <span className="calendar-day-number">{day.day}</span>
+                  {day.events.length > 0 && <span className="calendar-event-dot" />}
+                </button>
+              ))}
+            </div>
+            <div className="calendar-detail" key={fullDateKey(selectedDate)}>
+              <div>
+                <div className="calendar-detail-date">{selectedDateLabel}</div>
+                <div className="calendar-detail-note">
+                  农历 {selectedLunarDate} · {sameDate(selectedDate, now) ? "今天" : selectedDate > now ? "未来日期" : "历史日期"}
+                </div>
+              </div>
+              <div className="calendar-event-list">
+                {selectedEvents.length > 0 ? selectedEvents.map((event) => (
+                  <div className={`calendar-event-item ${event.type}`} key={`${event.title}-${event.type}`}>
+                    <span className="calendar-event-marker" />
+                    <div>
+                      <div className="calendar-event-title">{event.title}</div>
+                      <div className="calendar-event-desc">{event.description}</div>
+                    </div>
+                  </div>
+                )) : (
+                  <div className="calendar-empty-event">暂无节日或备忘</div>
+                )}
+              </div>
+              <div className="calendar-source">数据源：{dataSourceLabel}</div>
             </div>
           </DashboardCard>
 

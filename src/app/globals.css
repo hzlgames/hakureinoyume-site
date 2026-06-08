@@ -16,6 +16,17 @@
   --bg-position-mobile: 80% center; /* 默认让背景偏右显示，防止右侧人物被裁切 */
   --progress-bg: rgba(211, 60, 70, 0.15);
   --progress-fill: #d33c46;
+  --calendar-control-bg: rgba(255, 255, 255, 0.48);
+  --calendar-control-hover-bg: rgba(255, 255, 255, 0.76);
+  --calendar-border: var(--glass-border);
+  --calendar-day-hover-bg: var(--glass-border);
+  --calendar-detail-bg: rgba(255, 255, 255, 0.42);
+  --calendar-active-shadow: 0 8px 18px rgba(211, 60, 70, 0.22);
+  --calendar-selected-ring: rgba(211, 60, 70, 0.34);
+  --calendar-event-glow: rgba(211, 60, 70, 0.12);
+  --calendar-workday: #f0b44b;
+  --calendar-workday-glow: rgba(240, 180, 75, 0.14);
+  --calendar-detail-muted: var(--text-tertiary);
 }
 
 [data-theme="dark"] {
@@ -35,6 +46,17 @@
   --bg-position-mobile: 80% center; /* 保持与日间主题完全一致的裁剪位置 */
   --progress-bg: rgba(107, 140, 255, 0.15);
   --progress-fill: #6b8cff;
+  --calendar-control-bg: rgba(13, 20, 42, 0.72);
+  --calendar-control-hover-bg: rgba(36, 51, 94, 0.86);
+  --calendar-border: rgba(139, 165, 255, 0.24);
+  --calendar-day-hover-bg: rgba(107, 140, 255, 0.18);
+  --calendar-detail-bg: rgba(10, 15, 31, 0.78);
+  --calendar-active-shadow: 0 8px 22px rgba(107, 140, 255, 0.38);
+  --calendar-selected-ring: rgba(139, 165, 255, 0.68);
+  --calendar-event-glow: rgba(107, 140, 255, 0.18);
+  --calendar-workday: #f2b84b;
+  --calendar-workday-glow: rgba(242, 184, 75, 0.18);
+  --calendar-detail-muted: #a8b1cf;
 }
 
 * {
@@ -818,10 +840,62 @@ ul {
   font-size: 14px;
 }
 
+.calendar-today-button,
+.calendar-nav-button {
+  border: 1px solid var(--calendar-border);
+  background: var(--calendar-control-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.calendar-today-button:hover,
+.calendar-nav-button:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--calendar-control-hover-bg);
+}
+
+.calendar-today-button {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.calendar-toolbar {
+  display: grid;
+  grid-template-columns: 30px 30px minmax(0, 1fr) 30px 30px;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 16px;
+}
+
+.calendar-title {
+  min-width: 0;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.calendar-nav-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+  gap: 6px;
   text-align: center;
   font-size: 12px;
 }
@@ -832,28 +906,165 @@ ul {
 }
 
 .calendar-day {
-  width: 24px;
-  height: 24px;
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
   margin: 0 auto;
-  border-radius: 50%;
+  border-radius: 8px;
   cursor: pointer;
+  font: inherit;
+  line-height: 1;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .calendar-day:hover {
-  background: var(--glass-border);
+  background: var(--calendar-day-hover-bg);
+  transform: translateY(-1px);
 }
 
 .calendar-day.active {
   background: var(--accent);
   color: white;
+  box-shadow: var(--calendar-active-shadow);
+}
+
+.calendar-day.selected {
+  outline: 2px solid var(--calendar-selected-ring);
+  outline-offset: 2px;
 }
 
 .calendar-day.muted {
   color: var(--text-tertiary);
   opacity: 0.5;
+}
+
+.calendar-day.muted.selected,
+.calendar-day.muted:hover {
+  opacity: 0.85;
+}
+
+.calendar-day.workday {
+  color: var(--text-secondary);
+}
+
+.calendar-day.active.workday {
+  color: white;
+}
+
+.calendar-day-number {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.calendar-event-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+.calendar-day.workday .calendar-event-dot {
+  background: var(--calendar-workday);
+}
+
+.calendar-day.active .calendar-event-dot {
+  background: white;
+}
+
+.calendar-detail {
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid var(--calendar-border);
+  border-radius: 8px;
+  background: var(--calendar-detail-bg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  animation: calendarDetailIn 0.26s ease both;
+}
+
+.calendar-detail-date {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.calendar-detail-note {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--calendar-detail-muted);
+}
+
+.calendar-event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.calendar-event-item {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.calendar-event-marker {
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--calendar-event-glow);
+}
+
+.calendar-event-item.workday .calendar-event-marker {
+  background: var(--calendar-workday);
+  box-shadow: 0 0 0 4px var(--calendar-workday-glow);
+}
+
+.calendar-event-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.calendar-event-desc,
+.calendar-empty-event {
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--calendar-detail-muted);
+}
+
+.calendar-source {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--calendar-border);
+  font-size: 11px;
+  color: var(--calendar-detail-muted);
+}
+
+@keyframes calendarDetailIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 8. Projects */

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Hakureinoyume UI"
+  short_description: "Project frontend UI and theme implementation rules"
+  default_prompt: "Use $hakureinoyume-ui to update this project UI consistently with its theme and component conventions."
