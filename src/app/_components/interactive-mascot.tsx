@@ -106,6 +106,7 @@ export function InteractiveMascot({
   const [message, setMessage] = useState<MascotMessage>(initialMessage);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState<DragOffset>({ x: 0, y: 0 });
+  const widgetRef = useRef<HTMLDivElement | null>(null);
   const dragOffsetRef = useRef<DragOffset>({ x: 0, y: 0 });
   const dragLimits = useRef<DragLimits | null>(null);
   const dragStart = useRef<DragStart | null>(null);
@@ -119,18 +120,25 @@ export function InteractiveMascot({
 
   const animation = ANIMATIONS[petState];
 
-  const getDragLimits = useCallback((button: HTMLButtonElement, offset: DragOffset): DragLimits => {
-    const rect = button.getBoundingClientRect();
-    const baseLeft = rect.left - offset.x;
-    const baseTop = rect.top - offset.y;
+  const getDragLimits = useCallback((widget: HTMLDivElement, offset: DragOffset): DragLimits => {
+    const widgetRect = widget.getBoundingClientRect();
+    const bubbleRect = widget.querySelector(".mascot-bubble")?.getBoundingClientRect();
+    const visualLeft = Math.min(widgetRect.left, bubbleRect?.left ?? widgetRect.left);
+    const visualRight = Math.max(widgetRect.right, bubbleRect?.right ?? widgetRect.right);
+    const visualTop = Math.min(widgetRect.top, bubbleRect?.top ?? widgetRect.top);
+    const visualBottom = Math.max(widgetRect.bottom, bubbleRect?.bottom ?? widgetRect.bottom);
+    const baseLeft = visualLeft - offset.x;
+    const baseTop = visualTop - offset.y;
+    const visualWidth = visualRight - visualLeft;
+    const visualHeight = visualBottom - visualTop;
     const viewportWidth = document.documentElement.clientWidth;
     const viewportHeight = document.documentElement.clientHeight;
 
     return {
       minX: DRAG_SCREEN_MARGIN - baseLeft,
-      maxX: viewportWidth - baseLeft - rect.width - DRAG_SCREEN_MARGIN,
+      maxX: viewportWidth - baseLeft - visualWidth - DRAG_SCREEN_MARGIN,
       minY: DRAG_SCREEN_MARGIN - baseTop,
-      maxY: viewportHeight - baseTop - rect.height - DRAG_SCREEN_MARGIN
+      maxY: viewportHeight - baseTop - visualHeight - DRAG_SCREEN_MARGIN
     };
   }, []);
 
@@ -152,6 +160,16 @@ export function InteractiveMascot({
     dragOffsetRef.current = nextOffset;
     setDragOffset(nextOffset);
   }, [constrainDragOffset]);
+
+  const keepMascotInViewport = useCallback(() => {
+    if (!widgetRef.current) {
+      return;
+    }
+
+    dragLimits.current = getDragLimits(widgetRef.current, dragOffsetRef.current);
+    updateDragOffset(dragOffsetRef.current);
+    dragLimits.current = null;
+  }, [getDragLimits, updateDragOffset]);
 
   const setVisualState = useCallback((nextState: PetState, nextMessage = STATE_MESSAGES[nextState]) => {
     if (activeState.current !== nextState) {
@@ -224,6 +242,18 @@ export function InteractiveMascot({
   }, [clearDragSettleTimer, resetWaitingTimer]);
 
   useEffect(() => {
+    keepMascotInViewport();
+
+    window.addEventListener("resize", keepMascotInViewport);
+    window.addEventListener("focus", keepMascotInViewport);
+
+    return () => {
+      window.removeEventListener("resize", keepMascotInViewport);
+      window.removeEventListener("focus", keepMascotInViewport);
+    };
+  }, [keepMascotInViewport]);
+
+  useEffect(() => {
     if (reducedMotion) {
       return;
     }
@@ -276,7 +306,10 @@ export function InteractiveMascot({
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId);
     clearDragSettleTimer();
-    dragLimits.current = getDragLimits(event.currentTarget, dragOffsetRef.current);
+    if (widgetRef.current) {
+      dragLimits.current = getDragLimits(widgetRef.current, dragOffsetRef.current);
+    }
+
     dragStart.current = {
       pointerX: event.clientX,
       pointerY: event.clientY,
@@ -345,7 +378,11 @@ export function InteractiveMascot({
   };
 
   return (
-    <div className={["mascot-widget", isDragging ? "is-dragging" : "", className].filter(Boolean).join(" ")} style={widgetStyle}>
+    <div
+      ref={widgetRef}
+      className={["mascot-widget", isDragging ? "is-dragging" : "", className].filter(Boolean).join(" ")}
+      style={widgetStyle}
+    >
       <button
         type="button"
         className="mascot-sprite-button"
