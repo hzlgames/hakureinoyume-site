@@ -257,6 +257,22 @@ export function InteractiveMascot({
     [dragOffset.x, dragOffset.y]
   );
 
+  const getDragRunningState = useCallback((stepDeltaX: number): PetState => {
+    if (stepDeltaX > 0) {
+      return "running-right";
+    }
+
+    if (stepDeltaX < 0) {
+      return "running-left";
+    }
+
+    if (activeState.current === "running-left" || activeState.current === "running-right") {
+      return activeState.current;
+    }
+
+    return "running-right";
+  }, []);
+
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId);
     clearDragSettleTimer();
@@ -280,6 +296,7 @@ export function InteractiveMascot({
 
     const totalDeltaX = event.clientX - dragStart.current.pointerX;
     const totalDeltaY = event.clientY - dragStart.current.pointerY;
+    const stepDeltaX = event.clientX - lastPointerX.current;
 
     if (totalDeltaX !== 0 || totalDeltaY !== 0) {
       movedDuringPointer.current = true;
@@ -289,7 +306,7 @@ export function InteractiveMascot({
         x: dragStart.current.offsetX + totalDeltaX,
         y: dragStart.current.offsetY + totalDeltaY
       });
-      showState("running", false);
+      showState(getDragRunningState(stepDeltaX), false);
       scheduleDragSettle();
 
       lastPointerX.current = event.clientX;
