@@ -24,6 +24,18 @@ type InteractiveMascotProps = {
   initialMessage?: MascotMessage;
 };
 
+type DragOffset = {
+  x: number;
+  y: number;
+};
+
+type DragStart = {
+  pointerX: number;
+  pointerY: number;
+  offsetX: number;
+  offsetY: number;
+};
+
 const DEFAULT_MESSAGE: MascotMessage = {
   title: "需要帮忙吗？",
   body: "今天也要加油哦！✨"
@@ -60,6 +72,12 @@ const ANIMATIONS: Record<PetState, { row: number; durations: number[] }> = {
 
 const TRANSIENT_STATES = new Set<PetState>(["waving", "jumping"]);
 const WAITING_AFTER_MS = 12000;
+const DRAG_LIMITS = {
+  minX: -32,
+  maxX: 120,
+  minY: -24,
+  maxY: 64
+} as const;
 
 function usePrefersReducedMotion() {
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -84,6 +102,9 @@ export function InteractiveMascot({
   const [frame, setFrame] = useState(0);
   const [message, setMessage] = useState<MascotMessage>(initialMessage);
   const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState<DragOffset>({ x: 0, y: 0 });
+  const dragOffsetRef = useRef<DragOffset>({ x: 0, y: 0 });
+  const dragStart = useRef<DragStart | null>(null);
   const lastPointerX = useRef<number | null>(null);
   const movedDuringPointer = useRef(false);
   const waitingTimer = useRef<number | null>(null);
@@ -91,6 +112,17 @@ export function InteractiveMascot({
   const reducedMotion = usePrefersReducedMotion();
 
   const animation = ANIMATIONS[petState];
+
+  const constrainDragOffset = useCallback((offset: DragOffset) => ({
+    x: Math.min(DRAG_LIMITS.maxX, Math.max(DRAG_LIMITS.minX, offset.x)),
+    y: Math.min(DRAG_LIMITS.maxY, Math.max(DRAG_LIMITS.minY, offset.y))
+  }), []);
+
+  const updateDragOffset = useCallback((offset: DragOffset) => {
+    const nextOffset = constrainDragOffset(offset);
+    dragOffsetRef.current = nextOffset;
+    setDragOffset(nextOffset);
+  }, [constrainDragOffset]);
 
   const resetWaitingTimer = useCallback(() => {
     if (waitingTimer.current) {
@@ -163,8 +195,23 @@ export function InteractiveMascot({
     [animation.row, assetPath, displayedFrame]
   );
 
+  const widgetStyle = useMemo(
+    () =>
+      ({
+        "--mascot-drag-x": `${dragOffset.x}px`,
+        "--mascot-drag-y": `${dragOffset.y}px`
+      }) as React.CSSProperties,
+    [dragOffset.x, dragOffset.y]
+  );
+
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId);
+    dragStart.current = {
+      pointerX: event.clientX,
+      pointerY: event.clientY,
+      offsetX: dragOffsetRef.current.x,
+      offsetY: dragOffsetRef.current.y
+    };
     lastPointerX.current = event.clientX;
     movedDuringPointer.current = false;
     setIsDragging(false);
@@ -172,16 +219,28 @@ export function InteractiveMascot({
   };
 
   const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (lastPointerX.current === null) {
+    if (!dragStart.current || lastPointerX.current === null) {
       return;
     }
 
+    const totalDeltaX = event.clientX - dragStart.current.pointerX;
+    const totalDeltaY = event.clientY - dragStart.current.pointerY;
     const deltaX = event.clientX - lastPointerX.current;
 
-    if (Math.abs(deltaX) > 8) {
+    if (Math.abs(totalDeltaX) > 8 || Math.abs(totalDeltaY) > 8) {
       movedDuringPointer.current = true;
       setIsDragging(true);
-      showState(deltaX > 0 ? "running-right" : "running-left", false);
+      updateDragOffset({
+        x: dragStart.current.offsetX + totalDeltaX,
+        y: dragStart.current.offsetY + totalDeltaY
+      });
+
+      if (Math.abs(deltaX) > 2) {
+        showState(deltaX > 0 ? "running-right" : "running-left", false);
+      } else {
+        showState("running", false);
+      }
+
       lastPointerX.current = event.clientX;
     }
   };
@@ -192,6 +251,7 @@ export function InteractiveMascot({
     }
 
     const didMove = movedDuringPointer.current;
+    dragStart.current = null;
     lastPointerX.current = null;
     setIsDragging(false);
 
@@ -216,7 +276,7 @@ export function InteractiveMascot({
   };
 
   return (
-    <div className={["mascot-widget", className].filter(Boolean).join(" ")}>
+    <div className={["mascot-widget", isDragging ? "is-dragging" : "", className].filter(Boolean).join(" ")} style={widgetStyle}>
       <button
         type="button"
         className="mascot-sprite-button"

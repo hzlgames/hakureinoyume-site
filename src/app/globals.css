@@ -263,6 +263,13 @@ ul {
   width: 150px;
   height: 168px;
   z-index: 10;
+  transform: translate3d(var(--mascot-drag-x, 0), var(--mascot-drag-y, 0), 0);
+  transition: transform 0.22s ease;
+  will-change: transform;
+}
+
+.mascot-widget.is-dragging {
+  transition: none;
 }
 
 .mascot-img {
@@ -283,6 +290,7 @@ ul {
   cursor: grab;
   touch-action: none;
   outline: none;
+  user-select: none;
 }
 
 .mascot-sprite-button:active {
@@ -977,6 +985,7 @@ ul {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .mascot-widget,
   .mascot-sprite {
     transition: none;
   }
