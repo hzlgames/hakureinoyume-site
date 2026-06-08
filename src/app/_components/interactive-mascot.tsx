@@ -281,7 +281,7 @@ export function InteractiveMascot({
     const totalDeltaX = event.clientX - dragStart.current.pointerX;
     const totalDeltaY = event.clientY - dragStart.current.pointerY;
 
-    if (Math.abs(totalDeltaX) > 8 || Math.abs(totalDeltaY) > 8) {
+    if (totalDeltaX !== 0 || totalDeltaY !== 0) {
       movedDuringPointer.current = true;
       setIsDragging(true);
       clearDragSettleTimer();
