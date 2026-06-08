@@ -36,13 +36,6 @@ type DragStart = {
   offsetY: number;
 };
 
-type DragLimits = {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-};
-
 const DEFAULT_MESSAGE: MascotMessage = {
   title: "需要帮忙吗？",
   body: "今天也要加油哦！✨"
@@ -106,9 +99,10 @@ export function InteractiveMascot({
   const [message, setMessage] = useState<MascotMessage>(initialMessage);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState<DragOffset>({ x: 0, y: 0 });
+  const [isFloatingReady, setIsFloatingReady] = useState(false);
   const widgetRef = useRef<HTMLDivElement | null>(null);
+  const floatingRef = useRef<HTMLDivElement | null>(null);
   const dragOffsetRef = useRef<DragOffset>({ x: 0, y: 0 });
-  const dragLimits = useRef<DragLimits | null>(null);
   const dragStart = useRef<DragStart | null>(null);
   const lastPointerX = useRef<number | null>(null);
   const movedDuringPointer = useRef(false);
@@ -121,38 +115,31 @@ export function InteractiveMascot({
 
   const animation = ANIMATIONS[petState];
 
-  const getDragLimits = useCallback((widget: HTMLDivElement, offset: DragOffset): DragLimits => {
-    const widgetRect = widget.getBoundingClientRect();
-    const bubbleRect = widget.querySelector(".mascot-bubble")?.getBoundingClientRect();
-    const visualLeft = Math.min(widgetRect.left, bubbleRect?.left ?? widgetRect.left);
-    const visualRight = Math.max(widgetRect.right, bubbleRect?.right ?? widgetRect.right);
-    const visualTop = Math.min(widgetRect.top, bubbleRect?.top ?? widgetRect.top);
-    const visualBottom = Math.max(widgetRect.bottom, bubbleRect?.bottom ?? widgetRect.bottom);
-    const baseLeft = visualLeft - offset.x;
-    const baseTop = visualTop - offset.y;
-    const visualWidth = visualRight - visualLeft;
-    const visualHeight = visualBottom - visualTop;
-    const viewportWidth = document.documentElement.clientWidth;
-    const viewportHeight = document.documentElement.clientHeight;
-
-    return {
-      minX: DRAG_SCREEN_MARGIN - baseLeft,
-      maxX: viewportWidth - baseLeft - visualWidth - DRAG_SCREEN_MARGIN,
-      minY: DRAG_SCREEN_MARGIN - baseTop,
-      maxY: viewportHeight - baseTop - visualHeight - DRAG_SCREEN_MARGIN
-    };
-  }, []);
-
   const constrainDragOffset = useCallback((offset: DragOffset) => {
-    const limits = dragLimits.current;
+    const floating = floatingRef.current;
 
-    if (!limits) {
+    if (!floating) {
       return offset;
     }
 
+    const floatingRect = floating.getBoundingClientRect();
+    const bubbleRect = floating.querySelector(".mascot-bubble")?.getBoundingClientRect();
+    const visualLeft = Math.min(floatingRect.left, bubbleRect?.left ?? floatingRect.left);
+    const visualRight = Math.max(floatingRect.right, bubbleRect?.right ?? floatingRect.right);
+    const visualTop = Math.min(floatingRect.top, bubbleRect?.top ?? floatingRect.top);
+    const visualBottom = Math.max(floatingRect.bottom, bubbleRect?.bottom ?? floatingRect.bottom);
+    const leftInset = visualLeft - dragOffsetRef.current.x;
+    const rightInset = visualRight - dragOffsetRef.current.x;
+    const topInset = visualTop - dragOffsetRef.current.y;
+    const bottomInset = visualBottom - dragOffsetRef.current.y;
+    const minX = DRAG_SCREEN_MARGIN - leftInset;
+    const maxX = document.documentElement.clientWidth - DRAG_SCREEN_MARGIN - rightInset;
+    const minY = DRAG_SCREEN_MARGIN - topInset;
+    const maxY = document.documentElement.clientHeight - DRAG_SCREEN_MARGIN - bottomInset;
+
     return {
-      x: Math.min(limits.maxX, Math.max(limits.minX, offset.x)),
-      y: Math.min(limits.maxY, Math.max(limits.minY, offset.y))
+      x: Math.min(Math.max(minX, maxX), Math.max(minX, Math.min(maxX, offset.x))),
+      y: Math.min(Math.max(minY, maxY), Math.max(minY, Math.min(maxY, offset.y)))
     };
   }, []);
 
@@ -168,14 +155,28 @@ export function InteractiveMascot({
   }, [constrainDragOffset]);
 
   const keepMascotInViewport = useCallback(() => {
-    if (!widgetRef.current) {
+    if (!floatingRef.current) {
       return;
     }
 
-    dragLimits.current = getDragLimits(widgetRef.current, dragOffsetRef.current);
     updateDragOffset(dragOffsetRef.current);
-    dragLimits.current = null;
-  }, [getDragLimits, updateDragOffset]);
+  }, [updateDragOffset]);
+
+  const initializeMascotPosition = useCallback(() => {
+    if (!widgetRef.current || !floatingRef.current) {
+      return;
+    }
+
+    const anchorRect = widgetRef.current.getBoundingClientRect();
+    const nextOffset = constrainDragOffset({
+      x: anchorRect.left,
+      y: anchorRect.top
+    });
+
+    dragOffsetRef.current = nextOffset;
+    setDragOffset(nextOffset);
+    setIsFloatingReady(true);
+  }, [constrainDragOffset]);
 
   const scheduleKeepMascotInViewport = useCallback(() => {
     if (viewportClampFrame.current) {
@@ -259,6 +260,7 @@ export function InteractiveMascot({
   }, [clearDragSettleTimer, resetWaitingTimer]);
 
   useEffect(() => {
+    initializeMascotPosition();
     scheduleKeepMascotInViewport();
 
     window.addEventListener("resize", scheduleKeepMascotInViewport);
@@ -275,7 +277,7 @@ export function InteractiveMascot({
         viewportClampFrame.current = null;
       }
     };
-  }, [scheduleKeepMascotInViewport]);
+  }, [initializeMascotPosition, scheduleKeepMascotInViewport]);
 
   useEffect(() => {
     if (reducedMotion) {
@@ -330,9 +332,6 @@ export function InteractiveMascot({
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId);
     clearDragSettleTimer();
-    if (widgetRef.current) {
-      dragLimits.current = getDragLimits(widgetRef.current, dragOffsetRef.current);
-    }
 
     dragStart.current = {
       pointerX: event.clientX,
@@ -377,7 +376,6 @@ export function InteractiveMascot({
 
     const didMove = movedDuringPointer.current;
     dragStart.current = null;
-    dragLimits.current = null;
     lastPointerX.current = null;
 
     if (didMove) {
@@ -404,7 +402,11 @@ export function InteractiveMascot({
   return (
     <div
       ref={widgetRef}
-      className={["mascot-widget", isDragging ? "is-dragging" : "", className].filter(Boolean).join(" ")}
+      className={["mascot-widget", className].filter(Boolean).join(" ")}
+    >
+      <div
+        ref={floatingRef}
+        className={["mascot-floating", isDragging ? "is-dragging" : "", isFloatingReady ? "is-ready" : ""].filter(Boolean).join(" ")}
       style={widgetStyle}
     >
       <button
@@ -424,6 +426,7 @@ export function InteractiveMascot({
       <div className="mascot-bubble" aria-live="polite">
         <p>{message.title}</p>
         <p>{message.body}</p>
+      </div>
       </div>
     </div>
   );

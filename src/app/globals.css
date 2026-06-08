@@ -263,12 +263,28 @@ ul {
   width: 150px;
   height: 168px;
   z-index: 10;
+}
+
+.mascot-floating {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 150px;
+  height: 168px;
+  z-index: 40;
   transform: translate3d(var(--mascot-drag-x, 0), var(--mascot-drag-y, 0), 0);
+  opacity: 0;
+  pointer-events: none;
   transition: transform 0.22s ease;
   will-change: transform;
 }
 
-.mascot-widget.is-dragging {
+.mascot-floating.is-ready {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mascot-floating.is-dragging {
   transition: none;
 }
 
@@ -985,7 +1001,7 @@ ul {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mascot-widget,
+  .mascot-floating,
   .mascot-sprite {
     transition: none;
   }
