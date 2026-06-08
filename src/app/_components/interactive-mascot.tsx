@@ -79,7 +79,7 @@ const ANIMATIONS: Record<PetState, { row: number; durations: number[] }> = {
 
 const TRANSIENT_STATES = new Set<PetState>(["waving", "jumping"]);
 const WAITING_AFTER_MS = 12000;
-const DRAG_SETTLE_MS = 1000;
+const DRAG_SETTLE_MS = 300;
 const DRAG_SCREEN_MARGIN = 8;
 
 function usePrefersReducedMotion() {
