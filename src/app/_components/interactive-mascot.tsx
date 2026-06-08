@@ -56,7 +56,7 @@ const STATE_MESSAGES: Record<PetState, MascotMessage> = {
   jumping: { title: "好耶！", body: "灵感来了就抓住它。" },
   failed: { title: "有点卡住…", body: "别急，我们慢慢来。" },
   waiting: { title: "在等你哦", body: "要不要摸摸头继续？" },
-  running: { title: "处理中", body: "我正在认真看。" },
+  running: { title: "拖动中", body: "我跟着你走。" },
   review: { title: "让我看看", body: "这里值得细读一下。" }
 };
 
