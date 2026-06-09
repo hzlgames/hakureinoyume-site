@@ -22,6 +22,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   auditLogs     AdminAuditLog[] @relation("AuditActor")
+  neteaseAccount NeteaseAccount?
 
   @@map("user")
 }
@@ -87,4 +88,25 @@ model AdminAuditLog {
   @@index([targetId])
   @@index([action])
   @@index([createdAt])
+}
+
+model NeteaseAccount {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  neteaseUserId    String?
+  nickname         String?
+  avatarUrl        String?
+  cookieCiphertext String
+  cookieIv         String
+  cookieTag        String
+  profile          Json?
+  loginStatus      String   @default("active")
+  lastValidatedAt  DateTime?
+  expiresAt        DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([neteaseUserId])
+  @@index([loginStatus])
 }

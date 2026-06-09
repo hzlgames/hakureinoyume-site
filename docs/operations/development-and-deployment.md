@@ -18,6 +18,8 @@ Prisma 相关命令通过 `npx prisma ...` 执行。当前仓库没有单独 npm
 - `SMTP_HOST`、`SMTP_PORT`、`SMTP_SECURE`、`SMTP_USER`、`SMTP_PASS`：验证邮件和密码重置邮件的 SMTP 配置。
 - `AUTH_EMAIL_FROM`：认证邮件发件人。
 - `ADMIN_EMAILS`：逗号分隔的管理员邮箱。新用户创建时命中该列表会获得 `admin` 角色。
+- `NETEASE_API_BASE_URL`：网易云音乐 API 服务地址，默认开发值为 `http://localhost:3010`。生产应指向自托管 NeteaseCloudMusicApi Enhanced 或兼容服务，不建议把真实账号 cookie 发给公开演示站。
+- `NETEASE_COOKIE_SECRET`：网易云 cookie 入库加密密钥。未设置时回退使用 `BETTER_AUTH_SECRET`。
 - `NODE_ENV=production`：生产服务使用。
 - `PORT=3000`：systemd 服务中声明的端口。
 
@@ -56,7 +58,9 @@ Prisma 配置在 `prisma.config.ts`，schema 在 `prisma/schema.prisma`，迁移
 
 ## 动态 API 约束
 
-认证、账号后台、背景管理、天气和日历代理依赖 Next.js 动态 API、Node.js runtime、数据库、SMTP 或文件系统能力。生产需要运行 `next start`，不能只依赖静态 `out/` 目录。
+认证、账号后台、背景管理、天气、日历代理和网易云音乐代理依赖 Next.js 动态 API、Node.js runtime、数据库、SMTP、外部 API 或文件系统能力。生产需要运行 `next start`，不能只依赖静态 `out/` 目录。
+
+网易云播放器需要额外运行兼容 NeteaseCloudMusicApi Enhanced 的服务。本站只保存加密后的用户级网易云 cookie；当上游返回登录失效时，`/api/music/*` 会标记该用户的网易云登录态过期并提示重新扫码。
 
 `out/` 是生成产物，已在 ESLint 和 Git 忽略配置中排除。维护文档时不要把 `out/` 当作源码事实来源。
 

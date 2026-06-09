@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { 
   Search, Bell, BookOpen, Heart,
-  Play, Pause, SkipBack, SkipForward, Music,
   CloudSun, CalendarDays, Book, Timer, CheckSquare,
   Languages, Calculator, Dices, Palette, MoreHorizontal,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
@@ -14,6 +13,7 @@ import {
 } from 'lucide-react';
 import { CardHeader, DashboardCard, GlassPanel, ProgressBar } from "./_components/ui";
 import { InteractiveMascot } from "./_components/interactive-mascot";
+import { NeteasePlayer } from "./_components/netease-player";
 import { signOut, useSession } from "../lib/auth-client";
 
 type WeatherState = {
@@ -176,7 +176,6 @@ function buildCalendarDays(
 export default function HomeExperience() {
   const { data: session } = useSession();
   const [theme, setTheme] = useState('light');
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const [calendarViewDate, setCalendarViewDate] = useState(() => new Date());
@@ -588,31 +587,7 @@ export default function HomeExperience() {
 
           {/* Card 5: 正在播放 & 装饰 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <DashboardCard className="music-player">
-              <CardHeader
-                action={<ChevronRight size={16} color="var(--text-tertiary)" />}
-                icon={<Music className="card-title-icon" size={18} />}
-                title="正在播放"
-              />
-              <div className="music-cover-wrapper">
-                <div className="music-vinyl"></div>
-                <Image src="https://placeholder.co/140x140" alt="Album Cover" width={140} height={140} className="music-cover" />
-              </div>
-              <div className="music-title">幻梦的风 🍃</div>
-              <div className="music-artist">幽闭サテライト</div>
-              <div className="music-controls">
-                <div className="music-btn"><SkipBack size={16} /></div>
-                <div className="music-btn play" onClick={() => setIsPlaying(!isPlaying)}>
-                  {isPlaying ? <Pause size={20} /> : <Play size={20} fill="currentColor" />}
-                </div>
-                <div className="music-btn"><SkipForward size={16} /></div>
-              </div>
-              <div className="music-progress">
-                <span>01:24</span>
-                <div className="music-bar"><div className="music-bar-fill"></div></div>
-                <span>04:36</span>
-              </div>
-            </DashboardCard>
+            <NeteasePlayer />
             
             <DashboardCard>
               <div className="quote-card">

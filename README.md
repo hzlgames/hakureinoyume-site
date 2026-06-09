@@ -27,6 +27,12 @@ Copy `.env.example` and set the database, Better Auth, SMTP, and admin email var
 
 Run the Prisma migration against PostgreSQL before starting production.
 
+## NetEase Cloud Music
+
+The homepage player uses a server-side proxy under `/api/music/*`. Configure `NETEASE_API_BASE_URL` to point at a self-hosted NeteaseCloudMusicApi Enhanced or compatible service. The app defaults to `http://localhost:3010` for local development.
+
+Each site user can bind their own NetEase account by QR login. NetEase cookies are encrypted before being stored in PostgreSQL with `NETEASE_COOKIE_SECRET`; if that variable is absent, `BETTER_AUTH_SECRET` is used. Visitors who are not logged in to this site can still use public/anonymous NetEase search and playback when the upstream API permits it.
+
 ## Production service
 
 This server runs the app through `hakureinoyume-site.service`, installed from `deploy/hakureinoyume-site.service`.

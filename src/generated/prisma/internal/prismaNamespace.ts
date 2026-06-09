@@ -388,7 +388,8 @@ export const ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  AdminAuditLog: 'AdminAuditLog'
+  AdminAuditLog: 'AdminAuditLog',
+  NeteaseAccount: 'NeteaseAccount'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -404,7 +405,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "adminAuditLog"
+    modelProps: "user" | "session" | "account" | "verification" | "adminAuditLog" | "neteaseAccount"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -778,6 +779,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    NeteaseAccount: {
+      payload: Prisma.$NeteaseAccountPayload<ExtArgs>
+      fields: Prisma.NeteaseAccountFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.NeteaseAccountFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.NeteaseAccountFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>
+        }
+        findFirst: {
+          args: Prisma.NeteaseAccountFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.NeteaseAccountFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>
+        }
+        findMany: {
+          args: Prisma.NeteaseAccountFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>[]
+        }
+        create: {
+          args: Prisma.NeteaseAccountCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>
+        }
+        createMany: {
+          args: Prisma.NeteaseAccountCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.NeteaseAccountCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>[]
+        }
+        delete: {
+          args: Prisma.NeteaseAccountDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>
+        }
+        update: {
+          args: Prisma.NeteaseAccountUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>
+        }
+        deleteMany: {
+          args: Prisma.NeteaseAccountDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.NeteaseAccountUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.NeteaseAccountUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>[]
+        }
+        upsert: {
+          args: Prisma.NeteaseAccountUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>
+        }
+        aggregate: {
+          args: Prisma.NeteaseAccountAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateNeteaseAccount>
+        }
+        groupBy: {
+          args: Prisma.NeteaseAccountGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NeteaseAccountGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.NeteaseAccountCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NeteaseAccountCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -890,6 +965,26 @@ export const AdminAuditLogScalarFieldEnum = {
 } as const
 
 export type AdminAuditLogScalarFieldEnum = (typeof AdminAuditLogScalarFieldEnum)[keyof typeof AdminAuditLogScalarFieldEnum]
+
+
+export const NeteaseAccountScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  neteaseUserId: 'neteaseUserId',
+  nickname: 'nickname',
+  avatarUrl: 'avatarUrl',
+  cookieCiphertext: 'cookieCiphertext',
+  cookieIv: 'cookieIv',
+  cookieTag: 'cookieTag',
+  profile: 'profile',
+  loginStatus: 'loginStatus',
+  lastValidatedAt: 'lastValidatedAt',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NeteaseAccountScalarFieldEnum = (typeof NeteaseAccountScalarFieldEnum)[keyof typeof NeteaseAccountScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1116,6 +1211,7 @@ export type GlobalOmitConfig = {
   account?: Prisma.AccountOmit
   verification?: Prisma.VerificationOmit
   adminAuditLog?: Prisma.AdminAuditLogOmit
+  neteaseAccount?: Prisma.NeteaseAccountOmit
 }
 
 /* Types for Logging */

@@ -55,7 +55,8 @@ export const ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  AdminAuditLog: 'AdminAuditLog'
+  AdminAuditLog: 'AdminAuditLog',
+  NeteaseAccount: 'NeteaseAccount'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -147,6 +148,26 @@ export const AdminAuditLogScalarFieldEnum = {
 } as const
 
 export type AdminAuditLogScalarFieldEnum = (typeof AdminAuditLogScalarFieldEnum)[keyof typeof AdminAuditLogScalarFieldEnum]
+
+
+export const NeteaseAccountScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  neteaseUserId: 'neteaseUserId',
+  nickname: 'nickname',
+  avatarUrl: 'avatarUrl',
+  cookieCiphertext: 'cookieCiphertext',
+  cookieIv: 'cookieIv',
+  cookieTag: 'cookieTag',
+  profile: 'profile',
+  loginStatus: 'loginStatus',
+  lastValidatedAt: 'lastValidatedAt',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NeteaseAccountScalarFieldEnum = (typeof NeteaseAccountScalarFieldEnum)[keyof typeof NeteaseAccountScalarFieldEnum]
 
 
 export const SortOrder = {

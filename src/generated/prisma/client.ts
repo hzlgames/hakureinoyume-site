@@ -66,3 +66,8 @@ export type Verification = Prisma.VerificationModel
  * 
  */
 export type AdminAuditLog = Prisma.AdminAuditLogModel
+/**
+ * Model NeteaseAccount
+ * 
+ */
+export type NeteaseAccount = Prisma.NeteaseAccountModel

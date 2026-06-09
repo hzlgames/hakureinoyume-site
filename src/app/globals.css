@@ -768,6 +768,403 @@ ul {
   border-radius: 2px;
 }
 
+.netease-player {
+  text-align: left;
+}
+
+.netease-player button,
+.netease-player input {
+  font: inherit;
+}
+
+.netease-player button {
+  border: 0;
+}
+
+.netease-account,
+.netease-account-main,
+.netease-now,
+.netease-controls,
+.netease-search,
+.netease-tabs,
+.netease-playlist,
+.netease-track {
+  display: flex;
+  align-items: center;
+}
+
+.netease-account {
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.netease-account-main {
+  min-width: 0;
+  gap: 10px;
+}
+
+.netease-avatar {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  background: var(--surface-input);
+  color: var(--text-secondary);
+  display: grid;
+  flex: 0 0 auto;
+  overflow: hidden;
+  place-items: center;
+}
+
+.netease-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.netease-account-name {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.netease-account-note {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.netease-connect-btn,
+.netease-icon-btn {
+  align-items: center;
+  background: var(--text-primary);
+  color: var(--bg-color);
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 6px;
+  justify-content: center;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.netease-connect-btn {
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 32px;
+  padding: 0 12px;
+}
+
+.netease-icon-btn {
+  border-radius: 50%;
+  height: 32px;
+  width: 32px;
+}
+
+.netease-connect-btn:hover,
+.netease-icon-btn:hover {
+  background: var(--accent);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.netease-qr-panel {
+  align-items: center;
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 14px;
+  text-align: center;
+}
+
+.netease-qr-panel img {
+  border-radius: 8px;
+}
+
+.netease-qr-message {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.netease-now {
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.netease-cover {
+  flex: 0 0 116px;
+  height: 116px;
+  position: relative;
+  width: 116px;
+}
+
+.netease-cover img {
+  background: var(--surface-input);
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  position: relative;
+  width: 100%;
+  z-index: 2;
+}
+
+.netease-vinyl {
+  background: #101010;
+  border: 4px solid #303030;
+  border-radius: 50%;
+  height: 94px;
+  position: absolute;
+  right: -16px;
+  top: 11px;
+  width: 94px;
+  z-index: 1;
+}
+
+.netease-vinyl::after {
+  background: var(--glass-border);
+  border-radius: 50%;
+  content: "";
+  height: 24px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+}
+
+.netease-current {
+  min-width: 0;
+  width: 100%;
+}
+
+.netease-song-title {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.netease-song-artist {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.netease-controls {
+  gap: 14px;
+  margin: 12px 0;
+}
+
+.netease-search {
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  gap: 8px;
+  margin-bottom: 12px;
+  min-height: 38px;
+  padding: 0 8px 0 12px;
+}
+
+.netease-search svg {
+  color: var(--text-tertiary);
+  flex: 0 0 auto;
+}
+
+.netease-search input {
+  background: transparent;
+  border: 0;
+  color: var(--text-primary);
+  min-width: 0;
+  outline: 0;
+  width: 100%;
+}
+
+.netease-search input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.netease-search button {
+  background: var(--accent);
+  border-radius: 999px;
+  color: white;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 28px;
+  padding: 0 12px;
+}
+
+.netease-tabs {
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 4px;
+}
+
+.netease-tabs button {
+  align-items: center;
+  background: transparent;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  flex: 1;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 6px;
+  justify-content: center;
+  min-height: 30px;
+}
+
+.netease-tabs button.active {
+  background: var(--accent);
+  color: white;
+}
+
+.netease-playlists {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  max-height: 150px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.netease-playlist {
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 10px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 10px;
+  text-align: left;
+}
+
+.netease-playlist.active,
+.netease-playlist:hover {
+  border-color: var(--accent) !important;
+  color: var(--text-primary);
+}
+
+.netease-playlist span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.netease-playlist small {
+  color: var(--text-tertiary);
+  flex: 0 0 auto;
+  font-size: 11px;
+}
+
+.netease-list {
+  display: grid;
+  gap: 6px;
+  max-height: 214px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.netease-track {
+  background: transparent;
+  border-radius: 9px;
+  color: var(--text-primary);
+  cursor: pointer;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 8px;
+  text-align: left;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.netease-track:hover,
+.netease-track.active {
+  background: var(--accent-light);
+}
+
+.netease-track-name {
+  flex: 1.2;
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.netease-track-artist {
+  color: var(--text-secondary);
+  flex: 1;
+  font-size: 11px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.netease-track-time {
+  color: var(--text-tertiary);
+  flex: 0 0 38px;
+  font-size: 10px;
+  text-align: right;
+}
+
+.netease-empty,
+.netease-status {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.netease-empty {
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+}
+
+.netease-status {
+  border-top: 1px solid var(--glass-border);
+  margin-top: 12px;
+  padding-top: 10px;
+}
+
+.netease-spin {
+  animation: netease-spin 1s linear infinite;
+  color: var(--accent);
+}
+
+@keyframes netease-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .quote-card {
   display: flex;
   align-items: center;
@@ -1942,5 +2339,40 @@ ul {
   .admin-card,
   .auth-card {
     padding: 18px;
+  }
+
+  .netease-now {
+    align-items: flex-start;
+  }
+
+  .netease-cover {
+    flex-basis: 96px;
+    height: 96px;
+    width: 96px;
+  }
+
+  .netease-vinyl {
+    height: 78px;
+    right: -12px;
+    top: 9px;
+    width: 78px;
+  }
+
+  .netease-track {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px;
+  }
+
+  .netease-track-name,
+  .netease-track-artist {
+    flex: none;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .netease-track-time {
+    display: none;
   }
 }
