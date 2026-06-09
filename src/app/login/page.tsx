@@ -8,6 +8,14 @@ import { Mail, ShieldCheck } from "lucide-react";
 import { AuthShell } from "../_components/auth/auth-shell";
 import { authClient, signIn } from "../../lib/auth-client";
 
+function safeCallbackPath(value: string | null) {
+  if (!value || !value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) {
+    return "/";
+  }
+
+  return value;
+}
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -16,7 +24,7 @@ function LoginForm() {
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const callback = searchParams.get("callback") || "/";
+  const callback = safeCallbackPath(searchParams.get("callback"));
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
