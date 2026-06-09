@@ -1,6 +1,6 @@
 # 博麗の夢
 
-Personal website for `hakureinoyume.com`, built with Next.js App Router. The admin background manager uses dynamic API routes, so production should run `next start` behind Caddy.
+Personal website for `hakureinoyume.com`, built with Next.js App Router. Authentication and admin features use dynamic API routes, Prisma, PostgreSQL, and Better Auth, so production should run `next start` behind Caddy.
 
 ## Commands
 
@@ -12,15 +12,20 @@ Personal website for `hakureinoyume.com`, built with Next.js App Router. The adm
 ## Routes
 
 - `/`: homepage.
-- `/admin`: admin entry for changing the background image.
+- `/admin`: admin dashboard for background and account management.
+- `/login`: account login.
+- `/register`: account registration.
+- `/forgot-password`: password reset request.
+- `/reset-password`: password reset completion.
 - `/tools`: tools placeholder.
 
 Add new pages by creating folders under `src/app`, for example `src/app/about/page.tsx` or `src/app/tools/example/page.tsx`.
 
-## Admin access token
+## Auth and data
 
-Set `ADMIN_ACCESS_TOKEN` on the server to change the admin token. If it is not set, the temporary default is `hzlgames`.
-Set `ADMIN_SESSION_SECRET` to a long random value in production so session cookies are signed independently from the access token.
+Copy `.env.example` and set the database, Better Auth, SMTP, and admin email variables. `ADMIN_EMAILS` is a comma-separated list of emails that receive the `admin` role when accounts are created.
+
+Run the Prisma migration against PostgreSQL before starting production.
 
 ## Production service
 

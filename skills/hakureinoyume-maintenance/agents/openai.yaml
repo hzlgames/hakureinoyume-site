@@ -1,0 +1,4 @@
+interface:
+  display_name: "Hakurei Maintenance"
+  short_description: "Maintain project knowledge before remote sync"
+  default_prompt: "Use $hakureinoyume-maintenance before syncing Hakurei no Yume changes to a remote."
