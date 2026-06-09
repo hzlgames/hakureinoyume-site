@@ -10,17 +10,28 @@
     "start": "next start"
   },
   "dependencies": {
+    "@better-auth/prisma-adapter": "^1.6.15",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "better-auth": "^1.6.15",
     "lucide-react": "^1.17.0",
     "next": "latest",
+    "nodemailer": "^8.0.10",
+    "pg": "^8.21.0",
     "react": "latest",
     "react-dom": "latest"
   },
   "devDependencies": {
     "@types/node": "latest",
+    "@types/nodemailer": "^8.0.0",
+    "@types/pg": "^8.20.0",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "dotenv": "^17.4.2",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.7",
+    "prisma": "^7.8.0",
+    "tsx": "^4.22.4",
     "typescript": "latest"
   }
 }

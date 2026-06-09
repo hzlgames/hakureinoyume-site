@@ -2,16 +2,19 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { 
   Search, Bell, BookOpen, Heart,
   Play, Pause, SkipBack, SkipForward, Music,
   CloudSun, CalendarDays, Book, Timer, CheckSquare,
   Languages, Calculator, Dices, Palette, MoreHorizontal,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
-  Star, Moon, Sun, Target, AlignLeft, MapPin, Menu, X
+  Star, Moon, Sun, Target, AlignLeft, MapPin, Menu, X,
+  LogIn, LogOut, ShieldCheck, UserPlus
 } from 'lucide-react';
 import { CardHeader, DashboardCard, GlassPanel, ProgressBar } from "./_components/ui";
 import { InteractiveMascot } from "./_components/interactive-mascot";
+import { signOut, useSession } from "../lib/auth-client";
 
 type WeatherState = {
   temperature: number | null;
@@ -171,6 +174,7 @@ function buildCalendarDays(
 }
 
 export default function HomeExperience() {
+  const { data: session } = useSession();
   const [theme, setTheme] = useState('light');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -352,6 +356,11 @@ export default function HomeExperience() {
     setSelectedDate(today);
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    window.location.reload();
+  };
+
   return (
     <div className="app-container">
       {/* Header */}
@@ -377,9 +386,30 @@ export default function HomeExperience() {
           <div className="header-icon" onClick={toggleTheme}>
             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           </div>
-          <div className="header-avatar">
-            <Image src="https://placeholder.co/100x100/d33c46/fff?text=R" alt="avatar" width={100} height={100} />
-          </div>
+          {session?.user ? (
+            <div className="header-account">
+              {session.user.role === "admin" ? (
+                <Link className="header-auth-link admin" href="/admin">
+                  <ShieldCheck size={16} />
+                  管理
+                </Link>
+              ) : null}
+              <span className="header-user-name">{session.user.name}</span>
+              <button className="header-auth-icon" onClick={handleSignOut} type="button" aria-label="退出登录">
+                <LogOut size={17} />
+              </button>
+            </div>
+          ) : (
+            <div className="header-account">
+              <Link className="header-auth-link" href="/login">
+                <LogIn size={16} />
+                登录
+              </Link>
+              <Link className="header-auth-icon" href="/register" aria-label="注册">
+                <UserPlus size={17} />
+              </Link>
+            </div>
+          )}
         </div>
       </header>
 

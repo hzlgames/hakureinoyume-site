@@ -1,8 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import type { CSSProperties, ChangeEvent } from "react";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties, ChangeEvent, FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Ban,
+  CheckCircle2,
+  ImagePlus,
+  KeyRound,
+  LogOut,
+  RefreshCcw,
+  RotateCcw,
+  Search,
+  Shield,
+  ShieldCheck,
+  Upload,
+  Users
+} from "lucide-react";
 import {
   applyThemeVars,
   backgrounds,
@@ -10,12 +24,52 @@ import {
   siteName,
   storageKeys
 } from "../site-theme";
+import { signOut, useSession } from "../../lib/auth-client";
 
 type PublicBackgroundResponse = {
   custom: {
     src: string;
     updatedAt?: string;
   } | null;
+};
+
+type AdminUser = {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image: string | null;
+  createdAt: string;
+  updatedAt: string;
+  role: string | null;
+  banned: boolean | null;
+  banReason: string | null;
+  banExpires: string | null;
+  _count: {
+    sessions: number;
+  };
+};
+
+type AuditLog = {
+  id: string;
+  action: string;
+  actorId: string | null;
+  targetId: string | null;
+  metadata: unknown;
+  createdAt: string;
+  actor: {
+    email: string;
+    name: string;
+  } | null;
+};
+
+type UsersResponse = {
+  auditLogs: AuditLog[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  users: AdminUser[];
 };
 
 const outputWidth = 1600;
@@ -65,12 +119,22 @@ function drawCroppedImage(
   context.drawImage(image, drawX, drawY, drawWidth, drawHeight);
 }
 
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(new Date(value));
+}
+
+function roleLabel(role: string | null) {
+  return role === "admin" ? "管理员" : "用户";
+}
+
 export default function AdminPage() {
   const previewRef = useRef<HTMLCanvasElement>(null);
-  const [checkingAuth, setCheckingAuth] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
-  const [token, setToken] = useState("");
-  const [loginError, setLoginError] = useState("");
+  const { data: session, isPending } = useSession();
   const [sourceImage, setSourceImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState("");
   const [zoom, setZoom] = useState(1.08);
@@ -80,21 +144,13 @@ export default function AdminPage() {
   const [notice, setNotice] = useState("");
   const [serverBackground, setServerBackground] =
     useState<PublicBackgroundResponse["custom"]>(null);
+  const [usersPayload, setUsersPayload] = useState<UsersResponse | null>(null);
+  const [userSearch, setUserSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [userNotice, setUserNotice] = useState("");
 
-  useEffect(() => {
-    Promise.all([
-      fetch("/api/admin/session", { cache: "no-store" })
-        .then((response) => response.json())
-        .catch(() => ({ authenticated: false })),
-      fetch("/api/background", { cache: "no-store" })
-        .then((response) => response.json())
-        .catch(() => ({ custom: null }))
-    ]).then(([sessionPayload, backgroundPayload]) => {
-      setAuthenticated(Boolean(sessionPayload.authenticated));
-      setServerBackground(backgroundPayload.custom);
-      setCheckingAuth(false);
-    });
-  }, []);
+  const isAdmin = session?.user.role === "admin";
 
   const activeBackground = useMemo(() => {
     if (serverBackground?.src) {
@@ -107,6 +163,52 @@ export default function AdminPage() {
   useEffect(() => {
     applyThemeVars(activeBackground.theme);
   }, [activeBackground]);
+
+  useEffect(() => {
+    fetch("/api/background", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((payload: PublicBackgroundResponse) => setServerBackground(payload.custom))
+      .catch(() => undefined);
+  }, []);
+
+  const loadUsers = useCallback(async (nextPage = page, search = userSearch) => {
+    if (!isAdmin) {
+      return;
+    }
+
+    setUsersLoading(true);
+    setUserNotice("");
+
+    const params = new URLSearchParams({
+      page: String(nextPage)
+    });
+
+    if (search.trim()) {
+      params.set("search", search.trim());
+    }
+
+    try {
+      const response = await fetch(`/api/admin/users?${params.toString()}`, { cache: "no-store" });
+
+      if (!response.ok) {
+        throw new Error("load_users_failed");
+      }
+
+      setUsersPayload(await response.json() as UsersResponse);
+    } catch {
+      setUserNotice("账号数据加载失败。");
+    } finally {
+      setUsersLoading(false);
+    }
+  }, [isAdmin, page, userSearch]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      queueMicrotask(() => {
+        loadUsers(1);
+      });
+    }
+  }, [isAdmin, loadUsers]);
 
   useEffect(() => {
     if (!sourceImage) {
@@ -132,29 +234,9 @@ export default function AdminPage() {
     };
   }, [offsetX, offsetY, sourceImage, zoom]);
 
-  async function handleLogin(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoginError("");
-
-    const response = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token })
-    });
-
-    if (!response.ok) {
-      setLoginError("Access token 不正确。");
-      setToken("");
-      return;
-    }
-
-    setToken("");
-    setAuthenticated(true);
-  }
-
   async function handleLogout() {
-    await fetch("/api/admin/logout", { method: "POST" });
-    setAuthenticated(false);
+    await signOut();
+    window.location.href = "/";
   }
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -217,8 +299,9 @@ export default function AdminPage() {
       setServerBackground(payload.custom);
       window.localStorage.setItem(storageKeys.selectedBackground, "custom");
       setNotice("背景图已保存。");
+      loadUsers();
     } catch {
-      setNotice("保存失败，请重新登录或更换图片。");
+      setNotice("保存失败，请确认管理员登录状态。");
     } finally {
       setSaving(false);
     }
@@ -238,11 +321,91 @@ export default function AdminPage() {
       setServerBackground(null);
       window.localStorage.setItem(storageKeys.selectedBackground, backgrounds[0].id);
       setNotice("已恢复预设背景。");
+      loadUsers();
     } catch {
-      setNotice("重置失败，请重新登录后再试。");
+      setNotice("重置失败，请确认管理员登录状态。");
     } finally {
       setSaving(false);
     }
+  }
+
+  async function submitSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPage(1);
+    await loadUsers(1, userSearch);
+  }
+
+  async function mutateUser(path: string, init: RequestInit, success: string) {
+    setUserNotice("");
+    const response = await fetch(path, init);
+
+    if (!response.ok) {
+      setUserNotice("操作失败，请刷新后重试。");
+      return;
+    }
+
+    setUserNotice(success);
+    await loadUsers();
+  }
+
+  async function updateRole(user: AdminUser) {
+    const nextRole = user.role === "admin" ? "user" : "admin";
+
+    await mutateUser(
+      `/api/admin/users/${user.id}/role`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: nextRole })
+      },
+      `已更新为${roleLabel(nextRole)}。`
+    );
+  }
+
+  async function toggleBan(user: AdminUser) {
+    await mutateUser(
+      `/api/admin/users/${user.id}/ban`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          banned: !user.banned,
+          reason: "管理员后台操作"
+        })
+      },
+      user.banned ? "账号已恢复。" : "账号已停用，现有会话已撤销。"
+    );
+  }
+
+  async function revokeSessions(user: AdminUser) {
+    await mutateUser(
+      `/api/admin/users/${user.id}/sessions`,
+      { method: "DELETE" },
+      "该用户会话已撤销。"
+    );
+  }
+
+  async function resetPassword(user: AdminUser) {
+    const password = window.prompt(`为 ${user.email} 设置新密码，至少 8 位。`);
+
+    if (!password) {
+      return;
+    }
+
+    await mutateUser(
+      `/api/admin/users/${user.id}/password`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password })
+      },
+      "密码已重置。"
+    );
+  }
+
+  function changePage(nextPage: number) {
+    setPage(nextPage);
+    loadUsers(nextPage);
   }
 
   const pageStyle = {
@@ -267,145 +430,313 @@ export default function AdminPage() {
       <section className="admin-shell" aria-labelledby="admin-title">
         <div className="section-heading admin-heading">
           <p className="eyebrow">{siteName}</p>
-          <h1 id="admin-title">管理入口</h1>
+          <h1 id="admin-title">管理后台</h1>
+          <p>账号、会话与站点背景管理</p>
         </div>
 
-        {checkingAuth ? (
+        {isPending ? (
           <div className="portal-card admin-card">
             <p>Session</p>
             <h2>正在校验</h2>
           </div>
-        ) : authenticated ? (
-          <div className="admin-grid">
-            <section className="portal-card admin-card crop-card" aria-label="背景图裁切">
-              <div className="card-title-row">
-                <div>
-                  <p>Background</p>
-                  <h2>更换背景图</h2>
-                </div>
-                <button className="icon-button" type="button" onClick={handleLogout}>
-                  退出
-                </button>
+        ) : !session ? (
+          <div className="portal-card admin-card auth-required-card">
+            <Shield size={28} />
+            <h2>需要登录</h2>
+            <p>管理员后台已迁移到正式账号系统。</p>
+            <Link className="button primary-button" href="/login?callback=/admin">
+              登录
+            </Link>
+          </div>
+        ) : !isAdmin ? (
+          <div className="portal-card admin-card auth-required-card">
+            <Ban size={28} />
+            <h2>无管理员权限</h2>
+            <p>当前账号没有访问后台的权限。</p>
+            <div className="admin-actions">
+              <Link className="button primary-button" href="/">
+                返回首页
+              </Link>
+              <button className="button ghost-button" onClick={handleLogout} type="button">
+                退出登录
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="admin-dashboard">
+            <div className="admin-toolbar portal-card">
+              <div>
+                <p>Signed in</p>
+                <h2>{session.user.name}</h2>
+                <span>{session.user.email}</span>
               </div>
-
-              <label className="file-drop">
-                <input
-                  accept="image/avif,image/jpeg,image/png,image/webp"
-                  onChange={handleFileChange}
-                  type="file"
-                />
-                <span>{fileName || "选择图片"}</span>
-              </label>
-
-              <div className="crop-preview">
-                {sourceImage ? (
-                  <canvas ref={previewRef} />
-                ) : (
-                  <div className="empty-preview">16:10</div>
-                )}
-              </div>
-
-              <div className="control-grid">
-                <label>
-                  <span>缩放</span>
-                  <input
-                    max="2.2"
-                    min="1"
-                    onChange={(event) => setZoom(Number(event.target.value))}
-                    step="0.01"
-                    type="range"
-                    value={zoom}
-                  />
-                </label>
-                <label>
-                  <span>水平</span>
-                  <input
-                    max="50"
-                    min="-50"
-                    onChange={(event) => setOffsetX(Number(event.target.value))}
-                    step="1"
-                    type="range"
-                    value={offsetX}
-                  />
-                </label>
-                <label>
-                  <span>垂直</span>
-                  <input
-                    max="50"
-                    min="-50"
-                    onChange={(event) => setOffsetY(Number(event.target.value))}
-                    step="1"
-                    type="range"
-                    value={offsetY}
-                  />
-                </label>
-              </div>
-
-              <div className="admin-actions">
-                <button
-                  className="button primary-button"
-                  disabled={saving || !sourceImage}
-                  onClick={handleSaveBackground}
-                  type="button"
-                >
-                  {saving ? "保存中" : "保存背景"}
-                </button>
-                <button
-                  className="button ghost-button"
-                  disabled={saving}
-                  onClick={handleResetBackground}
-                  type="button"
-                >
-                  恢复预设
-                </button>
+              <div className="admin-toolbar-actions">
                 <Link className="button ghost-button" href="/">
                   返回首页
                 </Link>
+                <button className="button ghost-button" onClick={handleLogout} type="button">
+                  <LogOut size={16} />
+                  退出
+                </button>
+              </div>
+            </div>
+
+            <div className="admin-grid">
+              <section className="portal-card admin-card crop-card" aria-label="背景图裁切">
+                <div className="card-title-row">
+                  <div>
+                    <p>Background</p>
+                    <h2>更换背景图</h2>
+                  </div>
+                  <ImagePlus size={22} />
+                </div>
+
+                <label className="file-drop">
+                  <input
+                    accept="image/avif,image/jpeg,image/png,image/webp"
+                    onChange={handleFileChange}
+                    type="file"
+                  />
+                  <Upload size={18} />
+                  <span>{fileName || "选择图片"}</span>
+                </label>
+
+                <div className="crop-preview">
+                  {sourceImage ? (
+                    <canvas ref={previewRef} />
+                  ) : (
+                    <div className="empty-preview">16:10</div>
+                  )}
+                </div>
+
+                <div className="control-grid">
+                  <label>
+                    <span>缩放</span>
+                    <input
+                      max="2.2"
+                      min="1"
+                      onChange={(event) => setZoom(Number(event.target.value))}
+                      step="0.01"
+                      type="range"
+                      value={zoom}
+                    />
+                  </label>
+                  <label>
+                    <span>水平</span>
+                    <input
+                      max="50"
+                      min="-50"
+                      onChange={(event) => setOffsetX(Number(event.target.value))}
+                      step="1"
+                      type="range"
+                      value={offsetX}
+                    />
+                  </label>
+                  <label>
+                    <span>垂直</span>
+                    <input
+                      max="50"
+                      min="-50"
+                      onChange={(event) => setOffsetY(Number(event.target.value))}
+                      step="1"
+                      type="range"
+                      value={offsetY}
+                    />
+                  </label>
+                </div>
+
+                <div className="admin-actions">
+                  <button
+                    className="button primary-button"
+                    disabled={saving || !sourceImage}
+                    onClick={handleSaveBackground}
+                    type="button"
+                  >
+                    {saving ? "保存中" : "保存背景"}
+                  </button>
+                  <button
+                    className="button ghost-button"
+                    disabled={saving}
+                    onClick={handleResetBackground}
+                    type="button"
+                  >
+                    <RotateCcw size={16} />
+                    恢复预设
+                  </button>
+                </div>
+
+                {notice ? <p className="admin-notice">{notice}</p> : null}
+              </section>
+
+              <aside className="portal-card admin-card admin-status">
+                <p>Current</p>
+                <h2>{serverBackground ? "自定义背景已启用" : "当前使用预设背景"}</h2>
+                <dl>
+                  <div>
+                    <dt>输出比例</dt>
+                    <dd>16:10</dd>
+                  </div>
+                  <div>
+                    <dt>输出尺寸</dt>
+                    <dd>
+                      {outputWidth} x {outputHeight}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>认证系统</dt>
+                    <dd>Better Auth</dd>
+                  </div>
+                </dl>
+              </aside>
+            </div>
+
+            <section className="portal-card admin-card users-card">
+              <div className="card-title-row">
+                <div>
+                  <p>Accounts</p>
+                  <h2>账号后台</h2>
+                </div>
+                <Users size={22} />
               </div>
 
-              {notice ? <p className="admin-notice">{notice}</p> : null}
+              <form className="admin-search" onSubmit={submitSearch}>
+                <Search size={18} />
+                <input
+                  onChange={(event) => setUserSearch(event.target.value)}
+                  placeholder="搜索邮箱或昵称"
+                  type="search"
+                  value={userSearch}
+                />
+                <button className="button ghost-button" disabled={usersLoading} type="submit">
+                  搜索
+                </button>
+                <button
+                  className="icon-button compact"
+                  disabled={usersLoading}
+                  onClick={() => loadUsers()}
+                  type="button"
+                >
+                  <RefreshCcw size={16} />
+                </button>
+              </form>
+
+              {userNotice ? <p className="admin-notice">{userNotice}</p> : null}
+
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>账号</th>
+                      <th>验证</th>
+                      <th>角色</th>
+                      <th>状态</th>
+                      <th>会话</th>
+                      <th>创建</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {usersPayload?.users.map((user) => (
+                      <tr key={user.id}>
+                        <td>
+                          <strong>{user.name}</strong>
+                          <span>{user.email}</span>
+                        </td>
+                        <td>
+                          <span className={`status-pill ${user.emailVerified ? "ok" : "muted"}`}>
+                            {user.emailVerified ? <CheckCircle2 size={14} /> : null}
+                            {user.emailVerified ? "已验证" : "未验证"}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`status-pill ${user.role === "admin" ? "admin" : "muted"}`}>
+                            {user.role === "admin" ? <ShieldCheck size={14} /> : null}
+                            {roleLabel(user.role)}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`status-pill ${user.banned ? "danger" : "ok"}`}>
+                            {user.banned ? "已停用" : "正常"}
+                          </span>
+                        </td>
+                        <td>{user._count.sessions}</td>
+                        <td>{formatDate(user.createdAt)}</td>
+                        <td>
+                          <div className="table-actions">
+                            <button onClick={() => updateRole(user)} type="button">
+                              {user.role === "admin" ? "设为用户" : "设为管理员"}
+                            </button>
+                            <button onClick={() => toggleBan(user)} type="button">
+                              {user.banned ? "恢复" : "停用"}
+                            </button>
+                            <button onClick={() => revokeSessions(user)} type="button">
+                              撤销会话
+                            </button>
+                            <button onClick={() => resetPassword(user)} type="button">
+                              <KeyRound size={14} />
+                              重置密码
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {!usersPayload?.users.length ? (
+                      <tr>
+                        <td colSpan={7}>暂无账号数据。</td>
+                      </tr>
+                    ) : null}
+                  </tbody>
+                </table>
+              </div>
+
+              {usersPayload ? (
+                <div className="admin-pagination">
+                  <span>
+                    第 {usersPayload.page} / {usersPayload.totalPages} 页 · 共 {usersPayload.total} 个账号
+                  </span>
+                  <div>
+                    <button
+                      className="button ghost-button"
+                      disabled={usersPayload.page <= 1 || usersLoading}
+                      onClick={() => changePage(Math.max(1, usersPayload.page - 1))}
+                      type="button"
+                    >
+                      上一页
+                    </button>
+                    <button
+                      className="button ghost-button"
+                      disabled={usersPayload.page >= usersPayload.totalPages || usersLoading}
+                      onClick={() => changePage(Math.min(usersPayload.totalPages, usersPayload.page + 1))}
+                      type="button"
+                    >
+                      下一页
+                    </button>
+                  </div>
+                </div>
+              ) : null}
             </section>
 
-            <aside className="portal-card admin-card admin-status">
-              <p>Current</p>
-              <h2>{serverBackground ? "自定义背景已启用" : "当前使用预设背景"}</h2>
-              <dl>
+            <section className="portal-card admin-card audit-card">
+              <div className="card-title-row">
                 <div>
-                  <dt>输出比例</dt>
-                  <dd>16:10</dd>
+                  <p>Audit</p>
+                  <h2>操作记录</h2>
                 </div>
-                <div>
-                  <dt>输出尺寸</dt>
-                  <dd>
-                    {outputWidth} x {outputHeight}
-                  </dd>
-                </div>
-                <div>
-                  <dt>Access token</dt>
-                  <dd>服务端校验</dd>
-                </div>
-              </dl>
-            </aside>
+              </div>
+              <div className="audit-list">
+                {usersPayload?.auditLogs.map((log) => (
+                  <div className="audit-item" key={log.id}>
+                    <div>
+                      <strong>{log.action}</strong>
+                      <span>{log.actor?.email ?? "system"}</span>
+                    </div>
+                    <time>{formatDate(log.createdAt)}</time>
+                  </div>
+                ))}
+                {!usersPayload?.auditLogs.length ? <p className="admin-muted">暂无操作记录。</p> : null}
+              </div>
+            </section>
           </div>
-        ) : (
-          <form className="portal-card admin-card login-card" onSubmit={handleLogin}>
-            <p>Access</p>
-            <h2>输入 access token</h2>
-            <label>
-              <span>Token</span>
-              <input
-                autoComplete="off"
-                inputMode="text"
-                onChange={(event) => setToken(event.target.value)}
-                type="password"
-                value={token}
-              />
-            </label>
-            <button className="button primary-button" type="submit">
-              进入管理
-            </button>
-            {loginError ? <p className="admin-notice">{loginError}</p> : null}
-          </form>
         )}
       </section>
     </div>

@@ -1,7 +1,7 @@
 import { mkdir, stat, unlink, writeFile } from "fs/promises";
 import path from "path";
 import { NextResponse } from "next/server";
-import { isAdminAuthenticated } from "../admin/auth";
+import { auditAdminAction, requireAdmin } from "../../../lib/admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,8 +30,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ ok: false }, { status: 401 });
+  const admin = await requireAdmin();
+
+  if (!admin.ok) {
+    return admin.response;
   }
 
   const body = (await request.json().catch(() => null)) as {
@@ -56,16 +58,27 @@ export async function POST(request: Request) {
 
   await mkdir(backgroundDirectory, { recursive: true });
   await writeFile(backgroundFile, imageBuffer, { mode: 0o644 });
+  await auditAdminAction({
+    action: "background.update",
+    actorId: admin.session.user.id,
+    metadata: { bytes: imageBuffer.byteLength }
+  });
 
   return NextResponse.json({ ok: true, custom: await getCustomBackground() });
 }
 
 export async function DELETE() {
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ ok: false }, { status: 401 });
+  const admin = await requireAdmin();
+
+  if (!admin.ok) {
+    return admin.response;
   }
 
   await unlink(backgroundFile).catch(() => undefined);
+  await auditAdminAction({
+    action: "background.reset",
+    actorId: admin.session.user.id
+  });
 
   return NextResponse.json({ ok: true, custom: null });
 }
