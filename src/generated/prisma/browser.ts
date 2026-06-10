@@ -47,3 +47,13 @@ export type AdminAuditLog = Prisma.AdminAuditLogModel
  * 
  */
 export type NeteaseAccount = Prisma.NeteaseAccountModel
+/**
+ * Model WebMusicPlaylist
+ * 
+ */
+export type WebMusicPlaylist = Prisma.WebMusicPlaylistModel
+/**
+ * Model WebMusicPlaylistSong
+ * 
+ */
+export type WebMusicPlaylistSong = Prisma.WebMusicPlaylistSongModel

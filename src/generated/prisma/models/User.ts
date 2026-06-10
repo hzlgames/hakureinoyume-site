@@ -234,6 +234,7 @@ export type UserWhereInput = {
   accounts?: Prisma.AccountListRelationFilter
   auditLogs?: Prisma.AdminAuditLogListRelationFilter
   neteaseAccount?: Prisma.XOR<Prisma.NeteaseAccountNullableScalarRelationFilter, Prisma.NeteaseAccountWhereInput> | null
+  webMusicPlaylists?: Prisma.WebMusicPlaylistListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -252,6 +253,7 @@ export type UserOrderByWithRelationInput = {
   accounts?: Prisma.AccountOrderByRelationAggregateInput
   auditLogs?: Prisma.AdminAuditLogOrderByRelationAggregateInput
   neteaseAccount?: Prisma.NeteaseAccountOrderByWithRelationInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -273,6 +275,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   accounts?: Prisma.AccountListRelationFilter
   auditLogs?: Prisma.AdminAuditLogListRelationFilter
   neteaseAccount?: Prisma.XOR<Prisma.NeteaseAccountNullableScalarRelationFilter, Prisma.NeteaseAccountWhereInput> | null
+  webMusicPlaylists?: Prisma.WebMusicPlaylistListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -325,6 +328,7 @@ export type UserCreateInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -343,6 +347,7 @@ export type UserUncheckedCreateInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -361,6 +366,7 @@ export type UserUpdateInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -379,6 +385,7 @@ export type UserUncheckedUpdateInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -557,6 +564,20 @@ export type UserUpdateOneRequiredWithoutNeteaseAccountNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutNeteaseAccountInput, Prisma.UserUpdateWithoutNeteaseAccountInput>, Prisma.UserUncheckedUpdateWithoutNeteaseAccountInput>
 }
 
+export type UserCreateNestedOneWithoutWebMusicPlaylistsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutWebMusicPlaylistsInput, Prisma.UserUncheckedCreateWithoutWebMusicPlaylistsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutWebMusicPlaylistsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutWebMusicPlaylistsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutWebMusicPlaylistsInput, Prisma.UserUncheckedCreateWithoutWebMusicPlaylistsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutWebMusicPlaylistsInput
+  upsert?: Prisma.UserUpsertWithoutWebMusicPlaylistsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutWebMusicPlaylistsInput, Prisma.UserUpdateWithoutWebMusicPlaylistsInput>, Prisma.UserUncheckedUpdateWithoutWebMusicPlaylistsInput>
+}
+
 export type UserCreateWithoutSessionsInput = {
   id: string
   name: string
@@ -572,6 +593,7 @@ export type UserCreateWithoutSessionsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -589,6 +611,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -622,6 +645,7 @@ export type UserUpdateWithoutSessionsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -639,6 +663,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -656,6 +681,7 @@ export type UserCreateWithoutAccountsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -673,6 +699,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -706,6 +733,7 @@ export type UserUpdateWithoutAccountsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -723,6 +751,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAuditLogsInput = {
@@ -740,6 +769,7 @@ export type UserCreateWithoutAuditLogsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -757,6 +787,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -790,6 +821,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -807,6 +839,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutNeteaseAccountInput = {
@@ -824,6 +857,7 @@ export type UserCreateWithoutNeteaseAccountInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutNeteaseAccountInput = {
@@ -841,6 +875,7 @@ export type UserUncheckedCreateWithoutNeteaseAccountInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutNeteaseAccountInput = {
@@ -874,6 +909,7 @@ export type UserUpdateWithoutNeteaseAccountInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNeteaseAccountInput = {
@@ -891,6 +927,95 @@ export type UserUncheckedUpdateWithoutNeteaseAccountInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutWebMusicPlaylistsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
+  neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutWebMusicPlaylistsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
+  neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutWebMusicPlaylistsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutWebMusicPlaylistsInput, Prisma.UserUncheckedCreateWithoutWebMusicPlaylistsInput>
+}
+
+export type UserUpsertWithoutWebMusicPlaylistsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutWebMusicPlaylistsInput, Prisma.UserUncheckedUpdateWithoutWebMusicPlaylistsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutWebMusicPlaylistsInput, Prisma.UserUncheckedCreateWithoutWebMusicPlaylistsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutWebMusicPlaylistsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutWebMusicPlaylistsInput, Prisma.UserUncheckedUpdateWithoutWebMusicPlaylistsInput>
+}
+
+export type UserUpdateWithoutWebMusicPlaylistsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
+  neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutWebMusicPlaylistsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
+  neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
 }
 
 
@@ -902,12 +1027,14 @@ export type UserCountOutputType = {
   sessions: number
   accounts: number
   auditLogs: number
+  webMusicPlaylists: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
+  webMusicPlaylists?: boolean | UserCountOutputTypeCountWebMusicPlaylistsArgs
 }
 
 /**
@@ -941,6 +1068,13 @@ export type UserCountOutputTypeCountAuditLogsArgs<ExtArgs extends runtime.Types.
   where?: Prisma.AdminAuditLogWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountWebMusicPlaylistsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WebMusicPlaylistWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -958,6 +1092,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   neteaseAccount?: boolean | Prisma.User$neteaseAccountArgs<ExtArgs>
+  webMusicPlaylists?: boolean | Prisma.User$webMusicPlaylistsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1009,6 +1144,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   neteaseAccount?: boolean | Prisma.User$neteaseAccountArgs<ExtArgs>
+  webMusicPlaylists?: boolean | Prisma.User$webMusicPlaylistsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1021,6 +1157,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     accounts: Prisma.$AccountPayload<ExtArgs>[]
     auditLogs: Prisma.$AdminAuditLogPayload<ExtArgs>[]
     neteaseAccount: Prisma.$NeteaseAccountPayload<ExtArgs> | null
+    webMusicPlaylists: Prisma.$WebMusicPlaylistPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1432,6 +1569,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   auditLogs<T extends Prisma.User$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdminAuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   neteaseAccount<T extends Prisma.User$neteaseAccountArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$neteaseAccountArgs<ExtArgs>>): Prisma.Prisma__NeteaseAccountClient<runtime.Types.Result.GetResult<Prisma.$NeteaseAccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  webMusicPlaylists<T extends Prisma.User$webMusicPlaylistsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$webMusicPlaylistsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WebMusicPlaylistPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1953,6 +2091,30 @@ export type User$neteaseAccountArgs<ExtArgs extends runtime.Types.Extensions.Int
    */
   include?: Prisma.NeteaseAccountInclude<ExtArgs> | null
   where?: Prisma.NeteaseAccountWhereInput
+}
+
+/**
+ * User.webMusicPlaylists
+ */
+export type User$webMusicPlaylistsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WebMusicPlaylist
+   */
+  select?: Prisma.WebMusicPlaylistSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WebMusicPlaylist
+   */
+  omit?: Prisma.WebMusicPlaylistOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WebMusicPlaylistInclude<ExtArgs> | null
+  where?: Prisma.WebMusicPlaylistWhereInput
+  orderBy?: Prisma.WebMusicPlaylistOrderByWithRelationInput | Prisma.WebMusicPlaylistOrderByWithRelationInput[]
+  cursor?: Prisma.WebMusicPlaylistWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WebMusicPlaylistScalarFieldEnum | Prisma.WebMusicPlaylistScalarFieldEnum[]
 }
 
 /**

@@ -4,8 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Album,
   Heart,
+  HeartPlus,
+  GripVertical,
   ListMusic,
+  ListPlus,
   LoaderCircle,
   LogIn,
   LogOut,
@@ -16,7 +20,10 @@ import {
   Search,
   SkipBack,
   SkipForward,
-  UserRound
+  Trash2,
+  UserRound,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 import { CardHeader, DashboardCard } from "./ui";
 
@@ -34,12 +41,14 @@ type AccountState = {
 };
 
 type MusicSong = {
+  rowId?: string;
   id: string;
   name: string;
   artists: string;
   album: string;
   coverUrl: string | null;
   duration: number | null;
+  addedAt?: string;
 };
 
 type MusicPlaylist = {
@@ -50,11 +59,30 @@ type MusicPlaylist = {
   playCount: number;
 };
 
+type MusicAlbum = {
+  id: string;
+  name: string;
+  artists: string;
+  coverUrl: string | null;
+  trackCount: number;
+  publishTime: number | null;
+  company: string | null;
+};
+
 type QrState = {
   key: string;
   qrimg: string;
   status: "waiting" | "scanned" | "expired" | "error";
   message: string;
+};
+
+type WebPlaylistState = {
+  playlist: {
+    id: string;
+    name: string;
+    trackCount: number;
+  };
+  songs: MusicSong[];
 };
 
 const defaultAccount: AccountState = {
@@ -101,28 +129,69 @@ export function NeteasePlayer() {
   const qrCheckInFlightRef = useRef(false);
   const qrResolvedRef = useRef(false);
   const playRequestIdRef = useRef(0);
+  const playAbortControllerRef = useRef<AbortController | null>(null);
+  const autoplayRequestIdRef = useRef<number | null>(null);
+  const neteasePlaylistsRequestIdRef = useRef(0);
+  const playlistTracksRequestIdRef = useRef(0);
+  const webPlaylistRequestIdRef = useRef(0);
+  const refreshRequestIdRef = useRef(0);
+  const albumRequestIdRef = useRef(0);
   const [account, setAccount] = useState<AccountState>(defaultAccount);
   const [query, setQuery] = useState("东方Project");
-  const [mode, setMode] = useState<"search" | "collection">("search");
+  const [mode, setMode] = useState<"search" | "web" | "netease">("search");
+  const [searchType, setSearchType] = useState<"songs" | "albums">("songs");
   const [searchResults, setSearchResults] = useState<MusicSong[]>([]);
+  const [albumResults, setAlbumResults] = useState<MusicAlbum[]>([]);
+  const [selectedAlbum, setSelectedAlbum] = useState<MusicAlbum | null>(null);
+  const [albumTracks, setAlbumTracks] = useState<MusicSong[]>([]);
   const [playlists, setPlaylists] = useState<MusicPlaylist[]>([]);
   const [selectedPlaylist, setSelectedPlaylist] = useState<MusicPlaylist | null>(null);
   const [playlistTracks, setPlaylistTracks] = useState<MusicSong[]>([]);
+  const [webPlaylist, setWebPlaylist] = useState<WebPlaylistState["playlist"] | null>(null);
+  const [webPlaylistSongs, setWebPlaylistSongs] = useState<MusicSong[]>([]);
   const [queue, setQueue] = useState<MusicSong[]>([]);
   const [currentSong, setCurrentSong] = useState<MusicSong | null>(null);
   const [currentUrl, setCurrentUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(0.82);
+  const [isMuted, setIsMuted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isNeteasePlaylistsLoading, setIsNeteasePlaylistsLoading] = useState(false);
+  const [isPlaylistTracksLoading, setIsPlaylistTracksLoading] = useState(false);
+  const [isWebPlaylistLoading, setIsWebPlaylistLoading] = useState(false);
+  const [isAlbumLoading, setIsAlbumLoading] = useState(false);
+  const [pendingSongIds, setPendingSongIds] = useState<string[]>([]);
+  const [neteaseLikedSongIds, setNeteaseLikedSongIds] = useState<string[]>([]);
+  const [draggingSongId, setDraggingSongId] = useState<string | null>(null);
   const [message, setMessage] = useState("未登录网易云时，将使用公开/游客访问能力。");
   const [qr, setQr] = useState<QrState | null>(null);
 
   const visibleSongs = useMemo(
-    () => mode === "search" ? searchResults : playlistTracks,
-    [mode, playlistTracks, searchResults]
+    () => {
+      if (mode === "web") return webPlaylistSongs;
+      if (mode === "netease") return playlistTracks;
+      if (searchType === "albums") return albumTracks;
+      return searchResults;
+    },
+    [albumTracks, mode, playlistTracks, searchResults, searchType, webPlaylistSongs]
   );
+  const webSongIds = useMemo(() => new Set(webPlaylistSongs.map((song) => song.id)), [webPlaylistSongs]);
+  const neteaseLikedIds = useMemo(() => new Set(neteaseLikedSongIds), [neteaseLikedSongIds]);
+  const pendingIds = useMemo(() => new Set(pendingSongIds), [pendingSongIds]);
+  const playerBusy = isLoading || isNeteasePlaylistsLoading || isPlaylistTracksLoading || isWebPlaylistLoading || isAlbumLoading;
+
+  const markSongPending = useCallback((songId: string, pending: boolean) => {
+    setPendingSongIds((current) => {
+      if (pending) {
+        return current.includes(songId) ? current : [...current, songId];
+      }
+
+      return current.filter((id) => id !== songId);
+    });
+  }, []);
 
   const loadAccount = useCallback(async () => {
     const data = await fetchJson<AccountState>(`/api/music/me?t=${Date.now()}`);
@@ -137,6 +206,9 @@ export function NeteasePlayer() {
     nextAccount: AccountState,
     options: { announce?: boolean } = {}
   ) => {
+    const requestId = neteasePlaylistsRequestIdRef.current + 1;
+    neteasePlaylistsRequestIdRef.current = requestId;
+
     if (!nextAccount.neteaseAuthenticated) {
       setPlaylists([]);
       setSelectedPlaylist(null);
@@ -144,22 +216,74 @@ export function NeteasePlayer() {
       return [];
     }
 
-    const data = await fetchJson<{ playlists: MusicPlaylist[] }>(`/api/music/playlists?t=${Date.now()}`);
-    setPlaylists(data.playlists);
+    setIsNeteasePlaylistsLoading(true);
+    try {
+      const data = await fetchJson<{ playlists: MusicPlaylist[] }>(`/api/music/playlists?t=${Date.now()}`);
 
-    if (options.announce) {
-      setMessage(data.playlists.length > 0 ? "已读取网易云收藏歌单。" : "没有读取到收藏歌单。");
+      if (requestId !== neteasePlaylistsRequestIdRef.current) return [];
+
+      setPlaylists(data.playlists);
+
+      if (options.announce) {
+        setMessage(data.playlists.length > 0 ? "已读取网易云收藏歌单。" : "没有读取到收藏歌单。");
+      }
+
+      return data.playlists;
+    } finally {
+      if (requestId === neteasePlaylistsRequestIdRef.current) {
+        setIsNeteasePlaylistsLoading(false);
+      }
     }
+  }, []);
 
-    return data.playlists;
+  const loadWebPlaylist = useCallback(async (options: { announce?: boolean } = {}) => {
+    const requestId = webPlaylistRequestIdRef.current + 1;
+    webPlaylistRequestIdRef.current = requestId;
+    setIsWebPlaylistLoading(true);
+
+    try {
+      const data = await fetchJson<WebPlaylistState>(`/api/music/web-playlist?t=${Date.now()}`);
+
+      if (requestId !== webPlaylistRequestIdRef.current) return data;
+
+      setWebPlaylist(data.playlist);
+      setWebPlaylistSongs(data.songs);
+
+      if (options.announce) {
+        setMessage(data.songs.length > 0 ? "网页歌单已刷新。" : "网页歌单还是空的。");
+      }
+
+      return data;
+    } catch (error) {
+      if (requestId === webPlaylistRequestIdRef.current) {
+        setMessage(error instanceof Error ? error.message : "网页歌单读取失败。");
+        setWebPlaylist(null);
+        setWebPlaylistSongs([]);
+      }
+      throw error;
+    } finally {
+      if (requestId === webPlaylistRequestIdRef.current) {
+        setIsWebPlaylistLoading(false);
+      }
+    }
   }, []);
 
   const refreshMusicState = useCallback(async (
     options: { announce?: boolean; reloadPlaylists?: boolean } = {}
   ) => {
+    const requestId = refreshRequestIdRef.current + 1;
+    refreshRequestIdRef.current = requestId;
     setIsRefreshing(true);
     try {
       const nextAccount = await loadAccount();
+
+      if (requestId !== refreshRequestIdRef.current) {
+        return nextAccount;
+      }
+
+      if (nextAccount.siteAuthenticated) {
+        await loadWebPlaylist();
+      }
 
       if (options.reloadPlaylists !== false) {
         await loadPlaylistsForAccount(nextAccount);
@@ -176,17 +300,29 @@ export function NeteasePlayer() {
       }
       throw error;
     } finally {
-      setIsRefreshing(false);
+      if (requestId === refreshRequestIdRef.current) {
+        setIsRefreshing(false);
+      }
     }
-  }, [loadAccount, loadPlaylistsForAccount]);
+  }, [loadAccount, loadPlaylistsForAccount, loadWebPlaylist]);
 
-  const runSearch = useCallback(async (nextQuery: string) => {
+  const runSearch = useCallback(async (nextQuery: string, nextType = searchType) => {
     const keyword = nextQuery.trim();
     if (!keyword) return;
 
     setIsLoading(true);
     try {
-      const data = await fetchJson<{ songs: MusicSong[] }>(`/api/music/search?keywords=${encodeURIComponent(keyword)}&limit=24&t=${Date.now()}`);
+      if (nextType === "albums") {
+        const data = await fetchJson<{ albums: MusicAlbum[] }>(`/api/music/search?keywords=${encodeURIComponent(keyword)}&type=album&limit=16&t=${Date.now()}`);
+        setAlbumResults(data.albums);
+        setSelectedAlbum(null);
+        setAlbumTracks([]);
+        setMode("search");
+        setMessage(data.albums.length > 0 ? "专辑搜索结果已更新。" : "没有找到可展示的专辑。");
+        return;
+      }
+
+      const data = await fetchJson<{ songs: MusicSong[] }>(`/api/music/search?keywords=${encodeURIComponent(keyword)}&type=song&limit=24&t=${Date.now()}`);
       setSearchResults(data.songs);
       setMode("search");
       setMessage(data.songs.length > 0 ? "搜索结果已更新。" : "没有找到可展示的歌曲。");
@@ -195,29 +331,28 @@ export function NeteasePlayer() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [searchType]);
 
   const loadPlaylists = useCallback(async () => {
-    setIsLoading(true);
     try {
       await loadPlaylistsForAccount(account, { announce: true });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "歌单读取失败。");
-    } finally {
-      setIsLoading(false);
     }
   }, [account, loadPlaylistsForAccount]);
 
   useEffect(() => {
-    loadAccount().catch(() => setMessage("账号状态读取失败。"));
-    runSearch("东方Project").catch(() => setMessage("默认搜索失败。"));
-  }, [loadAccount, runSearch]);
+    loadAccount().then((nextAccount) => {
+      if (nextAccount.siteAuthenticated) {
+        loadWebPlaylist().catch(() => undefined);
+      }
 
-  useEffect(() => {
-    if (account.neteaseAuthenticated) {
-      loadPlaylists().catch(() => setMessage("歌单读取失败。"));
-    }
-  }, [account.neteaseAuthenticated, loadPlaylists]);
+      if (nextAccount.neteaseAuthenticated) {
+        loadPlaylistsForAccount(nextAccount).catch(() => undefined);
+      }
+    }).catch(() => setMessage("账号状态读取失败。"));
+    runSearch("东方Project", "songs").catch(() => setMessage("默认搜索失败。"));
+  }, [loadAccount, loadPlaylistsForAccount, loadWebPlaylist, runSearch]);
 
   useEffect(() => {
     qrRef.current = qr;
@@ -295,6 +430,55 @@ export function NeteasePlayer() {
     setDuration(0);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      playAbortControllerRef.current?.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    const requestId = playRequestIdRef.current;
+
+    if (!audio) return;
+
+    audio.pause();
+
+    if (!currentUrl) {
+      audio.removeAttribute("src");
+      audio.load();
+      return;
+    }
+
+    audio.src = currentUrl;
+    audio.currentTime = 0;
+    audio.load();
+
+    if (autoplayRequestIdRef.current !== requestId) return;
+
+    audio.play().then(() => {
+      if (playRequestIdRef.current === requestId) {
+        setIsPlaying(true);
+      }
+    }).catch((error) => {
+      if (playRequestIdRef.current !== requestId) return;
+
+      setIsPlaying(false);
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+      setMessage("浏览器阻止了自动播放，请手动点击播放。");
+    });
+  }, [currentUrl]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.volume = Math.min(Math.max(volume, 0), 1);
+    audio.muted = isMuted || volume === 0;
+  }, [isMuted, volume]);
+
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     runSearch(query).catch(() => setMessage("搜索失败。"));
@@ -350,25 +534,190 @@ export function NeteasePlayer() {
   };
 
   const loadPlaylistTracks = async (playlist: MusicPlaylist) => {
+    const requestId = playlistTracksRequestIdRef.current + 1;
+    playlistTracksRequestIdRef.current = requestId;
     setSelectedPlaylist(playlist);
-    setMode("collection");
-    setIsLoading(true);
+    setMode("netease");
+    setPlaylistTracks([]);
+    setIsPlaylistTracksLoading(true);
+    setMessage(`正在载入 ${playlist.name}。`);
 
     try {
       const data = await fetchJson<{ songs: MusicSong[] }>(`/api/music/playlist?id=${encodeURIComponent(playlist.id)}&t=${Date.now()}`);
+
+      if (requestId !== playlistTracksRequestIdRef.current) return;
+
       setPlaylistTracks(data.songs);
       setQueue(data.songs);
       setMessage(`已载入 ${playlist.name}。`);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "歌单歌曲读取失败。");
+      if (requestId === playlistTracksRequestIdRef.current) {
+        setMessage(error instanceof Error ? error.message : "歌单歌曲读取失败。");
+      }
     } finally {
-      setIsLoading(false);
+      if (requestId === playlistTracksRequestIdRef.current) {
+        setIsPlaylistTracksLoading(false);
+      }
+    }
+  };
+
+  const loadAlbumTracks = async (album: MusicAlbum) => {
+    const requestId = albumRequestIdRef.current + 1;
+    albumRequestIdRef.current = requestId;
+    setSelectedAlbum(album);
+    setAlbumTracks([]);
+    setMode("search");
+    setSearchType("albums");
+    setIsAlbumLoading(true);
+    setMessage(`正在载入专辑：${album.name}`);
+
+    try {
+      const data = await fetchJson<{ album: MusicAlbum | null; songs: MusicSong[] }>(`/api/music/album?id=${encodeURIComponent(album.id)}&t=${Date.now()}`);
+
+      if (requestId !== albumRequestIdRef.current) return;
+
+      setSelectedAlbum(data.album ?? album);
+      setAlbumTracks(data.songs);
+      setQueue(data.songs);
+      setMessage(data.songs.length > 0 ? `已载入专辑：${album.name}` : "这张专辑没有可展示的曲目。");
+    } catch (error) {
+      if (requestId === albumRequestIdRef.current) {
+        setMessage(error instanceof Error ? error.message : "专辑曲目读取失败。");
+      }
+    } finally {
+      if (requestId === albumRequestIdRef.current) {
+        setIsAlbumLoading(false);
+      }
+    }
+  };
+
+  const addSongToWebPlaylist = async (song: MusicSong) => {
+    if (!account.siteAuthenticated) {
+      setMessage("请先登录本站账号，再添加到网页歌单。");
+      return;
+    }
+
+    markSongPending(song.id, true);
+    try {
+      const data = await fetchJson<WebPlaylistState>("/api/music/web-playlist/tracks", {
+        method: "POST",
+        body: JSON.stringify({ song })
+      });
+      setWebPlaylist(data.playlist);
+      setWebPlaylistSongs(data.songs);
+      setMessage(`已加入网页歌单：${song.name}`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "加入网页歌单失败。");
+    } finally {
+      markSongPending(song.id, false);
+    }
+  };
+
+  const removeSongFromWebPlaylist = async (song: MusicSong) => {
+    if (!account.siteAuthenticated) {
+      setMessage("请先登录本站账号。");
+      return;
+    }
+
+    markSongPending(song.id, true);
+    try {
+      const data = await fetchJson<WebPlaylistState>(`/api/music/web-playlist/tracks?id=${encodeURIComponent(song.id)}`, {
+        method: "DELETE"
+      });
+      setWebPlaylist(data.playlist);
+      setWebPlaylistSongs(data.songs);
+      setMessage(`已从网页歌单移除：${song.name}`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "移除网页歌单歌曲失败。");
+    } finally {
+      markSongPending(song.id, false);
+    }
+  };
+
+  const addSongsToWebPlaylist = async (songs: MusicSong[], label: string) => {
+    if (!account.siteAuthenticated) {
+      setMessage("请先登录本站账号，再添加到网页歌单。");
+      return;
+    }
+
+    const songsToAdd = songs.filter((song) => !webSongIds.has(song.id));
+    if (songsToAdd.length === 0) {
+      setMessage("这些歌曲已经在网页歌单中。");
+      return;
+    }
+
+    setPendingSongIds((current) => Array.from(new Set([...current, ...songsToAdd.map((song) => song.id)])));
+    try {
+      const data = await fetchJson<WebPlaylistState>("/api/music/web-playlist/tracks", {
+        method: "POST",
+        body: JSON.stringify({ songs: songsToAdd })
+      });
+      setWebPlaylist(data.playlist);
+      setWebPlaylistSongs(data.songs);
+      setMessage(`已加入网页歌单：${label}`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "批量加入网页歌单失败。");
+    } finally {
+      setPendingSongIds((current) => current.filter((id) => !songsToAdd.some((song) => song.id === id)));
+    }
+  };
+
+  const reorderWebPlaylist = async (fromId: string, toId: string) => {
+    if (fromId === toId) return;
+
+    const fromIndex = webPlaylistSongs.findIndex((song) => song.id === fromId);
+    const toIndex = webPlaylistSongs.findIndex((song) => song.id === toId);
+    if (fromIndex < 0 || toIndex < 0) return;
+
+    const nextSongs = [...webPlaylistSongs];
+    const [moved] = nextSongs.splice(fromIndex, 1);
+    nextSongs.splice(toIndex, 0, moved);
+    setWebPlaylistSongs(nextSongs);
+    setDraggingSongId(null);
+
+    try {
+      const data = await fetchJson<WebPlaylistState>("/api/music/web-playlist/reorder", {
+        method: "POST",
+        body: JSON.stringify({ ids: nextSongs.map((song) => song.id) })
+      });
+      setWebPlaylist(data.playlist);
+      setWebPlaylistSongs(data.songs);
+      setMessage("网页歌单顺序已更新。");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "网页歌单排序保存失败。");
+      loadWebPlaylist().catch(() => undefined);
+    }
+  };
+
+  const likeSongOnNetease = async (song: MusicSong) => {
+    if (!account.neteaseAuthenticated) {
+      setMessage("请先连接网易云账户，再收藏到网易云。");
+      return;
+    }
+
+    markSongPending(song.id, true);
+    try {
+      await fetchJson<{ ok: boolean }>("/api/music/like", {
+        method: "POST",
+        body: JSON.stringify({ id: song.id, like: true })
+      });
+      setNeteaseLikedSongIds((current) => current.includes(song.id) ? current : [...current, song.id]);
+      setMessage(`已收藏到网易云：${song.name}`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "网易云收藏失败。");
+    } finally {
+      markSongPending(song.id, false);
     }
   };
 
   const playSong = async (song: MusicSong, nextQueue = visibleSongs) => {
     const requestId = playRequestIdRef.current + 1;
     playRequestIdRef.current = requestId;
+    playAbortControllerRef.current?.abort();
+
+    const controller = new AbortController();
+    playAbortControllerRef.current = controller;
+    autoplayRequestIdRef.current = requestId;
 
     resetAudioElement();
     setCurrentSong(song);
@@ -378,45 +727,36 @@ export function NeteasePlayer() {
     setIsLoading(true);
 
     try {
-      const data = await fetchJson<{ url: string | null }>(`/api/music/song-url?id=${encodeURIComponent(song.id)}&level=higher&t=${Date.now()}`);
+      const data = await fetchJson<{ url: string | null }>(
+        `/api/music/song-url?id=${encodeURIComponent(song.id)}&level=higher&t=${Date.now()}`,
+        { signal: controller.signal }
+      );
 
-      if (requestId !== playRequestIdRef.current) {
+      if (requestId !== playRequestIdRef.current || controller.signal.aborted) {
         return;
       }
 
       if (!data.url) {
+        autoplayRequestIdRef.current = null;
         setMessage("这首歌当前没有可用播放链接，可能受版权、VIP 或地区限制。");
         return;
       }
 
       setCurrentUrl(data.url);
       setMessage(`正在播放：${song.name}`);
-
-      const audio = audioRef.current;
-      if (!audio) return;
-
-      audio.pause();
-      audio.src = data.url;
-      audio.currentTime = 0;
-      audio.load();
-
-      try {
-        await audio.play();
-
-        if (requestId === playRequestIdRef.current) {
-          setIsPlaying(true);
-        }
-      } catch {
-        if (requestId === playRequestIdRef.current) {
-          setIsPlaying(false);
-          setMessage("浏览器阻止了自动播放，请手动点击播放。");
-        }
-      }
     } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
       if (requestId === playRequestIdRef.current) {
         setMessage(error instanceof Error ? error.message : "播放链接获取失败。");
       }
     } finally {
+      if (playAbortControllerRef.current === controller) {
+        playAbortControllerRef.current = null;
+      }
+
       if (requestId === playRequestIdRef.current) {
         setIsLoading(false);
       }
@@ -470,7 +810,7 @@ export function NeteasePlayer() {
     <DashboardCard className="netease-player">
       <CardHeader
         action={
-          isLoading ? <LoaderCircle className="netease-spin" size={16} /> : <Music size={16} color="var(--text-tertiary)" />
+          playerBusy ? <LoaderCircle className="netease-spin" size={16} /> : <Music size={16} color="var(--text-tertiary)" />
         }
         icon={<Music className="card-title-icon" size={18} />}
         title="网易云音乐"
@@ -573,6 +913,31 @@ export function NeteasePlayer() {
             <button className="music-btn" type="button" onClick={() => playByOffset(1)} aria-label="下一首">
               <SkipForward size={16} />
             </button>
+            <div className="music-volume">
+              <button
+                className="music-btn"
+                type="button"
+                onClick={() => setIsMuted((current) => !current)}
+                aria-label={isMuted || volume === 0 ? "取消静音" : "静音"}
+                title={isMuted || volume === 0 ? "取消静音" : "静音"}
+              >
+                {isMuted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
+              </button>
+              <input
+                aria-label="调整音量"
+                className="music-volume-range"
+                max={1}
+                min={0}
+                onChange={(event) => {
+                  const nextVolume = Number(event.currentTarget.value);
+                  setVolume(nextVolume);
+                  setIsMuted(nextVolume === 0);
+                }}
+                step={0.01}
+                type="range"
+                value={isMuted ? 0 : volume}
+              />
+            </div>
           </div>
           <div className="music-progress">
             <span>{formatClock(progress)}</span>
@@ -602,21 +967,81 @@ export function NeteasePlayer() {
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="搜索歌曲、歌手"
+          placeholder={searchType === "albums" ? "搜索专辑、艺人" : "搜索歌曲、歌手"}
         />
         <button type="submit">搜索</button>
       </form>
+
+      <div className="netease-search-types" aria-label="搜索类型">
+        <button
+          className={searchType === "songs" ? "active" : ""}
+          type="button"
+          onClick={() => {
+            setSearchType("songs");
+            setMode("search");
+            runSearch(query, "songs").catch(() => setMessage("搜索失败。"));
+          }}
+        >
+          <Music size={14} /> 单曲
+        </button>
+        <button
+          className={searchType === "albums" ? "active" : ""}
+          type="button"
+          onClick={() => {
+            setSearchType("albums");
+            setMode("search");
+            runSearch(query, "albums").catch(() => setMessage("专辑搜索失败。"));
+          }}
+        >
+          <Album size={14} /> 专辑
+        </button>
+      </div>
 
       <div className="netease-tabs">
         <button className={mode === "search" ? "active" : ""} type="button" onClick={() => setMode("search")}>
           <Search size={14} /> 搜索
         </button>
-        <button className={mode === "collection" ? "active" : ""} type="button" onClick={() => setMode("collection")}>
-          <Heart size={14} /> 收藏
+        <button
+          className={mode === "web" ? "active" : ""}
+          type="button"
+          onClick={() => {
+            setMode("web");
+            if (account.siteAuthenticated && !webPlaylist) {
+              loadWebPlaylist({ announce: true }).catch(() => undefined);
+            }
+          }}
+        >
+          <ListPlus size={14} /> 网页歌单
+        </button>
+        <button
+          className={mode === "netease" ? "active" : ""}
+          type="button"
+          onClick={() => {
+            setMode("netease");
+            if (account.neteaseAuthenticated && playlists.length === 0) {
+              loadPlaylists().catch(() => undefined);
+            }
+          }}
+        >
+          <Heart size={14} /> 网易云
         </button>
       </div>
 
-      {mode === "collection" ? (
+      {mode === "web" ? (
+        <div className="netease-playlists">
+          {account.siteAuthenticated ? (
+            <div className="netease-playlist active" aria-live="polite">
+              <ListMusic size={15} />
+              <span>{webPlaylist?.name ?? "网页歌单"}</span>
+              <small>{webPlaylist?.trackCount ?? webPlaylistSongs.length}</small>
+            </div>
+          ) : (
+            <div className="netease-empty">登录本站后可保存网页歌单。</div>
+          )}
+        </div>
+      ) : null}
+
+      {mode === "netease" ? (
         <div className="netease-playlists">
           {account.neteaseAuthenticated ? playlists.map((playlist) => (
             <button
@@ -624,31 +1049,159 @@ export function NeteasePlayer() {
               key={playlist.id}
               type="button"
               onClick={() => loadPlaylistTracks(playlist)}
+              disabled={isPlaylistTracksLoading && selectedPlaylist?.id === playlist.id}
             >
-              <ListMusic size={15} />
+              {isPlaylistTracksLoading && selectedPlaylist?.id === playlist.id ? <LoaderCircle className="netease-spin" size={15} /> : <ListMusic size={15} />}
               <span>{playlist.name}</span>
               <small>{playlist.trackCount}</small>
             </button>
           )) : (
             <div className="netease-empty">连接网易云后可查看收藏歌单。</div>
           )}
+          {account.neteaseAuthenticated && playlists.length === 0 && !isNeteasePlaylistsLoading ? (
+            <div className="netease-empty">没有读取到网易云歌单。</div>
+          ) : null}
         </div>
+      ) : null}
+
+      {mode === "search" && searchType === "albums" ? (
+        <>
+          <div className="netease-albums" aria-label="专辑搜索结果">
+            {albumResults.map((album) => (
+              <button
+                className={`netease-album ${selectedAlbum?.id === album.id ? "active" : ""}`}
+                key={album.id}
+                type="button"
+                onClick={() => loadAlbumTracks(album)}
+                disabled={isAlbumLoading && selectedAlbum?.id === album.id}
+              >
+                <Image src={album.coverUrl || "https://placeholder.co/96x96"} alt={album.name} width={46} height={46} />
+                <span>
+                  <strong>{album.name}</strong>
+                  <small>{album.artists} · {album.trackCount} 首</small>
+                </span>
+              </button>
+            ))}
+            {albumResults.length === 0 && !isLoading ? <div className="netease-empty">没有找到可展示的专辑。</div> : null}
+          </div>
+
+          {selectedAlbum ? (
+            <div className="netease-album-current">
+              <div>
+                <strong>{selectedAlbum.name}</strong>
+                <span>{selectedAlbum.artists} · {albumTracks.length || selectedAlbum.trackCount} 首</span>
+              </div>
+              <div className="netease-album-actions">
+                <button
+                  className="netease-connect-btn"
+                  type="button"
+                  onClick={() => albumTracks[0] ? playSong(albumTracks[0], albumTracks).catch(() => setMessage("专辑播放失败。")) : undefined}
+                  disabled={albumTracks.length === 0}
+                >
+                  <Play size={14} fill="currentColor" /> 播放
+                </button>
+                <button
+                  className="netease-connect-btn"
+                  type="button"
+                  onClick={() => addSongsToWebPlaylist(albumTracks, selectedAlbum.name)}
+                  disabled={albumTracks.length === 0}
+                >
+                  <ListPlus size={14} /> 加入
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </>
       ) : null}
 
       <div className="netease-list" aria-label="歌曲列表">
         {visibleSongs.map((song) => (
-          <button
-            className={`netease-track ${currentSong?.id === song.id ? "active" : ""}`}
+          <div
+            className={`netease-track ${currentSong?.id === song.id ? "active" : ""} ${draggingSongId === song.id ? "dragging" : ""}`}
             key={song.id}
-            type="button"
-            onClick={() => playSong(song, visibleSongs)}
+            draggable={mode === "web"}
+            onDragStart={(event) => {
+              if (mode !== "web") return;
+              setDraggingSongId(song.id);
+              event.dataTransfer.effectAllowed = "move";
+              event.dataTransfer.setData("text/plain", song.id);
+            }}
+            onDragOver={(event) => {
+              if (mode === "web" && draggingSongId) {
+                event.preventDefault();
+                event.dataTransfer.dropEffect = "move";
+              }
+            }}
+            onDrop={(event) => {
+              if (mode !== "web") return;
+              event.preventDefault();
+              const fromId = event.dataTransfer.getData("text/plain") || draggingSongId;
+              if (fromId) {
+                reorderWebPlaylist(fromId, song.id).catch(() => undefined);
+              }
+            }}
+            onDragEnd={() => setDraggingSongId(null)}
           >
-            <span className="netease-track-name">{song.name}</span>
-            <span className="netease-track-artist">{song.artists}</span>
-            <span className="netease-track-time">{formatDuration(song.duration)}</span>
-          </button>
+            {mode === "web" ? <GripVertical className="netease-drag-handle" size={15} aria-hidden="true" /> : null}
+            <button
+              className="netease-track-main"
+              type="button"
+              onClick={() => playSong(song, visibleSongs)}
+            >
+              <span className="netease-track-name">{song.name}</span>
+              <span className="netease-track-artist">{song.artists}</span>
+              <span className="netease-track-time">{formatDuration(song.duration)}</span>
+            </button>
+            <div className="netease-track-actions">
+              {mode === "web" ? (
+                <button
+                  className="netease-track-action"
+                  type="button"
+                  onClick={() => removeSongFromWebPlaylist(song)}
+                  disabled={pendingIds.has(song.id)}
+                  aria-label={`从网页歌单移除 ${song.name}`}
+                  title="从网页歌单移除"
+                >
+                  <Trash2 size={14} />
+                </button>
+              ) : (
+                <button
+                  className="netease-track-action"
+                  type="button"
+                  onClick={() => addSongToWebPlaylist(song)}
+                  disabled={pendingIds.has(song.id) || webSongIds.has(song.id)}
+                  aria-label={`加入网页歌单 ${song.name}`}
+                  title={webSongIds.has(song.id) ? "已在网页歌单" : "加入网页歌单"}
+                >
+                  <ListPlus size={14} />
+                </button>
+              )}
+              <button
+                className="netease-track-action"
+                type="button"
+                onClick={() => likeSongOnNetease(song)}
+                disabled={pendingIds.has(song.id) || !account.neteaseAuthenticated || neteaseLikedIds.has(song.id)}
+                aria-label={`收藏到网易云 ${song.name}`}
+                title={!account.neteaseAuthenticated ? "连接网易云后可收藏" : neteaseLikedIds.has(song.id) ? "已收藏到网易云" : "收藏到网易云"}
+              >
+                <HeartPlus size={14} />
+              </button>
+            </div>
+          </div>
         ))}
-        {visibleSongs.length === 0 ? <div className="netease-empty">{message}</div> : null}
+        {visibleSongs.length === 0 ? (
+          <div className="netease-empty">
+            {mode === "web" && isWebPlaylistLoading
+              ? "正在读取网页歌单。"
+              : mode === "netease" && isPlaylistTracksLoading
+                ? "正在读取网易云歌单歌曲。"
+                : mode === "search" && searchType === "albums" && isAlbumLoading
+                  ? "正在读取专辑曲目。"
+                  : mode === "search" && searchType === "albums" && albumResults.length > 0 && !selectedAlbum
+                    ? "选择一张专辑查看曲目。"
+                    : message}
+          </div>
+        ) : null}
       </div>
 
       <div className="netease-status">{message}</div>

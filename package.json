@@ -6,7 +6,7 @@
     "dev": "next dev",
     "lint": "eslint . --max-warnings=0",
     "build": "next build",
-    "deploy": "npm run build",
+    "deploy": "bash scripts/deploy.sh",
     "start": "next start"
   },
   "dependencies": {
