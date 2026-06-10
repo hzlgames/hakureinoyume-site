@@ -768,6 +768,84 @@ ul {
   border-radius: 2px;
 }
 
+.music-seek-wrap {
+  flex: 1;
+  height: 18px;
+  position: relative;
+}
+
+.music-seek-wrap .music-bar {
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.music-seek {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
+  height: 18px;
+  left: 0;
+  margin: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 2;
+}
+
+.music-seek:disabled {
+  cursor: default;
+}
+
+.music-seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  background: var(--accent);
+  border: 2px solid var(--bg-color);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  height: 12px;
+  width: 12px;
+}
+
+.music-seek::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 18px;
+}
+
+.music-seek::-moz-range-thumb {
+  background: var(--accent);
+  border: 2px solid var(--bg-color);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  height: 12px;
+  width: 12px;
+}
+
+.music-seek::-moz-range-track {
+  background: transparent;
+  height: 18px;
+}
+
+.music-seek:disabled::-webkit-slider-thumb {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.music-seek:disabled::-moz-range-thumb {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.music-seek-wrap:hover .music-bar,
+.music-seek-wrap:focus-within .music-bar {
+  background: var(--progress-bg);
+}
+
 .netease-player {
   text-align: left;
 }
@@ -802,6 +880,13 @@ ul {
 .netease-account-main {
   min-width: 0;
   gap: 10px;
+}
+
+.netease-account-actions {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 8px;
 }
 
 .netease-avatar {
@@ -870,6 +955,13 @@ ul {
   background: var(--accent);
   color: white;
   transform: translateY(-1px);
+}
+
+.netease-connect-btn:disabled,
+.netease-icon-btn:disabled {
+  cursor: wait;
+  opacity: 0.62;
+  transform: none;
 }
 
 .netease-qr-panel {

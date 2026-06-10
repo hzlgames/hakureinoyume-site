@@ -25,7 +25,9 @@ type MusicRouteContext = {
 type SongRecord = Record<string, unknown>;
 
 function json(data: unknown, init?: ResponseInit) {
-  return NextResponse.json(data, init);
+  const response = NextResponse.json(data, init);
+  response.headers.set("Cache-Control", "no-store, max-age=0");
+  return response;
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {

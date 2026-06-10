@@ -78,6 +78,8 @@ function formatClock(value: number) {
 
 async function fetchJson<T>(url: string, init?: RequestInit) {
   const response = await fetch(url, {
+    cache: "no-store",
+    credentials: "same-origin",
     ...init,
     headers: {
       ...(init?.headers ?? {}),
@@ -95,6 +97,10 @@ async function fetchJson<T>(url: string, init?: RequestInit) {
 
 export function NeteasePlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const qrRef = useRef<QrState | null>(null);
+  const qrCheckInFlightRef = useRef(false);
+  const qrResolvedRef = useRef(false);
+  const playRequestIdRef = useRef(0);
   const [account, setAccount] = useState<AccountState>(defaultAccount);
   const [query, setQuery] = useState("东方Project");
   const [mode, setMode] = useState<"search" | "collection">("search");
@@ -109,6 +115,7 @@ export function NeteasePlayer() {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [message, setMessage] = useState("未登录网易云时，将使用公开/游客访问能力。");
   const [qr, setQr] = useState<QrState | null>(null);
 
@@ -118,12 +125,60 @@ export function NeteasePlayer() {
   );
 
   const loadAccount = useCallback(async () => {
-    const data = await fetchJson<AccountState>("/api/music/me");
+    const data = await fetchJson<AccountState>(`/api/music/me?t=${Date.now()}`);
     setAccount(data);
     if (data.expired) {
       setMessage("网易云登录态已失效，请重新扫码登录。");
     }
+    return data;
   }, []);
+
+  const loadPlaylistsForAccount = useCallback(async (
+    nextAccount: AccountState,
+    options: { announce?: boolean } = {}
+  ) => {
+    if (!nextAccount.neteaseAuthenticated) {
+      setPlaylists([]);
+      setSelectedPlaylist(null);
+      setPlaylistTracks([]);
+      return [];
+    }
+
+    const data = await fetchJson<{ playlists: MusicPlaylist[] }>(`/api/music/playlists?t=${Date.now()}`);
+    setPlaylists(data.playlists);
+
+    if (options.announce) {
+      setMessage(data.playlists.length > 0 ? "已读取网易云收藏歌单。" : "没有读取到收藏歌单。");
+    }
+
+    return data.playlists;
+  }, []);
+
+  const refreshMusicState = useCallback(async (
+    options: { announce?: boolean; reloadPlaylists?: boolean } = {}
+  ) => {
+    setIsRefreshing(true);
+    try {
+      const nextAccount = await loadAccount();
+
+      if (options.reloadPlaylists !== false) {
+        await loadPlaylistsForAccount(nextAccount);
+      }
+
+      if (options.announce) {
+        setMessage(nextAccount.neteaseAuthenticated ? "网易云状态已刷新。" : "当前未连接网易云账户。");
+      }
+
+      return nextAccount;
+    } catch (error) {
+      if (options.announce) {
+        setMessage(error instanceof Error ? error.message : "状态刷新失败。");
+      }
+      throw error;
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [loadAccount, loadPlaylistsForAccount]);
 
   const runSearch = useCallback(async (nextQuery: string) => {
     const keyword = nextQuery.trim();
@@ -131,7 +186,7 @@ export function NeteasePlayer() {
 
     setIsLoading(true);
     try {
-      const data = await fetchJson<{ songs: MusicSong[] }>(`/api/music/search?keywords=${encodeURIComponent(keyword)}&limit=24`);
+      const data = await fetchJson<{ songs: MusicSong[] }>(`/api/music/search?keywords=${encodeURIComponent(keyword)}&limit=24&t=${Date.now()}`);
       setSearchResults(data.songs);
       setMode("search");
       setMessage(data.songs.length > 0 ? "搜索结果已更新。" : "没有找到可展示的歌曲。");
@@ -143,19 +198,15 @@ export function NeteasePlayer() {
   }, []);
 
   const loadPlaylists = useCallback(async () => {
-    if (!account.neteaseAuthenticated) return;
-
     setIsLoading(true);
     try {
-      const data = await fetchJson<{ playlists: MusicPlaylist[] }>("/api/music/playlists");
-      setPlaylists(data.playlists);
-      setMessage(data.playlists.length > 0 ? "已读取网易云收藏歌单。" : "没有读取到收藏歌单。");
+      await loadPlaylistsForAccount(account, { announce: true });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "歌单读取失败。");
     } finally {
       setIsLoading(false);
     }
-  }, [account.neteaseAuthenticated]);
+  }, [account, loadPlaylistsForAccount]);
 
   useEffect(() => {
     loadAccount().catch(() => setMessage("账号状态读取失败。"));
@@ -169,19 +220,43 @@ export function NeteasePlayer() {
   }, [account.neteaseAuthenticated, loadPlaylists]);
 
   useEffect(() => {
-    if (!qr || qr.status === "expired" || qr.status === "error") return;
+    qrRef.current = qr;
+  }, [qr]);
 
-    const timer = window.setInterval(async () => {
+  useEffect(() => {
+    if (!qr?.key) return;
+
+    const key = qr.key;
+    let isStopped = false;
+    qrResolvedRef.current = false;
+
+    const checkQrStatus = async () => {
+      const currentQr = qrRef.current;
+
+      if (
+        isStopped
+        || qrCheckInFlightRef.current
+        || qrResolvedRef.current
+        || !currentQr
+        || currentQr.key !== key
+        || currentQr.status === "expired"
+        || currentQr.status === "error"
+      ) {
+        return;
+      }
+
+      qrCheckInFlightRef.current = true;
       try {
         const data = await fetchJson<{ code: number; message?: string; profile?: NeteaseProfile }>("/api/music/login/qr/check", {
           method: "POST",
-          body: JSON.stringify({ key: qr.key })
+          body: JSON.stringify({ key })
         });
 
         if (data.code === 803) {
+          qrResolvedRef.current = true;
           setQr(null);
           setMessage(`网易云已连接${data.profile?.nickname ? `：${data.profile.nickname}` : ""}。`);
-          await loadAccount();
+          await refreshMusicState({ reloadPlaylists: true });
           return;
         }
 
@@ -196,20 +271,29 @@ export function NeteasePlayer() {
           status: "error",
           message: error instanceof Error ? error.message : "登录状态检查失败。"
         } : current);
+      } finally {
+        qrCheckInFlightRef.current = false;
       }
-    }, 2200);
+    };
 
-    return () => window.clearInterval(timer);
-  }, [loadAccount, qr]);
+    checkQrStatus();
+    const timer = window.setInterval(checkQrStatus, 1400);
 
-  useEffect(() => {
-    if (!currentUrl || !isPlaying) return;
+    return () => {
+      isStopped = true;
+      window.clearInterval(timer);
+    };
+  }, [qr?.key, refreshMusicState]);
 
-    audioRef.current?.play().catch(() => {
-      setIsPlaying(false);
-      setMessage("浏览器阻止了自动播放，请手动点击播放。");
-    });
-  }, [currentUrl, isPlaying]);
+  const resetAudioElement = useCallback(() => {
+    const audio = audioRef.current;
+
+    audio?.pause();
+    audio?.removeAttribute("src");
+    audio?.load();
+    setProgress(0);
+    setDuration(0);
+  }, []);
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -223,11 +307,14 @@ export function NeteasePlayer() {
     }
 
     setIsLoading(true);
+    setQr(null);
+    setMessage("正在生成新的网易云登录二维码。");
     try {
       const data = await fetchJson<{ key: string; qrimg: string }>("/api/music/login/qr/start", {
         method: "POST",
         body: JSON.stringify({})
       });
+      qrResolvedRef.current = false;
       setQr({
         key: data.key,
         qrimg: data.qrimg,
@@ -248,10 +335,12 @@ export function NeteasePlayer() {
         method: "POST",
         body: JSON.stringify({})
       });
+      setQr(null);
       setAccount((current) => ({ ...current, neteaseAuthenticated: false, profile: null }));
       setPlaylists([]);
       setSelectedPlaylist(null);
       setPlaylistTracks([]);
+      await refreshMusicState({ reloadPlaylists: false });
       setMessage("已断开网易云账户。");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "断开失败。");
@@ -266,7 +355,7 @@ export function NeteasePlayer() {
     setIsLoading(true);
 
     try {
-      const data = await fetchJson<{ songs: MusicSong[] }>(`/api/music/playlist?id=${encodeURIComponent(playlist.id)}`);
+      const data = await fetchJson<{ songs: MusicSong[] }>(`/api/music/playlist?id=${encodeURIComponent(playlist.id)}&t=${Date.now()}`);
       setPlaylistTracks(data.songs);
       setQueue(data.songs);
       setMessage(`已载入 ${playlist.name}。`);
@@ -278,6 +367,10 @@ export function NeteasePlayer() {
   };
 
   const playSong = async (song: MusicSong, nextQueue = visibleSongs) => {
+    const requestId = playRequestIdRef.current + 1;
+    playRequestIdRef.current = requestId;
+
+    resetAudioElement();
     setCurrentSong(song);
     setCurrentUrl(null);
     setIsPlaying(false);
@@ -285,7 +378,11 @@ export function NeteasePlayer() {
     setIsLoading(true);
 
     try {
-      const data = await fetchJson<{ url: string | null }>(`/api/music/song-url?id=${encodeURIComponent(song.id)}&level=higher`);
+      const data = await fetchJson<{ url: string | null }>(`/api/music/song-url?id=${encodeURIComponent(song.id)}&level=higher&t=${Date.now()}`);
+
+      if (requestId !== playRequestIdRef.current) {
+        return;
+      }
 
       if (!data.url) {
         setMessage("这首歌当前没有可用播放链接，可能受版权、VIP 或地区限制。");
@@ -293,12 +390,36 @@ export function NeteasePlayer() {
       }
 
       setCurrentUrl(data.url);
-      setIsPlaying(true);
       setMessage(`正在播放：${song.name}`);
+
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      audio.pause();
+      audio.src = data.url;
+      audio.currentTime = 0;
+      audio.load();
+
+      try {
+        await audio.play();
+
+        if (requestId === playRequestIdRef.current) {
+          setIsPlaying(true);
+        }
+      } catch {
+        if (requestId === playRequestIdRef.current) {
+          setIsPlaying(false);
+          setMessage("浏览器阻止了自动播放，请手动点击播放。");
+        }
+      }
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "播放链接获取失败。");
+      if (requestId === playRequestIdRef.current) {
+        setMessage(error instanceof Error ? error.message : "播放链接获取失败。");
+      }
     } finally {
-      setIsLoading(false);
+      if (requestId === playRequestIdRef.current) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -318,6 +439,11 @@ export function NeteasePlayer() {
     if (!audioRef.current) return;
 
     if (audioRef.current.paused) {
+      if (!audioRef.current.currentSrc && currentUrl) {
+        audioRef.current.src = currentUrl;
+        audioRef.current.load();
+      }
+
       audioRef.current.play().then(() => setIsPlaying(true)).catch(() => setMessage("播放失败。"));
     } else {
       audioRef.current.pause();
@@ -325,7 +451,19 @@ export function NeteasePlayer() {
     }
   };
 
+  const seekTo = (value: number) => {
+    const audio = audioRef.current;
+    const nextTime = Math.min(Math.max(value, 0), Number.isFinite(duration) ? duration : 0);
+
+    setProgress(nextTime);
+
+    if (audio && Number.isFinite(nextTime)) {
+      audio.currentTime = nextTime;
+    }
+  };
+
   const progressPercent = duration > 0 ? Math.min((progress / duration) * 100, 100) : 0;
+  const canSeek = duration > 0 && Number.isFinite(duration);
   const coverUrl = currentSong?.coverUrl || account.profile?.avatarUrl || "https://placeholder.co/140x140";
 
   return (
@@ -340,9 +478,17 @@ export function NeteasePlayer() {
 
       <audio
         ref={audioRef}
-        src={currentUrl ?? undefined}
         onTimeUpdate={(event) => setProgress(event.currentTarget.currentTime)}
-        onDurationChange={(event) => setDuration(event.currentTarget.duration)}
+        onLoadedMetadata={(event) => {
+          const nextDuration = event.currentTarget.duration;
+          setDuration(Number.isFinite(nextDuration) ? nextDuration : 0);
+        }}
+        onDurationChange={(event) => {
+          const nextDuration = event.currentTarget.duration;
+          setDuration(Number.isFinite(nextDuration) ? nextDuration : 0);
+        }}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
         onEnded={() => playByOffset(1)}
       />
 
@@ -372,24 +518,36 @@ export function NeteasePlayer() {
             </>
           )}
         </div>
-        {account.neteaseAuthenticated ? (
-          <button className="netease-icon-btn" type="button" onClick={disconnect} aria-label="断开网易云">
-            <LogOut size={16} />
+        <div className="netease-account-actions">
+          <button
+            className="netease-icon-btn"
+            type="button"
+            onClick={() => refreshMusicState({ announce: true }).catch(() => undefined)}
+            disabled={isRefreshing}
+            aria-label="刷新网易云状态"
+            title="刷新网易云状态"
+          >
+            <RefreshCw className={isRefreshing ? "netease-spin" : undefined} size={16} />
           </button>
-        ) : account.siteAuthenticated ? (
-          <button className="netease-connect-btn" type="button" onClick={startQrLogin}>
-            <LogIn size={14} /> 连接
-          </button>
-        ) : (
-          <Link className="netease-connect-btn" href="/login">
-            <LogIn size={14} /> 登录本站
-          </Link>
-        )}
+          {account.neteaseAuthenticated ? (
+            <button className="netease-icon-btn" type="button" onClick={disconnect} disabled={isLoading} aria-label="断开网易云">
+              <LogOut size={16} />
+            </button>
+          ) : account.siteAuthenticated ? (
+            <button className="netease-connect-btn" type="button" onClick={startQrLogin} disabled={isLoading}>
+              <LogIn size={14} /> 连接
+            </button>
+          ) : (
+            <Link className="netease-connect-btn" href="/login">
+              <LogIn size={14} /> 登录本站
+            </Link>
+          )}
+        </div>
       </div>
 
       {qr ? (
         <div className="netease-qr-panel">
-          {qr.qrimg ? <Image src={qr.qrimg} alt="网易云二维码" width={160} height={160} /> : null}
+          {qr.qrimg ? <Image key={qr.key} src={qr.qrimg} alt="网易云二维码" width={160} height={160} /> : null}
           <div className="netease-qr-message">{qr.message}</div>
           <button className="netease-connect-btn" type="button" onClick={startQrLogin}>
             <RefreshCw size={14} /> 重新生成
@@ -418,8 +576,21 @@ export function NeteasePlayer() {
           </div>
           <div className="music-progress">
             <span>{formatClock(progress)}</span>
-            <div className="music-bar">
-              <div className="music-bar-fill" style={{ width: `${progressPercent}%` }} />
+            <div className="music-seek-wrap">
+              <div className="music-bar" aria-hidden="true">
+                <div className="music-bar-fill" style={{ width: `${progressPercent}%` }} />
+              </div>
+              <input
+                aria-label="调整播放进度"
+                className="music-seek"
+                disabled={!canSeek}
+                max={canSeek ? duration : 0}
+                min={0}
+                onChange={(event) => seekTo(Number(event.currentTarget.value))}
+                step={0.1}
+                type="range"
+                value={canSeek ? Math.min(progress, duration) : 0}
+              />
             </div>
             <span>{formatClock(duration)}</span>
           </div>
