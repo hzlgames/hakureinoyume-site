@@ -388,7 +388,10 @@ export const ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  AdminAuditLog: 'AdminAuditLog'
+  AdminAuditLog: 'AdminAuditLog',
+  NeteaseAccount: 'NeteaseAccount',
+  WebMusicPlaylist: 'WebMusicPlaylist',
+  WebMusicPlaylistSong: 'WebMusicPlaylistSong'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -404,7 +407,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "adminAuditLog"
+    modelProps: "user" | "session" | "account" | "verification" | "adminAuditLog" | "neteaseAccount" | "webMusicPlaylist" | "webMusicPlaylistSong"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -778,6 +781,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    NeteaseAccount: {
+      payload: Prisma.$NeteaseAccountPayload<ExtArgs>
+      fields: Prisma.NeteaseAccountFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.NeteaseAccountFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.NeteaseAccountFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>
+        }
+        findFirst: {
+          args: Prisma.NeteaseAccountFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.NeteaseAccountFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>
+        }
+        findMany: {
+          args: Prisma.NeteaseAccountFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>[]
+        }
+        create: {
+          args: Prisma.NeteaseAccountCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>
+        }
+        createMany: {
+          args: Prisma.NeteaseAccountCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.NeteaseAccountCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>[]
+        }
+        delete: {
+          args: Prisma.NeteaseAccountDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>
+        }
+        update: {
+          args: Prisma.NeteaseAccountUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>
+        }
+        deleteMany: {
+          args: Prisma.NeteaseAccountDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.NeteaseAccountUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.NeteaseAccountUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>[]
+        }
+        upsert: {
+          args: Prisma.NeteaseAccountUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NeteaseAccountPayload>
+        }
+        aggregate: {
+          args: Prisma.NeteaseAccountAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateNeteaseAccount>
+        }
+        groupBy: {
+          args: Prisma.NeteaseAccountGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NeteaseAccountGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.NeteaseAccountCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NeteaseAccountCountAggregateOutputType> | number
+        }
+      }
+    }
+    WebMusicPlaylist: {
+      payload: Prisma.$WebMusicPlaylistPayload<ExtArgs>
+      fields: Prisma.WebMusicPlaylistFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WebMusicPlaylistFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WebMusicPlaylistFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistPayload>
+        }
+        findFirst: {
+          args: Prisma.WebMusicPlaylistFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WebMusicPlaylistFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistPayload>
+        }
+        findMany: {
+          args: Prisma.WebMusicPlaylistFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistPayload>[]
+        }
+        create: {
+          args: Prisma.WebMusicPlaylistCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistPayload>
+        }
+        createMany: {
+          args: Prisma.WebMusicPlaylistCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WebMusicPlaylistCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistPayload>[]
+        }
+        delete: {
+          args: Prisma.WebMusicPlaylistDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistPayload>
+        }
+        update: {
+          args: Prisma.WebMusicPlaylistUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistPayload>
+        }
+        deleteMany: {
+          args: Prisma.WebMusicPlaylistDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WebMusicPlaylistUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WebMusicPlaylistUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistPayload>[]
+        }
+        upsert: {
+          args: Prisma.WebMusicPlaylistUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistPayload>
+        }
+        aggregate: {
+          args: Prisma.WebMusicPlaylistAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWebMusicPlaylist>
+        }
+        groupBy: {
+          args: Prisma.WebMusicPlaylistGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebMusicPlaylistGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WebMusicPlaylistCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebMusicPlaylistCountAggregateOutputType> | number
+        }
+      }
+    }
+    WebMusicPlaylistSong: {
+      payload: Prisma.$WebMusicPlaylistSongPayload<ExtArgs>
+      fields: Prisma.WebMusicPlaylistSongFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WebMusicPlaylistSongFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistSongPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WebMusicPlaylistSongFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistSongPayload>
+        }
+        findFirst: {
+          args: Prisma.WebMusicPlaylistSongFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistSongPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WebMusicPlaylistSongFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistSongPayload>
+        }
+        findMany: {
+          args: Prisma.WebMusicPlaylistSongFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistSongPayload>[]
+        }
+        create: {
+          args: Prisma.WebMusicPlaylistSongCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistSongPayload>
+        }
+        createMany: {
+          args: Prisma.WebMusicPlaylistSongCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WebMusicPlaylistSongCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistSongPayload>[]
+        }
+        delete: {
+          args: Prisma.WebMusicPlaylistSongDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistSongPayload>
+        }
+        update: {
+          args: Prisma.WebMusicPlaylistSongUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistSongPayload>
+        }
+        deleteMany: {
+          args: Prisma.WebMusicPlaylistSongDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WebMusicPlaylistSongUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WebMusicPlaylistSongUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistSongPayload>[]
+        }
+        upsert: {
+          args: Prisma.WebMusicPlaylistSongUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebMusicPlaylistSongPayload>
+        }
+        aggregate: {
+          args: Prisma.WebMusicPlaylistSongAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWebMusicPlaylistSong>
+        }
+        groupBy: {
+          args: Prisma.WebMusicPlaylistSongGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebMusicPlaylistSongGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WebMusicPlaylistSongCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebMusicPlaylistSongCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -892,6 +1117,53 @@ export const AdminAuditLogScalarFieldEnum = {
 export type AdminAuditLogScalarFieldEnum = (typeof AdminAuditLogScalarFieldEnum)[keyof typeof AdminAuditLogScalarFieldEnum]
 
 
+export const NeteaseAccountScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  neteaseUserId: 'neteaseUserId',
+  nickname: 'nickname',
+  avatarUrl: 'avatarUrl',
+  cookieCiphertext: 'cookieCiphertext',
+  cookieIv: 'cookieIv',
+  cookieTag: 'cookieTag',
+  profile: 'profile',
+  loginStatus: 'loginStatus',
+  lastValidatedAt: 'lastValidatedAt',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NeteaseAccountScalarFieldEnum = (typeof NeteaseAccountScalarFieldEnum)[keyof typeof NeteaseAccountScalarFieldEnum]
+
+
+export const WebMusicPlaylistScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WebMusicPlaylistScalarFieldEnum = (typeof WebMusicPlaylistScalarFieldEnum)[keyof typeof WebMusicPlaylistScalarFieldEnum]
+
+
+export const WebMusicPlaylistSongScalarFieldEnum = {
+  id: 'id',
+  playlistId: 'playlistId',
+  songId: 'songId',
+  name: 'name',
+  artists: 'artists',
+  album: 'album',
+  coverUrl: 'coverUrl',
+  duration: 'duration',
+  position: 'position',
+  addedAt: 'addedAt'
+} as const
+
+export type WebMusicPlaylistSongScalarFieldEnum = (typeof WebMusicPlaylistSongScalarFieldEnum)[keyof typeof WebMusicPlaylistSongScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -999,6 +1271,20 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**
@@ -1116,6 +1402,9 @@ export type GlobalOmitConfig = {
   account?: Prisma.AccountOmit
   verification?: Prisma.VerificationOmit
   adminAuditLog?: Prisma.AdminAuditLogOmit
+  neteaseAccount?: Prisma.NeteaseAccountOmit
+  webMusicPlaylist?: Prisma.WebMusicPlaylistOmit
+  webMusicPlaylistSong?: Prisma.WebMusicPlaylistSongOmit
 }
 
 /* Types for Logging */

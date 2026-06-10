@@ -1,6 +1,6 @@
 # 博麗の夢
 
-Personal website for `hakureinoyume.com`, built with Next.js App Router. The admin background manager uses dynamic API routes, so production should run `next start` behind Caddy.
+Personal website for `hakureinoyume.com`, built with Next.js App Router. Authentication and admin features use dynamic API routes, Prisma, PostgreSQL, and Better Auth, so production should run `next start` behind Caddy.
 
 ## Commands
 
@@ -12,15 +12,26 @@ Personal website for `hakureinoyume.com`, built with Next.js App Router. The adm
 ## Routes
 
 - `/`: homepage.
-- `/admin`: admin entry for changing the background image.
+- `/admin`: admin dashboard for background and account management.
+- `/login`: account login.
+- `/register`: account registration.
+- `/forgot-password`: password reset request.
+- `/reset-password`: password reset completion.
 - `/tools`: tools placeholder.
 
 Add new pages by creating folders under `src/app`, for example `src/app/about/page.tsx` or `src/app/tools/example/page.tsx`.
 
-## Admin access token
+## Auth and data
 
-Set `ADMIN_ACCESS_TOKEN` on the server to change the admin token. If it is not set, the temporary default is `hzlgames`.
-Set `ADMIN_SESSION_SECRET` to a long random value in production so session cookies are signed independently from the access token.
+Copy `.env.example` and set the database, Better Auth, SMTP, and admin email variables. `ADMIN_EMAILS` is a comma-separated list of emails that receive the `admin` role when accounts are created.
+
+Run the Prisma migration against PostgreSQL before starting production.
+
+## NetEase Cloud Music
+
+The homepage player uses a server-side proxy under `/api/music/*`. Configure `NETEASE_API_BASE_URL` to point at a self-hosted NeteaseCloudMusicApi Enhanced or compatible service. The app defaults to `http://localhost:3010` for local development.
+
+Each site user can bind their own NetEase account by QR login. NetEase cookies are encrypted before being stored in PostgreSQL with `NETEASE_COOKIE_SECRET`; if that variable is absent, `BETTER_AUTH_SECRET` is used. Visitors who are not logged in to this site can still use public/anonymous NetEase search and playback when the upstream API permits it.
 
 ## Production service
 

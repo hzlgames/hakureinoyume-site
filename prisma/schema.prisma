@@ -8,20 +8,22 @@ datasource db {
 }
 
 model User {
-  id            String          @id
-  name          String
-  email         String          @unique
-  emailVerified Boolean
-  image         String?
-  createdAt     DateTime
-  updatedAt     DateTime
-  role          String?
-  banned        Boolean?
-  banReason     String?
-  banExpires    DateTime?
-  sessions      Session[]
-  accounts      Account[]
-  auditLogs     AdminAuditLog[] @relation("AuditActor")
+  id                String             @id
+  name              String
+  email             String             @unique
+  emailVerified     Boolean
+  image             String?
+  createdAt         DateTime
+  updatedAt         DateTime
+  role              String?
+  banned            Boolean?
+  banReason         String?
+  banExpires        DateTime?
+  sessions          Session[]
+  accounts          Account[]
+  auditLogs         AdminAuditLog[]    @relation("AuditActor")
+  neteaseAccount    NeteaseAccount?
+  webMusicPlaylists WebMusicPlaylist[]
 
   @@map("user")
 }
@@ -87,4 +89,57 @@ model AdminAuditLog {
   @@index([targetId])
   @@index([action])
   @@index([createdAt])
+}
+
+model NeteaseAccount {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  neteaseUserId    String?
+  nickname         String?
+  avatarUrl        String?
+  cookieCiphertext String
+  cookieIv         String
+  cookieTag        String
+  profile          Json?
+  loginStatus      String    @default("active")
+  lastValidatedAt  DateTime?
+  expiresAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([neteaseUserId])
+  @@index([loginStatus])
+}
+
+model WebMusicPlaylist {
+  id        String                 @id @default(cuid())
+  userId    String
+  name      String                 @default("网页歌单")
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+  user      User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  songs     WebMusicPlaylistSong[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model WebMusicPlaylistSong {
+  id         String           @id @default(cuid())
+  playlistId String
+  songId     String
+  name       String
+  artists    String
+  album      String?
+  coverUrl   String?
+  duration   Int?
+  position   Int              @default(0)
+  addedAt    DateTime         @default(now())
+  playlist   WebMusicPlaylist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+
+  @@unique([playlistId, songId])
+  @@index([playlistId])
+  @@index([playlistId, position])
+  @@index([songId])
 }

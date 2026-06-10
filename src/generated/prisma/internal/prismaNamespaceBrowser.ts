@@ -55,7 +55,10 @@ export const ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  AdminAuditLog: 'AdminAuditLog'
+  AdminAuditLog: 'AdminAuditLog',
+  NeteaseAccount: 'NeteaseAccount',
+  WebMusicPlaylist: 'WebMusicPlaylist',
+  WebMusicPlaylistSong: 'WebMusicPlaylistSong'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -147,6 +150,53 @@ export const AdminAuditLogScalarFieldEnum = {
 } as const
 
 export type AdminAuditLogScalarFieldEnum = (typeof AdminAuditLogScalarFieldEnum)[keyof typeof AdminAuditLogScalarFieldEnum]
+
+
+export const NeteaseAccountScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  neteaseUserId: 'neteaseUserId',
+  nickname: 'nickname',
+  avatarUrl: 'avatarUrl',
+  cookieCiphertext: 'cookieCiphertext',
+  cookieIv: 'cookieIv',
+  cookieTag: 'cookieTag',
+  profile: 'profile',
+  loginStatus: 'loginStatus',
+  lastValidatedAt: 'lastValidatedAt',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NeteaseAccountScalarFieldEnum = (typeof NeteaseAccountScalarFieldEnum)[keyof typeof NeteaseAccountScalarFieldEnum]
+
+
+export const WebMusicPlaylistScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WebMusicPlaylistScalarFieldEnum = (typeof WebMusicPlaylistScalarFieldEnum)[keyof typeof WebMusicPlaylistScalarFieldEnum]
+
+
+export const WebMusicPlaylistSongScalarFieldEnum = {
+  id: 'id',
+  playlistId: 'playlistId',
+  songId: 'songId',
+  name: 'name',
+  artists: 'artists',
+  album: 'album',
+  coverUrl: 'coverUrl',
+  duration: 'duration',
+  position: 'position',
+  addedAt: 'addedAt'
+} as const
+
+export type WebMusicPlaylistSongScalarFieldEnum = (typeof WebMusicPlaylistSongScalarFieldEnum)[keyof typeof WebMusicPlaylistSongScalarFieldEnum]
 
 
 export const SortOrder = {

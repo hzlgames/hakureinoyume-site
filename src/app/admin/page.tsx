@@ -171,7 +171,7 @@ export default function AdminPage() {
       .catch(() => undefined);
   }, []);
 
-  const loadUsers = useCallback(async (nextPage = page, search = userSearch) => {
+  const loadUsers = useCallback(async (nextPage: number, search: string) => {
     if (!isAdmin) {
       return;
     }
@@ -200,12 +200,12 @@ export default function AdminPage() {
     } finally {
       setUsersLoading(false);
     }
-  }, [isAdmin, page, userSearch]);
+  }, [isAdmin]);
 
   useEffect(() => {
     if (isAdmin) {
       queueMicrotask(() => {
-        loadUsers(1);
+        loadUsers(1, "");
       });
     }
   }, [isAdmin, loadUsers]);
@@ -299,7 +299,7 @@ export default function AdminPage() {
       setServerBackground(payload.custom);
       window.localStorage.setItem(storageKeys.selectedBackground, "custom");
       setNotice("背景图已保存。");
-      loadUsers();
+      loadUsers(page, userSearch);
     } catch {
       setNotice("保存失败，请确认管理员登录状态。");
     } finally {
@@ -321,7 +321,7 @@ export default function AdminPage() {
       setServerBackground(null);
       window.localStorage.setItem(storageKeys.selectedBackground, backgrounds[0].id);
       setNotice("已恢复预设背景。");
-      loadUsers();
+      loadUsers(page, userSearch);
     } catch {
       setNotice("重置失败，请确认管理员登录状态。");
     } finally {
@@ -345,7 +345,7 @@ export default function AdminPage() {
     }
 
     setUserNotice(success);
-    await loadUsers();
+    await loadUsers(page, userSearch);
   }
 
   async function updateRole(user: AdminUser) {
@@ -405,7 +405,7 @@ export default function AdminPage() {
 
   function changePage(nextPage: number) {
     setPage(nextPage);
-    loadUsers(nextPage);
+    loadUsers(nextPage, userSearch);
   }
 
   const pageStyle = {
@@ -613,7 +613,7 @@ export default function AdminPage() {
                 <button
                   className="icon-button compact"
                   disabled={usersLoading}
-                  onClick={() => loadUsers()}
+                  onClick={() => loadUsers(page, userSearch)}
                   type="button"
                 >
                   <RefreshCcw size={16} />
