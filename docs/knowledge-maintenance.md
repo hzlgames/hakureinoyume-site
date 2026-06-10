@@ -21,7 +21,7 @@
 - 修改后台认证、Better Auth、Prisma schema、cookie、角色或权限：更新认证架构、运维和 ADR。
 - 修改背景图、主题变量、公共 UI 或素材路径：更新功能文档；涉及长期策略时补 ADR。
 - 修改 Caddy、systemd、环境变量、数据库迁移、构建或部署命令：更新运维文档；改变部署策略时补 ADR。
-- 修改 skill 触发条件或流程：更新 `skills/hakureinoyume-maintenance/SKILL.md` 和本文件。
+- 修改 skill 触发条件或流程：更新 `.agents/skills/hakureinoyume-maintenance/SKILL.md` 和本文件。
 
 ## 远端同步前检查清单
 

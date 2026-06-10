@@ -10,11 +10,11 @@ Accepted
 
 ## Decision
 
-采用轻量 docs-as-code 文档体系，把项目事实保存在仓库 `docs/` 中。新增仓库内 skill `skills/hakureinoyume-maintenance/`，用于在 Git 远端同步前或用户明确提醒时检查知识库是否需要更新。
+采用轻量 docs-as-code 文档体系，把项目事实保存在仓库 `docs/` 中。新增仓库内 skill `.agents/skills/hakureinoyume-maintenance/`，用于在 Git 远端同步前或用户明确提醒时检查知识库是否需要更新。
 
 ## Consequences
 
 - 文档和代码同版本演进，agent 可以先读文档再核对源码。
 - 远端同步前形成知识维护门禁，降低文档漂移。
 - 普通本地试验不强制触发文档更新，减少维护成本。
-- 若要让 Codex 自动发现该 skill，需要把仓库内 skill 同步或安装到 `${CODEX_HOME:-$HOME/.codex}/skills`。
+- `.agents/skills/` 是统一的 skills 规范源；`.codex/skills`、`.claude/skills`、`.agent/skills` 作为兼容入口指向同一目录，让 Codex、Claude Code、Antigravity 等 agent 读取同一份 skill。

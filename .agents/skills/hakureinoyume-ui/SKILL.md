@@ -1,6 +1,6 @@
 ---
 name: hakureinoyume-ui
-description: Project-private frontend UI implementation standards for hakureinoyume-site. Use when Codex changes this repository's React/Next.js pages, CSS, theme variables, glass panels, dashboard cards, responsive layouts, dark/light theme behavior, or reusable UI components.
+description: Project frontend UI implementation standards for hakureinoyume-site. Use when changing this repository's React/Next.js pages, CSS, theme variables, glass panels, dashboard cards, responsive layouts, dark/light theme behavior, or reusable UI components.
 ---
 
 # Hakureinoyume UI
@@ -12,10 +12,10 @@ Use this skill to keep UI changes in `hakureinoyume-site` consistent with the ex
 ## Workflow
 
 1. Inspect the existing component and nearby CSS before editing.
-2. Prefer existing components from `src/app/_components` for stable card/header/progress primitives.
+2. Prefer existing components from `src/app/_components` for stable card, header, and progress primitives.
 3. Use global CSS variables for color, borders, shadows, and status accents.
 4. Keep page-level layout in page shells or parent grids, not inside card contents.
-5. Verify both light and dark themes when the change touches color, glass surfaces, hover states, selected states, disabled/muted states, or overlays.
+5. Verify both light and dark themes when the change touches color, glass surfaces, hover states, selected states, disabled or muted states, or overlays.
 
 ## Theme Rules
 
@@ -23,7 +23,7 @@ Use this skill to keep UI changes in `hakureinoyume-site` consistent with the ex
 - Prefer `--bg-color`, `--text-primary`, `--text-secondary`, `--text-tertiary`, `--accent`, `--accent-hover`, `--accent-light`, `--glass-bg`, `--glass-border`, `--glass-shadow`, `--header-bg`, `--progress-bg`, and `--progress-fill`.
 - Do not add static light-only colors such as `rgba(255,255,255,...)` to component states unless a matching dark value or semantic variable is added.
 - When adding component-specific tokens, define them in `:root` and override them in `[data-theme="dark"]`.
-- Keep `site-theme.ts` `--theme-*` variables for dynamic background/admin contexts unless the current code path already uses them.
+- Keep `site-theme.ts` `--theme-*` variables for dynamic background and admin contexts unless the current code path already uses them.
 - New visual states must cover normal, hover/focus, selected/active, muted/disabled, and status variants where relevant.
 
 ## Layout Rules
@@ -53,5 +53,5 @@ Use this skill to keep UI changes in `hakureinoyume-site` consistent with the ex
 ## Validation
 
 - Run the project lint or the narrowest available check after code edits.
-- For visual UI work, use the local browser when available to inspect desktop and mobile, and check that text stays legible in light and dark themes.
+- For visual UI work, inspect desktop and mobile when a local browser is available, and check that text stays legible in light and dark themes.
 - Pay special attention to contrast on glass surfaces because background images vary in brightness.
