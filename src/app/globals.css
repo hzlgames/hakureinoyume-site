@@ -2547,6 +2547,155 @@ ul {
   gap: 18px;
 }
 
+.zju-tool-heading {
+  align-items: flex-end;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.zju-tool-heading h1 {
+  font-size: 42px;
+  letter-spacing: 0;
+  line-height: 1.1;
+  margin-top: 6px;
+}
+
+.zju-heading-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.zju-back-link,
+.zju-text-link {
+  align-items: center;
+  color: var(--text-secondary);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.zju-text-link {
+  color: var(--accent);
+  margin-bottom: 0;
+}
+
+.zju-tool-index,
+.zju-info-grid,
+.zju-metric-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.zju-tool-index {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.zju-info-grid,
+.zju-metric-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+.zju-index-card {
+  min-height: 172px;
+}
+
+.zju-auth-card {
+  max-width: 560px;
+}
+
+.zju-suite-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.zju-suite-tool {
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  display: grid;
+  gap: 6px;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 12px;
+}
+
+.zju-suite-tool span {
+  align-items: center;
+  background: var(--accent-light);
+  border-radius: 10px;
+  color: var(--accent);
+  display: inline-flex;
+  grid-row: span 2;
+  height: 42px;
+  justify-content: center;
+  width: 42px;
+}
+
+.zju-suite-tool strong {
+  font-size: 15px;
+}
+
+.zju-suite-tool p {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.zju-card-heading {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.zju-card-heading h2 {
+  font-size: 22px;
+  letter-spacing: 0;
+  margin-top: 4px;
+}
+
+.zju-metric-card {
+  display: grid;
+  gap: 6px;
+  min-height: 118px;
+}
+
+.zju-metric-card > span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.zju-metric-card > strong {
+  color: var(--text-primary);
+  font-size: 32px;
+  line-height: 1;
+}
+
+.zju-metric-card > p {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.tool-status-pill.active {
+  background: var(--calendar-workday-glow);
+  color: var(--calendar-workday);
+}
+
+.tool-status-pill.danger {
+  background: var(--status-danger-bg);
+  color: var(--status-danger);
+}
+
 .zju-course-panel,
 .zju-jobs-card,
 .zju-disabled-card {
@@ -2594,9 +2743,181 @@ ul {
   margin: 14px 0;
 }
 
+.zju-detail-layout {
+  align-items: start;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(280px, 0.38fr) minmax(0, 1fr);
+}
+
+.zju-detail-main,
+.zju-side-stack {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.zju-course-facts {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.zju-course-facts div {
+  border-bottom: 1px solid var(--glass-border);
+  display: grid;
+  gap: 4px;
+  padding-bottom: 10px;
+}
+
+.zju-course-facts div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.zju-course-facts dt {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.zju-course-facts dd {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
 .tool-empty {
   color: var(--text-tertiary);
   font-size: 13px;
+}
+
+.zju-empty-state {
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.zju-control-card {
+  padding: 16px;
+}
+
+.zju-filter-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) 180px;
+}
+
+.zju-search-field {
+  align-items: center;
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 12px;
+}
+
+.zju-search-field input {
+  background: transparent;
+  border: 0;
+  color: var(--text-primary);
+  font: inherit;
+  min-width: 0;
+  outline: none;
+  width: 100%;
+}
+
+.zju-todo-list,
+.zju-material-list,
+.zju-score-table,
+.zju-job-list {
+  display: grid;
+  gap: 10px;
+}
+
+.zju-todo-row,
+.zju-material-row,
+.zju-score-row {
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  display: flex;
+  gap: 14px;
+  min-width: 0;
+  padding: 14px;
+}
+
+.zju-todo-row,
+.zju-score-row {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.zju-todo-main {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.zju-todo-title-line {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.zju-todo-title-line strong,
+.zju-score-row strong,
+.zju-material-row strong {
+  font-size: 15px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.zju-todo-main > p,
+.zju-score-row span,
+.zju-material-row span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.zju-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.zju-tag-row span {
+  background: var(--accent-light);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 26px;
+  padding: 5px 9px;
+}
+
+.zju-score-row > div,
+.zju-material-row > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.zju-material-row {
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.zju-material-row input {
+  accent-color: var(--accent);
+  flex: 0 0 auto;
+  margin-top: 4px;
 }
 
 .zju-list {
@@ -3030,14 +3351,30 @@ ul {
   }
 
   .intro h1,
-  .tool-detail-card h1 {
+  .tool-detail-card h1,
+  .zju-tool-heading h1 {
     font-size: 34px;
   }
 
   .tool-hub-grid,
   .zju-home-grid,
-  .zju-tools-grid {
+  .zju-tools-grid,
+  .zju-tool-index,
+  .zju-info-grid,
+  .zju-metric-grid,
+  .zju-detail-layout,
+  .zju-filter-grid {
     grid-template-columns: 1fr;
+  }
+
+  .zju-tool-heading,
+  .zju-card-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .zju-heading-actions .button {
+    width: 100%;
   }
 
   .zju-materials-card,
@@ -3056,14 +3393,29 @@ ul {
   }
 
   .tool-action-row,
-  .zju-list-row {
+  .zju-list-row,
+  .zju-todo-row,
+  .zju-score-row {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .zju-suite-tool {
+    grid-template-columns: auto minmax(0, 1fr);
   }
 
   .tool-action-row .button,
   .compact-button {
     width: 100%;
+  }
+
+  .zju-metric-card {
+    min-height: auto;
+  }
+
+  .zju-todo-title-line {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .zju-row-side {

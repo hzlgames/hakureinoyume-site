@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
-import { ArrowRight, BookOpenCheck, KeyRound, Save, Trash2 } from "lucide-react";
+import { ArrowRight, BookOpen, FileDown, KeyRound, ListChecks, Save, Trash2 } from "lucide-react";
 import { DashboardCard } from "../../_components/ui";
 import { useSession } from "../../../lib/auth-client";
 
@@ -15,6 +15,27 @@ type AccountPayload = {
     username: string;
   } | null;
 };
+
+const zjuTools = [
+  {
+    href: "/tools/ZJU_tools/courses.zju/todos",
+    icon: <ListChecks size={24} />,
+    title: "待办中心",
+    text: "查看学在浙大与 Pintia 待办。"
+  },
+  {
+    href: "/tools/ZJU_tools/courses.zju/scores",
+    icon: <BookOpen size={24} />,
+    title: "成绩查询",
+    text: "按课程查看作业和考试分数。"
+  },
+  {
+    href: "/tools/ZJU_tools/courses.zju/materials",
+    icon: <FileDown size={24} />,
+    title: "课程资料",
+    text: "筛选资料并创建下载任务。"
+  }
+];
 
 export default function ZjuToolsPage() {
   const { data: session, isPending } = useSession();
@@ -195,19 +216,27 @@ export default function ZjuToolsPage() {
           </form>
         </DashboardCard>
 
-        <Link className="tool-hub-link" href="/tools/ZJU_tools/courses.zju">
-          <DashboardCard className="tool-detail-card tool-launch-card">
-            <div className="tool-hub-icon">
-              <BookOpenCheck size={26} />
-            </div>
+        <DashboardCard className="tool-detail-card">
+          <div className="zju-card-heading">
             <div>
               <p className="eyebrow">courses.zju</p>
               <h2>学在浙大</h2>
-              <p>查看待办、课程、作业考试分数，下载课程资料。</p>
             </div>
-            <ArrowRight className="tool-hub-arrow" size={20} />
-          </DashboardCard>
-        </Link>
+            <Link className="zju-text-link" href="/tools/ZJU_tools/courses.zju">
+              工具索引
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="zju-suite-grid">
+            {zjuTools.map((tool) => (
+              <Link className="zju-suite-tool" href={tool.href} key={tool.href}>
+                <span>{tool.icon}</span>
+                <strong>{tool.title}</strong>
+                <p>{tool.text}</p>
+              </Link>
+            ))}
+          </div>
+        </DashboardCard>
       </div>
     </section>
   );

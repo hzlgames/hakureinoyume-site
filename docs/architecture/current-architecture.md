@@ -22,7 +22,7 @@
 - Web UI：`src/app/page.tsx` 渲染首页，实际交互在 `src/app/home-experience.tsx`。
 - Auth UI：`/login`、`/register`、`/forgot-password`、`/reset-password` 处理账号登录、注册和密码重置。
 - Admin UI：`src/app/admin/page.tsx` 管理当前账号信息、背景图预览/裁切/保存/重置、用户列表、角色、停用、会话撤销和密码重置。
-- Tools UI：`/tools` 提供工具入口；`/tools/ZJU_tools` 管理用户级 ZJU 凭据；`/tools/ZJU_tools/courses.zju` 提供学在浙大的待办、课程、成绩、资料和下载任务界面。
+- Tools UI：`/tools` 提供工具入口；`/tools/ZJU_tools` 管理用户级 ZJU 凭据；`/tools/ZJU_tools/courses.zju` 是学在浙大工具索引，具体待办、成绩、资料下载分别在独立子页面操作。
 - API Routes：`src/app/api/**/route.ts` 提供 Better Auth、后台用户管理、背景图、天气和节日日历接口。
 - Data Layer：`prisma/schema.prisma` 定义 PostgreSQL schema，`src/lib/prisma.ts` 创建 Prisma client。
 - Static Assets：`public/` 存放背景图、小宠物 spritesheet 和其他静态资源。
@@ -60,7 +60,10 @@
 - `/reset-password`：使用 token 设置新密码。
 - `/tools`：工具箱入口页。
 - `/tools/ZJU_tools`：ZJU 工具合集页，保存或删除当前用户的 ZJU 学号、密码和可选 Pintia Cookie。
-- `/tools/ZJU_tools/courses.zju`：学在浙大工具页，支持待办、课程列表、作业/考试分数、课程资料列表和资料下载任务。
+- `/tools/ZJU_tools/courses.zju`：学在浙大工具索引页。
+- `/tools/ZJU_tools/courses.zju/todos`：待办中心，读取学在浙大与可选 Pintia 待办。
+- `/tools/ZJU_tools/courses.zju/scores`：成绩查询，按课程读取作业和考试分数。
+- `/tools/ZJU_tools/courses.zju/materials`：课程资料，按课程读取资料、选择文件、创建下载任务并管理任务产物。
 - `/api/auth/[...all]`：Better Auth 统一认证接口，支持登录、注册、登出、邮箱验证、密码重置等动作。
 - `GET /api/admin/users`：管理员分页搜索用户并读取最近审计日志。
 - `POST /api/admin/users/[userId]/role`：管理员修改用户角色，允许 `admin` 和 `user`。
