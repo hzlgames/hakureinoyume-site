@@ -48,6 +48,16 @@ export type AdminAuditLog = Prisma.AdminAuditLogModel
  */
 export type NeteaseAccount = Prisma.NeteaseAccountModel
 /**
+ * Model ZjuAccount
+ * 
+ */
+export type ZjuAccount = Prisma.ZjuAccountModel
+/**
+ * Model ZjuToolJob
+ * 
+ */
+export type ZjuToolJob = Prisma.ZjuToolJobModel
+/**
  * Model WebMusicPlaylist
  * 
  */

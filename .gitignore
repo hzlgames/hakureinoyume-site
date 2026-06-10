@@ -7,6 +7,7 @@ node_modules/
 Caddyfile
 deploy/*.service
 local-scripts/
+.data/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

@@ -525,14 +525,6 @@ export type WebMusicPlaylistSongUncheckedUpdateManyWithoutPlaylistNestedInput = 
   deleteMany?: Prisma.WebMusicPlaylistSongScalarWhereInput | Prisma.WebMusicPlaylistSongScalarWhereInput[]
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type IntFieldUpdateOperationsInput = {
   set?: number
   increment?: number

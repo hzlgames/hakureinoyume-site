@@ -20,6 +20,8 @@ Prisma 相关命令通过 `npx prisma ...` 执行。当前仓库没有单独 npm
 - `ADMIN_EMAILS`：逗号分隔的管理员邮箱。新用户创建时命中该列表会获得 `admin` 角色。
 - `NETEASE_API_BASE_URL`：网易云音乐 API 服务地址，默认开发值为 `http://localhost:3010`。生产应指向自托管 NeteaseCloudMusicApi Enhanced 或兼容服务，不建议把真实账号 cookie 发给公开演示站。
 - `NETEASE_COOKIE_SECRET`：网易云 cookie 入库加密密钥。未设置时回退使用 `BETTER_AUTH_SECRET`。
+- `ZJU_ACCOUNT_SECRET`：ZJU 密码和 Pintia Cookie 入库加密密钥。未设置时回退使用 `BETTER_AUTH_SECRET`。
+- `ZJU_TOOL_DATA_DIR`：ZJU 工具任务产物根目录。未设置时默认使用仓库内 `.data/zju-tools/`，生产需要保证服务用户可写并纳入磁盘容量管理。
 - `NODE_ENV=production`：生产服务使用。
 - `PORT=3000`：systemd 服务中声明的端口。
 
@@ -62,6 +64,8 @@ Prisma 配置在 `prisma.config.ts`，schema 在 `prisma/schema.prisma`，迁移
 
 网易云播放器需要额外运行兼容 NeteaseCloudMusicApi Enhanced 的服务。本站只保存加密后的用户级网易云 cookie；当上游返回登录失效时，`/api/music/*` 会标记该用户的网易云登录态过期并提示重新扫码。
 
+ZJU 工具直接在 Next.js Node runtime 内调用 `login-zju` 和学在浙大 API。本站只保存加密后的用户级 ZJU 密码和可选 Pintia Cookie；资料下载任务会写入 `ZjuToolJob` 并使用用户专属工作目录。生产环境需要执行迁移 `0005_zju_tools`，并确认 `ZJU_TOOL_DATA_DIR` 或默认 `.data/zju-tools/` 对服务进程可写。
+
 `out/` 是生成产物，已在 ESLint 和 Git 忽略配置中排除。维护文档时不要把 `out/` 当作源码事实来源。
 
 ## 故障排查
@@ -72,4 +76,6 @@ Prisma 配置在 `prisma.config.ts`，schema 在 `prisma/schema.prisma`，迁移
 - 登录后保存背景失败：检查 session 是否过期、用户是否为 admin、请求是否命中 `/api/background`，确认服务进程对 `public/backgrounds` 有写权限。
 - 保存后前台仍显示旧背景：检查 API 返回的 `?v=<mtime>` 是否变化，必要时刷新浏览器缓存。
 - 生产 API 404 或不可用：确认服务不是静态文件托管，必须是 `npm run start` 后由 Caddy 代理。
+- ZJU 工具提示未保存账号：确认用户已登录本站并在 `/tools/ZJU_tools` 保存过学号和密码。
+- ZJU 资料下载失败：检查 ZJU 凭据是否有效、服务进程是否能写入 `ZJU_TOOL_DATA_DIR`，以及任务日志中的 HTTP 状态。
 - 样式异常：优先检查 `src/app/globals.css` 中变量和响应式断点，再检查 `site-theme.ts` 注入的 CSS 变量。

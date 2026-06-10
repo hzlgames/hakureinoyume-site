@@ -23,6 +23,8 @@ model User {
   accounts          Account[]
   auditLogs         AdminAuditLog[]    @relation("AuditActor")
   neteaseAccount    NeteaseAccount?
+  zjuAccount        ZjuAccount?
+  zjuToolJobs       ZjuToolJob[]
   webMusicPlaylists WebMusicPlaylist[]
 
   @@map("user")
@@ -110,6 +112,47 @@ model NeteaseAccount {
 
   @@index([neteaseUserId])
   @@index([loginStatus])
+}
+
+model ZjuAccount {
+  id                 String    @id @default(cuid())
+  userId             String    @unique
+  username           String
+  passwordCiphertext String
+  passwordIv         String
+  passwordTag        String
+  pintiaCiphertext   String?
+  pintiaIv           String?
+  pintiaTag          String?
+  lastValidatedAt    DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([username])
+}
+
+model ZjuToolJob {
+  id          String    @id @default(cuid())
+  userId      String
+  tool        String
+  status      String    @default("queued")
+  input       Json?
+  output      Json?
+  logs        String    @default("")
+  error       String?
+  workDir     String?
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  exitCode    Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tool])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model WebMusicPlaylist {

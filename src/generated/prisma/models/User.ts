@@ -234,6 +234,8 @@ export type UserWhereInput = {
   accounts?: Prisma.AccountListRelationFilter
   auditLogs?: Prisma.AdminAuditLogListRelationFilter
   neteaseAccount?: Prisma.XOR<Prisma.NeteaseAccountNullableScalarRelationFilter, Prisma.NeteaseAccountWhereInput> | null
+  zjuAccount?: Prisma.XOR<Prisma.ZjuAccountNullableScalarRelationFilter, Prisma.ZjuAccountWhereInput> | null
+  zjuToolJobs?: Prisma.ZjuToolJobListRelationFilter
   webMusicPlaylists?: Prisma.WebMusicPlaylistListRelationFilter
 }
 
@@ -253,6 +255,8 @@ export type UserOrderByWithRelationInput = {
   accounts?: Prisma.AccountOrderByRelationAggregateInput
   auditLogs?: Prisma.AdminAuditLogOrderByRelationAggregateInput
   neteaseAccount?: Prisma.NeteaseAccountOrderByWithRelationInput
+  zjuAccount?: Prisma.ZjuAccountOrderByWithRelationInput
+  zjuToolJobs?: Prisma.ZjuToolJobOrderByRelationAggregateInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistOrderByRelationAggregateInput
 }
 
@@ -275,6 +279,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   accounts?: Prisma.AccountListRelationFilter
   auditLogs?: Prisma.AdminAuditLogListRelationFilter
   neteaseAccount?: Prisma.XOR<Prisma.NeteaseAccountNullableScalarRelationFilter, Prisma.NeteaseAccountWhereInput> | null
+  zjuAccount?: Prisma.XOR<Prisma.ZjuAccountNullableScalarRelationFilter, Prisma.ZjuAccountWhereInput> | null
+  zjuToolJobs?: Prisma.ZjuToolJobListRelationFilter
   webMusicPlaylists?: Prisma.WebMusicPlaylistListRelationFilter
 }, "id" | "email">
 
@@ -328,6 +334,8 @@ export type UserCreateInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobCreateNestedManyWithoutUserInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistCreateNestedManyWithoutUserInput
 }
 
@@ -347,6 +355,8 @@ export type UserUncheckedCreateInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedCreateNestedManyWithoutUserInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -366,6 +376,8 @@ export type UserUpdateInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUpdateManyWithoutUserNestedInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistUpdateManyWithoutUserNestedInput
 }
 
@@ -385,6 +397,8 @@ export type UserUncheckedUpdateInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedUpdateManyWithoutUserNestedInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -564,6 +578,34 @@ export type UserUpdateOneRequiredWithoutNeteaseAccountNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutNeteaseAccountInput, Prisma.UserUpdateWithoutNeteaseAccountInput>, Prisma.UserUncheckedUpdateWithoutNeteaseAccountInput>
 }
 
+export type UserCreateNestedOneWithoutZjuAccountInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutZjuAccountInput, Prisma.UserUncheckedCreateWithoutZjuAccountInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutZjuAccountInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutZjuAccountNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutZjuAccountInput, Prisma.UserUncheckedCreateWithoutZjuAccountInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutZjuAccountInput
+  upsert?: Prisma.UserUpsertWithoutZjuAccountInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutZjuAccountInput, Prisma.UserUpdateWithoutZjuAccountInput>, Prisma.UserUncheckedUpdateWithoutZjuAccountInput>
+}
+
+export type UserCreateNestedOneWithoutZjuToolJobsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutZjuToolJobsInput, Prisma.UserUncheckedCreateWithoutZjuToolJobsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutZjuToolJobsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutZjuToolJobsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutZjuToolJobsInput, Prisma.UserUncheckedCreateWithoutZjuToolJobsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutZjuToolJobsInput
+  upsert?: Prisma.UserUpsertWithoutZjuToolJobsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutZjuToolJobsInput, Prisma.UserUpdateWithoutZjuToolJobsInput>, Prisma.UserUncheckedUpdateWithoutZjuToolJobsInput>
+}
+
 export type UserCreateNestedOneWithoutWebMusicPlaylistsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutWebMusicPlaylistsInput, Prisma.UserUncheckedCreateWithoutWebMusicPlaylistsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutWebMusicPlaylistsInput
@@ -593,6 +635,8 @@ export type UserCreateWithoutSessionsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobCreateNestedManyWithoutUserInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistCreateNestedManyWithoutUserInput
 }
 
@@ -611,6 +655,8 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedCreateNestedManyWithoutUserInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -645,6 +691,8 @@ export type UserUpdateWithoutSessionsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUpdateManyWithoutUserNestedInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistUpdateManyWithoutUserNestedInput
 }
 
@@ -663,6 +711,8 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedUpdateManyWithoutUserNestedInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -681,6 +731,8 @@ export type UserCreateWithoutAccountsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobCreateNestedManyWithoutUserInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistCreateNestedManyWithoutUserInput
 }
 
@@ -699,6 +751,8 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedCreateNestedManyWithoutUserInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -733,6 +787,8 @@ export type UserUpdateWithoutAccountsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUpdateManyWithoutUserNestedInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistUpdateManyWithoutUserNestedInput
 }
 
@@ -751,6 +807,8 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedUpdateManyWithoutUserNestedInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -769,6 +827,8 @@ export type UserCreateWithoutAuditLogsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobCreateNestedManyWithoutUserInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistCreateNestedManyWithoutUserInput
 }
 
@@ -787,6 +847,8 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedCreateNestedManyWithoutUserInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -821,6 +883,8 @@ export type UserUpdateWithoutAuditLogsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUpdateManyWithoutUserNestedInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistUpdateManyWithoutUserNestedInput
 }
 
@@ -839,6 +903,8 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedUpdateManyWithoutUserNestedInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -857,6 +923,8 @@ export type UserCreateWithoutNeteaseAccountInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
+  zjuAccount?: Prisma.ZjuAccountCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobCreateNestedManyWithoutUserInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistCreateNestedManyWithoutUserInput
 }
 
@@ -875,6 +943,8 @@ export type UserUncheckedCreateWithoutNeteaseAccountInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedCreateNestedManyWithoutUserInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -909,6 +979,8 @@ export type UserUpdateWithoutNeteaseAccountInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
+  zjuAccount?: Prisma.ZjuAccountUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUpdateManyWithoutUserNestedInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistUpdateManyWithoutUserNestedInput
 }
 
@@ -927,6 +999,200 @@ export type UserUncheckedUpdateWithoutNeteaseAccountInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedUpdateManyWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutZjuAccountInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
+  neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobCreateNestedManyWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutZjuAccountInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
+  neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedCreateNestedManyWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutZjuAccountInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutZjuAccountInput, Prisma.UserUncheckedCreateWithoutZjuAccountInput>
+}
+
+export type UserUpsertWithoutZjuAccountInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutZjuAccountInput, Prisma.UserUncheckedUpdateWithoutZjuAccountInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutZjuAccountInput, Prisma.UserUncheckedCreateWithoutZjuAccountInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutZjuAccountInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutZjuAccountInput, Prisma.UserUncheckedUpdateWithoutZjuAccountInput>
+}
+
+export type UserUpdateWithoutZjuAccountInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
+  neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUpdateManyWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutZjuAccountInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
+  neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedUpdateManyWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutZjuToolJobsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
+  neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountCreateNestedOneWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutZjuToolJobsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
+  neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedCreateNestedOneWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutZjuToolJobsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutZjuToolJobsInput, Prisma.UserUncheckedCreateWithoutZjuToolJobsInput>
+}
+
+export type UserUpsertWithoutZjuToolJobsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutZjuToolJobsInput, Prisma.UserUncheckedUpdateWithoutZjuToolJobsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutZjuToolJobsInput, Prisma.UserUncheckedCreateWithoutZjuToolJobsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutZjuToolJobsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutZjuToolJobsInput, Prisma.UserUncheckedUpdateWithoutZjuToolJobsInput>
+}
+
+export type UserUpdateWithoutZjuToolJobsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
+  neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUpdateOneWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutZjuToolJobsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
+  neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedUpdateOneWithoutUserNestedInput
   webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -946,6 +1212,8 @@ export type UserCreateWithoutWebMusicPlaylistsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutWebMusicPlaylistsInput = {
@@ -964,6 +1232,8 @@ export type UserUncheckedCreateWithoutWebMusicPlaylistsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutWebMusicPlaylistsInput = {
@@ -998,6 +1268,8 @@ export type UserUpdateWithoutWebMusicPlaylistsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWebMusicPlaylistsInput = {
@@ -1016,6 +1288,8 @@ export type UserUncheckedUpdateWithoutWebMusicPlaylistsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -1027,6 +1301,7 @@ export type UserCountOutputType = {
   sessions: number
   accounts: number
   auditLogs: number
+  zjuToolJobs: number
   webMusicPlaylists: number
 }
 
@@ -1034,6 +1309,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
+  zjuToolJobs?: boolean | UserCountOutputTypeCountZjuToolJobsArgs
   webMusicPlaylists?: boolean | UserCountOutputTypeCountWebMusicPlaylistsArgs
 }
 
@@ -1071,6 +1347,13 @@ export type UserCountOutputTypeCountAuditLogsArgs<ExtArgs extends runtime.Types.
 /**
  * UserCountOutputType without action
  */
+export type UserCountOutputTypeCountZjuToolJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ZjuToolJobWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
 export type UserCountOutputTypeCountWebMusicPlaylistsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.WebMusicPlaylistWhereInput
 }
@@ -1092,6 +1375,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   neteaseAccount?: boolean | Prisma.User$neteaseAccountArgs<ExtArgs>
+  zjuAccount?: boolean | Prisma.User$zjuAccountArgs<ExtArgs>
+  zjuToolJobs?: boolean | Prisma.User$zjuToolJobsArgs<ExtArgs>
   webMusicPlaylists?: boolean | Prisma.User$webMusicPlaylistsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
@@ -1144,6 +1429,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   neteaseAccount?: boolean | Prisma.User$neteaseAccountArgs<ExtArgs>
+  zjuAccount?: boolean | Prisma.User$zjuAccountArgs<ExtArgs>
+  zjuToolJobs?: boolean | Prisma.User$zjuToolJobsArgs<ExtArgs>
   webMusicPlaylists?: boolean | Prisma.User$webMusicPlaylistsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -1157,6 +1444,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     accounts: Prisma.$AccountPayload<ExtArgs>[]
     auditLogs: Prisma.$AdminAuditLogPayload<ExtArgs>[]
     neteaseAccount: Prisma.$NeteaseAccountPayload<ExtArgs> | null
+    zjuAccount: Prisma.$ZjuAccountPayload<ExtArgs> | null
+    zjuToolJobs: Prisma.$ZjuToolJobPayload<ExtArgs>[]
     webMusicPlaylists: Prisma.$WebMusicPlaylistPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1569,6 +1858,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   auditLogs<T extends Prisma.User$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdminAuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   neteaseAccount<T extends Prisma.User$neteaseAccountArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$neteaseAccountArgs<ExtArgs>>): Prisma.Prisma__NeteaseAccountClient<runtime.Types.Result.GetResult<Prisma.$NeteaseAccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  zjuAccount<T extends Prisma.User$zjuAccountArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$zjuAccountArgs<ExtArgs>>): Prisma.Prisma__ZjuAccountClient<runtime.Types.Result.GetResult<Prisma.$ZjuAccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  zjuToolJobs<T extends Prisma.User$zjuToolJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$zjuToolJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ZjuToolJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   webMusicPlaylists<T extends Prisma.User$webMusicPlaylistsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$webMusicPlaylistsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WebMusicPlaylistPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -2091,6 +2382,49 @@ export type User$neteaseAccountArgs<ExtArgs extends runtime.Types.Extensions.Int
    */
   include?: Prisma.NeteaseAccountInclude<ExtArgs> | null
   where?: Prisma.NeteaseAccountWhereInput
+}
+
+/**
+ * User.zjuAccount
+ */
+export type User$zjuAccountArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ZjuAccount
+   */
+  select?: Prisma.ZjuAccountSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ZjuAccount
+   */
+  omit?: Prisma.ZjuAccountOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ZjuAccountInclude<ExtArgs> | null
+  where?: Prisma.ZjuAccountWhereInput
+}
+
+/**
+ * User.zjuToolJobs
+ */
+export type User$zjuToolJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ZjuToolJob
+   */
+  select?: Prisma.ZjuToolJobSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ZjuToolJob
+   */
+  omit?: Prisma.ZjuToolJobOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ZjuToolJobInclude<ExtArgs> | null
+  where?: Prisma.ZjuToolJobWhereInput
+  orderBy?: Prisma.ZjuToolJobOrderByWithRelationInput | Prisma.ZjuToolJobOrderByWithRelationInput[]
+  cursor?: Prisma.ZjuToolJobWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ZjuToolJobScalarFieldEnum | Prisma.ZjuToolJobScalarFieldEnum[]
 }
 
 /**

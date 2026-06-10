@@ -2359,6 +2359,348 @@ ul {
   padding: 28px;
 }
 
+/* Tools */
+.page-shell {
+  margin: 0 auto;
+  max-width: 1240px;
+  padding: 104px 24px 48px;
+}
+
+.intro {
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.intro h1,
+.tool-detail-card h1 {
+  font-size: 42px;
+  letter-spacing: 0;
+  line-height: 1.1;
+  margin-top: 6px;
+}
+
+.lead {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-top: 10px;
+  max-width: 720px;
+}
+
+.secondary-button {
+  background: var(--accent-light);
+  color: var(--text-primary);
+}
+
+.secondary-button:hover {
+  background: var(--calendar-day-hover-bg);
+}
+
+.tools-page {
+  min-height: 100vh;
+}
+
+.tools-intro {
+  max-width: 760px;
+}
+
+.tool-hub-grid,
+.zju-home-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.tool-hub-link {
+  display: block;
+  min-width: 0;
+}
+
+.tool-hub-card,
+.tool-launch-card {
+  align-items: center;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 150px;
+  gap: 18px;
+  position: relative;
+}
+
+.tool-hub-card h2,
+.tool-detail-card h2 {
+  font-size: 22px;
+  letter-spacing: 0;
+  margin: 4px 0 8px;
+}
+
+.tool-hub-card p:not(.eyebrow),
+.tool-detail-card p:not(.eyebrow) {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.tool-hub-icon {
+  align-items: center;
+  background: var(--accent-light);
+  border-radius: 14px;
+  color: var(--accent);
+  display: inline-flex;
+  height: 54px;
+  justify-content: center;
+  width: 54px;
+}
+
+.tool-hub-arrow {
+  color: var(--text-tertiary);
+}
+
+.tool-hub-card-muted {
+  opacity: 0.7;
+}
+
+.tool-detail-card {
+  min-width: 0;
+}
+
+.tool-form {
+  display: grid;
+  gap: 14px;
+}
+
+.tool-form label {
+  color: var(--text-secondary);
+  display: grid;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 8px;
+}
+
+.tool-form input,
+.tool-form textarea,
+.tool-select {
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font: inherit;
+  outline: none;
+  padding: 0 12px;
+  width: 100%;
+}
+
+.tool-form input,
+.tool-select {
+  min-height: 42px;
+}
+
+.tool-form textarea {
+  min-height: 96px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.tool-form input:focus,
+.tool-form textarea:focus,
+.tool-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.tool-action-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tool-inline-button {
+  margin-top: 16px;
+}
+
+.tool-status-pill {
+  align-items: center;
+  background: var(--status-ok-bg);
+  border-radius: 999px;
+  color: var(--status-ok);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  min-height: 28px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.tool-status-pill.muted {
+  background: var(--accent-light);
+  color: var(--text-secondary);
+}
+
+.zju-tools-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.1fr);
+  gap: 18px;
+}
+
+.zju-course-panel,
+.zju-jobs-card,
+.zju-disabled-card {
+  align-self: start;
+}
+
+.zju-materials-card,
+.zju-jobs-card {
+  grid-column: span 2;
+}
+
+.zju-page-message {
+  margin-bottom: 16px;
+}
+
+.icon-action-button {
+  align-items: center;
+  background: var(--accent-light);
+  border: 0;
+  border-radius: 999px;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: inline-flex;
+  height: 36px;
+  justify-content: center;
+  transition: transform 0.2s ease, background 0.2s ease;
+  width: 36px;
+}
+
+.icon-action-button:hover {
+  background: var(--calendar-day-hover-bg);
+  transform: translateY(-1px);
+}
+
+.compact-button {
+  min-height: 34px;
+  padding: 0 12px;
+}
+
+.zju-course-meta {
+  color: var(--text-secondary);
+  display: grid;
+  font-size: 13px;
+  gap: 6px;
+  margin: 14px 0;
+}
+
+.tool-empty {
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+
+.zju-list {
+  display: grid;
+  gap: 10px;
+  max-height: 520px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.zju-list-row {
+  align-items: center;
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 12px;
+}
+
+.zju-list-row strong,
+.zju-list-row span {
+  display: block;
+  min-width: 0;
+}
+
+.zju-list-row strong {
+  font-size: 14px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.zju-list-row span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+  margin-top: 3px;
+}
+
+.zju-row-side {
+  align-items: center;
+  color: var(--text-secondary);
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.zju-checkbox-row {
+  cursor: pointer;
+  justify-content: flex-start;
+}
+
+.zju-checkbox-row input {
+  accent-color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.zju-job {
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.zju-job-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.zju-job pre {
+  color: var(--text-secondary);
+  font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  max-height: 160px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.zju-file-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.zju-file-links a {
+  align-items: center;
+  background: var(--accent-light);
+  border-radius: 999px;
+  color: var(--text-primary);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 10px;
+}
+
 .auth-required-card p {
   color: var(--text-secondary);
 }
@@ -2681,6 +3023,55 @@ ul {
   .admin-card,
   .auth-card {
     padding: 18px;
+  }
+
+  .page-shell {
+    padding: 82px 14px 32px;
+  }
+
+  .intro h1,
+  .tool-detail-card h1 {
+    font-size: 34px;
+  }
+
+  .tool-hub-grid,
+  .zju-home-grid,
+  .zju-tools-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .zju-materials-card,
+  .zju-jobs-card {
+    grid-column: auto;
+  }
+
+  .tool-hub-card,
+  .tool-launch-card {
+    grid-template-columns: auto minmax(0, 1fr);
+    min-height: 132px;
+  }
+
+  .tool-hub-arrow {
+    display: none;
+  }
+
+  .tool-action-row,
+  .zju-list-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tool-action-row .button,
+  .compact-button {
+    width: 100%;
+  }
+
+  .zju-row-side {
+    justify-content: space-between;
+  }
+
+  .zju-list {
+    max-height: none;
   }
 
   .netease-now {
