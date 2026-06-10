@@ -104,6 +104,18 @@ function formatClock(value: number) {
   return `${minutes}:${String(Math.floor(value % 60)).padStart(2, "0")}`;
 }
 
+class ApiError extends Error {
+  code?: string;
+  status: number;
+
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
 async function fetchJson<T>(url: string, init?: RequestInit) {
   const response = await fetch(url, {
     cache: "no-store",
@@ -117,7 +129,7 @@ async function fetchJson<T>(url: string, init?: RequestInit) {
   const data = await response.json() as T & { message?: string; error?: string };
 
   if (!response.ok) {
-    throw new Error(data.message || data.error || "请求失败");
+    throw new ApiError(data.message || data.error || "请求失败", response.status, data.error);
   }
 
   return data;
@@ -193,6 +205,24 @@ export function NeteasePlayer() {
     });
   }, []);
 
+  // When any NetEase call comes back with an expired login (the server has
+  // already marked the stored cookie expired), flip the UI back to the
+  // disconnected state so the 连接 button reappears instead of leaving a stale
+  // "connected" account chip that silently fails every request.
+  const handleNeteaseExpiry = useCallback((error: unknown) => {
+    if (!(error instanceof ApiError) || error.code !== "netease_login_required") {
+      return false;
+    }
+
+    setAccount((current) => ({ ...current, neteaseAuthenticated: false, profile: null, expired: true }));
+    setPlaylists([]);
+    setSelectedPlaylist(null);
+    setPlaylistTracks([]);
+    setNeteaseLikedSongIds([]);
+    setMessage("网易云登录态已失效，请重新扫码登录。");
+    return true;
+  }, []);
+
   const loadAccount = useCallback(async () => {
     const data = await fetchJson<AccountState>(`/api/music/me?t=${Date.now()}`);
     setAccount(data);
@@ -229,12 +259,17 @@ export function NeteasePlayer() {
       }
 
       return data.playlists;
+    } catch (error) {
+      if (requestId === neteasePlaylistsRequestIdRef.current) {
+        handleNeteaseExpiry(error);
+      }
+      throw error;
     } finally {
       if (requestId === neteasePlaylistsRequestIdRef.current) {
         setIsNeteasePlaylistsLoading(false);
       }
     }
-  }, []);
+  }, [handleNeteaseExpiry]);
 
   const loadWebPlaylist = useCallback(async (options: { announce?: boolean } = {}) => {
     const requestId = webPlaylistRequestIdRef.current + 1;
@@ -332,14 +367,6 @@ export function NeteasePlayer() {
       setIsLoading(false);
     }
   }, [searchType]);
-
-  const loadPlaylists = useCallback(async () => {
-    try {
-      await loadPlaylistsForAccount(account, { announce: true });
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "歌单读取失败。");
-    }
-  }, [account, loadPlaylistsForAccount]);
 
   useEffect(() => {
     loadAccount().then((nextAccount) => {
@@ -551,7 +578,7 @@ export function NeteasePlayer() {
       setQueue(data.songs);
       setMessage(`已载入 ${playlist.name}。`);
     } catch (error) {
-      if (requestId === playlistTracksRequestIdRef.current) {
+      if (requestId === playlistTracksRequestIdRef.current && !handleNeteaseExpiry(error)) {
         setMessage(error instanceof Error ? error.message : "歌单歌曲读取失败。");
       }
     } finally {
@@ -704,7 +731,9 @@ export function NeteasePlayer() {
       setNeteaseLikedSongIds((current) => current.includes(song.id) ? current : [...current, song.id]);
       setMessage(`已收藏到网易云：${song.name}`);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "网易云收藏失败。");
+      if (!handleNeteaseExpiry(error)) {
+        setMessage(error instanceof Error ? error.message : "网易云收藏失败。");
+      }
     } finally {
       markSongPending(song.id, false);
     }
@@ -749,7 +778,7 @@ export function NeteasePlayer() {
         return;
       }
 
-      if (requestId === playRequestIdRef.current) {
+      if (requestId === playRequestIdRef.current && !handleNeteaseExpiry(error)) {
         setMessage(error instanceof Error ? error.message : "播放链接获取失败。");
       }
     } finally {
@@ -972,30 +1001,32 @@ export function NeteasePlayer() {
         <button type="submit">搜索</button>
       </form>
 
-      <div className="netease-search-types" aria-label="搜索类型">
-        <button
-          className={searchType === "songs" ? "active" : ""}
-          type="button"
-          onClick={() => {
-            setSearchType("songs");
-            setMode("search");
-            runSearch(query, "songs").catch(() => setMessage("搜索失败。"));
-          }}
-        >
-          <Music size={14} /> 单曲
-        </button>
-        <button
-          className={searchType === "albums" ? "active" : ""}
-          type="button"
-          onClick={() => {
-            setSearchType("albums");
-            setMode("search");
-            runSearch(query, "albums").catch(() => setMessage("专辑搜索失败。"));
-          }}
-        >
-          <Album size={14} /> 专辑
-        </button>
-      </div>
+      {mode === "search" ? (
+        <div className="netease-search-types" aria-label="搜索类型">
+          <button
+            className={searchType === "songs" ? "active" : ""}
+            type="button"
+            onClick={() => {
+              setSearchType("songs");
+              setMode("search");
+              runSearch(query, "songs").catch(() => setMessage("搜索失败。"));
+            }}
+          >
+            <Music size={14} /> 单曲
+          </button>
+          <button
+            className={searchType === "albums" ? "active" : ""}
+            type="button"
+            onClick={() => {
+              setSearchType("albums");
+              setMode("search");
+              runSearch(query, "albums").catch(() => setMessage("专辑搜索失败。"));
+            }}
+          >
+            <Album size={14} /> 专辑
+          </button>
+        </div>
+      ) : null}
 
       <div className="netease-tabs">
         <button className={mode === "search" ? "active" : ""} type="button" onClick={() => setMode("search")}>
@@ -1018,8 +1049,8 @@ export function NeteasePlayer() {
           type="button"
           onClick={() => {
             setMode("netease");
-            if (account.neteaseAuthenticated && playlists.length === 0) {
-              loadPlaylists().catch(() => undefined);
+            if (account.neteaseAuthenticated) {
+              loadPlaylistsForAccount(account).catch(() => undefined);
             }
           }}
         >

@@ -303,7 +303,19 @@ async function handleMe() {
     });
   }
 
-  const status = await requestNetease("/login/status", {}, { cookie: account.cookie });
+  let status;
+  try {
+    status = await requestNetease("/login/status", {}, { cookie: account.cookie });
+  } catch {
+    // The upstream NetEase API is briefly unreachable. Don't mark the account
+    // expired or drop the session — keep the last known good profile so a
+    // transient outage doesn't log the user out of the panel.
+    return json({
+      siteAuthenticated: true,
+      neteaseAuthenticated: true,
+      profile: account.profile
+    });
+  }
 
   if (isLoginExpiredPayload(status.payload)) {
     await markStoredNeteaseAccountExpired(session.user.id);
