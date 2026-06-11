@@ -37,12 +37,24 @@ const zjuTools = [
   }
 ];
 
+function formatAccountTime(value: string | null) {
+  if (!value) return "尚未验证";
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(new Date(value));
+}
+
 export default function ZjuToolsPage() {
   const { data: session, isPending } = useSession();
   const [account, setAccount] = useState<AccountPayload["account"]>(null);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [pintiaCookie, setPintiaCookie] = useState("");
+  const [clearPintiaCookie, setClearPintiaCookie] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
@@ -91,7 +103,8 @@ export default function ZjuToolsPage() {
       body: JSON.stringify({
         username,
         password,
-        pintiaCookie
+        ...(pintiaCookie.trim() ? { pintiaCookie } : {}),
+        clearPintiaCookie
       })
     });
     const payload = await response.json() as AccountPayload & { message?: string };
@@ -105,7 +118,8 @@ export default function ZjuToolsPage() {
     setAccount(payload.account);
     setPassword("");
     setPintiaCookie("");
-    setNotice("ZJU 账号已保存。");
+    setClearPintiaCookie(false);
+    setNotice("ZJU 账号已验证并保存。");
   }
 
   async function deleteAccount() {
@@ -124,6 +138,7 @@ export default function ZjuToolsPage() {
     setUsername("");
     setPassword("");
     setPintiaCookie("");
+    setClearPintiaCookie(false);
     setNotice("ZJU 账号已删除。");
   }
 
@@ -168,6 +183,12 @@ export default function ZjuToolsPage() {
             </div>
             {account ? <span className="tool-status-pill">已保存</span> : <span className="tool-status-pill muted">未保存</span>}
           </div>
+          {account ? (
+            <p className="tool-account-meta">
+              {account.username} · 上次验证 {formatAccountTime(account.lastValidatedAt)}
+              {account.hasPintiaCookie ? " · Pintia 已配置" : ""}
+            </p>
+          ) : null}
           <form className="tool-form" onSubmit={saveAccount}>
             <label>
               <span>学号</span>
@@ -184,7 +205,7 @@ export default function ZjuToolsPage() {
               <input
                 autoComplete="current-password"
                 onChange={(event) => setPassword(event.target.value)}
-                placeholder={account ? "留空不会保存，请重新输入后更新" : ""}
+                placeholder={account ? "留空沿用已保存密码" : ""}
                 required={!account}
                 type="password"
                 value={password}
@@ -193,16 +214,29 @@ export default function ZjuToolsPage() {
             <label>
               <span>Pintia Cookie</span>
               <textarea
-                onChange={(event) => setPintiaCookie(event.target.value)}
+                onChange={(event) => {
+                  setPintiaCookie(event.target.value);
+                  if (event.target.value.trim()) setClearPintiaCookie(false);
+                }}
                 placeholder={account?.hasPintiaCookie ? "已保存；如需更新请重新粘贴" : "可选，仅用于合并 Pintia 待办"}
                 rows={4}
                 value={pintiaCookie}
               />
             </label>
+            {account?.hasPintiaCookie ? (
+              <label className="tool-checkbox-label">
+                <input
+                  checked={clearPintiaCookie}
+                  onChange={(event) => setClearPintiaCookie(event.target.checked)}
+                  type="checkbox"
+                />
+                <span>清除已保存的 Pintia Cookie</span>
+              </label>
+            ) : null}
             <div className="tool-action-row">
-              <button className="button primary-button" disabled={saving || (!password && Boolean(account))} type="submit">
+              <button className="button primary-button" disabled={saving || !username.trim() || (!password && !account)} type="submit">
                 <Save size={18} />
-                {saving ? "保存中" : account ? "更新账号" : "保存账号"}
+                {saving ? "验证中" : account ? "更新账号" : "保存账号"}
               </button>
               {account ? (
                 <button className="button secondary-button" onClick={deleteAccount} type="button">

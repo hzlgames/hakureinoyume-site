@@ -6,5 +6,6 @@ declare module "login-zju" {
   export class COURSES {
     constructor(auth: ZJUAM);
     fetch(input: string | URL, init?: RequestInit): Promise<Response>;
+    login(): Promise<boolean>;
   }
 }

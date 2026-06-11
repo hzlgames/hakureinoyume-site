@@ -1,6 +1,6 @@
 import prisma from "../../../../lib/prisma";
 import { createMaterialDownloadJob } from "../../../../lib/zju";
-import { readJsonBody, requireUser, routeError, zjuJson } from "../_shared";
+import { readJsonBody, requireUser, routeError, serializeZjuJob, zjuJson } from "../_shared";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
       take: 20
     });
-    return zjuJson({ jobs });
+    return zjuJson({ jobs: jobs.map(serializeZjuJob) });
   } catch (error) {
     return routeError(error);
   }
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       courseId,
       selectedIds
     });
-    return zjuJson({ job }, { status: 201 });
+    return zjuJson({ job: serializeZjuJob(job) }, { status: 201 });
   } catch (error) {
     return routeError(error);
   }

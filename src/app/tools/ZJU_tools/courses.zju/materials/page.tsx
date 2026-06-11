@@ -55,8 +55,12 @@ export default function ZjuMaterialsPage() {
   }, []);
 
   const loadJobs = useCallback(async () => {
-    const payload = await fetchJson<{ jobs?: Job[] }>("/api/zju/jobs");
-    setJobs(payload.jobs ?? []);
+    try {
+      const payload = await fetchJson<{ jobs?: Job[] }>("/api/zju/jobs");
+      setJobs(payload.jobs ?? []);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "任务读取失败。");
+    }
   }, []);
 
   const loadMaterials = useCallback(async () => {
@@ -94,7 +98,7 @@ export default function ZjuMaterialsPage() {
     return materials.filter((material) => `${material.name} ${material.activityTitle}`.toLowerCase().includes(keyword));
   }, [materials, query]);
 
-  const selectedSize = filteredMaterials
+  const selectedSize = materials
     .filter((material) => selectedMaterials.has(String(material.id)))
     .reduce((sum, material) => sum + material.size, 0);
 
@@ -124,10 +128,22 @@ export default function ZjuMaterialsPage() {
   }
 
   async function cancelJob(jobId: string) {
-    await fetch(`/api/zju/jobs/${jobId}`, {
-      method: "DELETE"
-    });
-    await loadJobs();
+    setError("");
+    try {
+      await fetchJson<{ ok: boolean }>(`/api/zju/jobs/${jobId}`, {
+        method: "DELETE"
+      });
+      await loadJobs();
+    } catch (cancelError) {
+      setError(cancelError instanceof Error ? cancelError.message : "任务取消失败。");
+    }
+  }
+
+  function selectCourse(courseId: string) {
+    setSelectedCourseId(courseId);
+    setMaterials([]);
+    setSelectedMaterials(new Set());
+    setQuery("");
   }
 
   function toggleMaterial(id: string, checked: boolean) {
@@ -184,7 +200,7 @@ export default function ZjuMaterialsPage() {
               courses={courses}
               disabled={loading === "courses"}
               onRefresh={loadCourses}
-              onSelect={setSelectedCourseId}
+              onSelect={selectCourse}
               selectedCourseId={selectedCourseId}
             />
             <DashboardCard className="tool-detail-card">
@@ -281,6 +297,7 @@ export default function ZjuMaterialsPage() {
                         ) : null}
                       </div>
                       <pre>{job.logs || job.error || "等待开始..."}</pre>
+                      {job.error && job.logs ? <p className="zju-job-error">{job.error}</p> : null}
                       {files.length > 0 ? (
                         <div className="zju-file-links">
                           {files.map((file) => (

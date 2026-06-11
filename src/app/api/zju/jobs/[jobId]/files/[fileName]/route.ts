@@ -17,6 +17,11 @@ function asRecord(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null ? value as Record<string, unknown> : {};
 }
 
+function isInsideDirectory(childPath: string, parentPath: string) {
+  const relativePath = path.relative(path.resolve(parentPath), path.resolve(childPath));
+  return relativePath === "" || (!relativePath.startsWith("..") && !path.isAbsolute(relativePath));
+}
+
 export async function GET(_request: Request, context: Context) {
   const user = await requireUser();
   if (!user.ok) return user.response;
@@ -40,7 +45,13 @@ export async function GET(_request: Request, context: Context) {
       .map(asRecord)
       .find((item) => typeof item.name === "string" && item.name === fileName);
 
-    if (!file || typeof file.path !== "string" || path.basename(file.path) !== fileName) {
+    if (
+      !file
+      || typeof file.path !== "string"
+      || !job.workDir
+      || path.basename(file.path) !== fileName
+      || !isInsideDirectory(file.path, job.workDir)
+    ) {
       return zjuJson({ error: "not_found", message: "文件不存在。" }, { status: 404 });
     }
 

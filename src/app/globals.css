@@ -173,6 +173,7 @@ ul {
   position: relative;
   padding: 8px 0;
   cursor: pointer;
+  text-decoration: none;
   transition: color 0.2s;
 }
 
@@ -400,9 +401,18 @@ ul {
   gap: 16px;
   padding: 16px 24px;
   cursor: pointer;
+  color: inherit;
+  text-decoration: none;
   width: 240px;
   margin-left: 260px; /* offset from mascot */
   margin-top: 120px;
+}
+
+.nav-item:focus-visible,
+.tools-entry:focus-visible,
+.tool-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
 }
 
 .tools-entry-icon {
@@ -1866,6 +1876,7 @@ ul {
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .tool-icon {
@@ -1884,6 +1895,10 @@ ul {
   background: var(--accent);
   color: white;
   transform: translateY(-2px);
+}
+
+.tool-item:hover .tool-name {
+  color: var(--accent);
 }
 
 .tool-name {
@@ -2473,6 +2488,13 @@ ul {
   gap: 14px;
 }
 
+.tool-account-meta {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
 .tool-form label {
   color: var(--text-secondary);
   display: grid;
@@ -2510,6 +2532,21 @@ ul {
 .tool-select:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.tool-checkbox-label {
+  align-items: center;
+  color: var(--text-secondary);
+  display: flex;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 10px;
+}
+
+.tool-checkbox-label input {
+  accent-color: var(--accent);
+  height: 16px;
+  width: 16px;
 }
 
 .tool-action-row {
@@ -3001,6 +3038,13 @@ ul {
   overflow: auto;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.zju-job-error {
+  color: var(--status-danger);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
 }
 
 .zju-file-links {

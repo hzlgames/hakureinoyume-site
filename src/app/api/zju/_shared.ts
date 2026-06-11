@@ -38,6 +38,39 @@ export async function readJsonBody(request: Request) {
   }
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null ? value as Record<string, unknown> : {};
+}
+
+function sanitizeZjuJobOutput(output: unknown) {
+  const record = asRecord(output);
+  const files = Array.isArray(record.files) ? record.files : null;
+
+  if (!files) return output;
+
+  return {
+    ...record,
+    files: files
+      .map(asRecord)
+      .filter((file) => typeof file.name === "string" && typeof file.size === "number")
+      .map((file) => ({
+        id: typeof file.id === "string" ? file.id : undefined,
+        name: file.name,
+        size: file.size
+      }))
+  };
+}
+
+export function serializeZjuJob<T extends Record<string, unknown>>(job: T) {
+  const result = { ...job };
+  delete result.workDir;
+
+  return {
+    ...result,
+    output: sanitizeZjuJobOutput(job.output)
+  };
+}
+
 export function routeError(error: unknown) {
   const message = error instanceof Error ? error.message : "请求处理失败。";
   return zjuJson({ error: "zju_error", message }, { status: 500 });

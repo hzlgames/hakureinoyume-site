@@ -76,6 +76,6 @@ ZJU 工具直接在 Next.js Node runtime 内调用 `login-zju` 和学在浙大 A
 - 登录后保存背景失败：检查 session 是否过期、用户是否为 admin、请求是否命中 `/api/background`，确认服务进程对 `public/backgrounds` 有写权限。
 - 保存后前台仍显示旧背景：检查 API 返回的 `?v=<mtime>` 是否变化，必要时刷新浏览器缓存。
 - 生产 API 404 或不可用：确认服务不是静态文件托管，必须是 `npm run start` 后由 Caddy 代理。
-- ZJU 工具提示未保存账号：确认用户已登录本站并在 `/tools/ZJU_tools` 保存过学号和密码。
+- ZJU 工具提示未保存账号：确认用户已登录本站并在 `/tools/ZJU_tools` 保存过学号和密码。保存账号会即时验证学在浙大登录，失败时检查账号密码、ZJU 登录状态和 `login-zju` 是否仍兼容当前登录流程。
 - ZJU 资料下载失败：检查 ZJU 凭据是否有效、服务进程是否能写入 `ZJU_TOOL_DATA_DIR`，以及任务日志中的 HTTP 状态。
 - 样式异常：优先检查 `src/app/globals.css` 中变量和响应式断点，再检查 `site-theme.ts` 注入的 CSS 变量。

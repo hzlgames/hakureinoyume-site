@@ -1,6 +1,6 @@
 import prisma from "../../../../../lib/prisma";
 import { cancelZjuJob } from "../../../../../lib/zju";
-import { requireUser, routeError, zjuJson } from "../../_shared";
+import { requireUser, routeError, serializeZjuJob, zjuJson } from "../../_shared";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,7 +28,7 @@ export async function GET(_request: Request, context: Context) {
       return zjuJson({ error: "not_found", message: "任务不存在。" }, { status: 404 });
     }
 
-    return zjuJson({ job });
+    return zjuJson({ job: serializeZjuJob(job) });
   } catch (error) {
     return routeError(error);
   }

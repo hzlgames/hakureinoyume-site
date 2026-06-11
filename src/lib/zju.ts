@@ -1,6 +1,4 @@
 import crypto from "crypto";
-import fs from "fs/promises";
-import path from "path";
 import type { Prisma } from "../generated/prisma/client";
 import prisma from "./prisma";
 
@@ -123,6 +121,11 @@ function buildCoursesClient(secret: StoredZjuSecret) {
   });
 }
 
+async function validateCoursesSecret(secret: StoredZjuSecret) {
+  const client = await buildCoursesClient(secret);
+  await client.login();
+}
+
 async function requestJson<T>(client: CoursesClient, url: string, init?: RequestInit): Promise<T> {
   const response = await client.fetch(url, init);
 
@@ -151,8 +154,30 @@ function materialFileName(name: string) {
   return name.replace(/[\\/:*?"<>|]/g, "_").replace(/\s+/g, " ").trim() || "material";
 }
 
+function uniqueMaterialFileName(name: string, usedNames: Set<string>) {
+  const safeName = materialFileName(name);
+  const dotIndex = safeName.lastIndexOf(".");
+  const hasExtension = dotIndex > 0 && dotIndex < safeName.length - 1;
+  const baseName = hasExtension ? safeName.slice(0, dotIndex) : safeName;
+  const extension = hasExtension ? safeName.slice(dotIndex) : "";
+  let candidate = safeName;
+  let index = 2;
+
+  while (usedNames.has(candidate)) {
+    candidate = `${baseName}-${index}${extension}`;
+    index += 1;
+  }
+
+  usedNames.add(candidate);
+  return candidate;
+}
+
 function getZjuDataRoot() {
-  return process.env.ZJU_TOOL_DATA_DIR ?? path.join(/* turbopackIgnore: true */ process.cwd(), ".data", "zju-tools");
+  return process.env.ZJU_TOOL_DATA_DIR ?? `${process.cwd()}/.data/zju-tools`;
+}
+
+function pathSegment(value: string) {
+  return value.replace(/[^a-zA-Z0-9._-]/g, "_") || "unknown";
 }
 
 export async function getStoredZjuAccount(userId: string) {
@@ -172,19 +197,70 @@ export async function getStoredZjuAccount(userId: string) {
 }
 
 export async function saveStoredZjuAccount(input: {
-  password: string;
-  pintiaCookie?: string | null;
+  clearPintiaCookie?: boolean;
+  password?: string;
+  pintiaCookie?: string;
   userId: string;
   username: string;
 }) {
-  const password = encryptSecret(input.password);
-  const pintiaCookie = input.pintiaCookie?.trim()
-    ? encryptSecret(input.pintiaCookie.trim())
-    : null;
+  const existing = await prisma.zjuAccount.findUnique({
+    where: { userId: input.userId }
+  });
 
-  return await prisma.zjuAccount.upsert({
-    where: { userId: input.userId },
-    create: {
+  if (!existing && !input.password) {
+    throw new Error("首次保存 ZJU 账号时密码不能为空。");
+  }
+
+  const currentSecret = existing
+    ? await getZjuSecret(input.userId)
+    : null;
+  const nextSecret: StoredZjuSecret = {
+    username: input.username,
+    password: input.password || currentSecret?.password || "",
+    pintiaCookie: input.clearPintiaCookie
+      ? null
+      : input.pintiaCookie?.trim()
+        ? input.pintiaCookie.trim()
+        : currentSecret?.pintiaCookie ?? null
+  };
+
+  await validateCoursesSecret(nextSecret);
+
+  const password = input.password ? encryptSecret(input.password) : null;
+  const pintiaCookie = input.clearPintiaCookie
+    ? null
+    : input.pintiaCookie?.trim()
+      ? encryptSecret(input.pintiaCookie.trim())
+      : undefined;
+  const lastValidatedAt = new Date();
+
+  if (existing) {
+    await prisma.zjuAccount.update({
+      where: { userId: input.userId },
+      data: {
+        username: input.username,
+        lastValidatedAt,
+        ...(password ? {
+          passwordCiphertext: password.ciphertext,
+          passwordIv: password.iv,
+          passwordTag: password.tag
+        } : {}),
+        ...(pintiaCookie === undefined ? {} : {
+          pintiaCiphertext: pintiaCookie?.ciphertext ?? null,
+          pintiaIv: pintiaCookie?.iv ?? null,
+          pintiaTag: pintiaCookie?.tag ?? null
+        })
+      }
+    });
+    return;
+  }
+
+  if (!password) {
+    throw new Error("首次保存 ZJU 账号时密码不能为空。");
+  }
+
+  await prisma.zjuAccount.create({
+    data: {
       userId: input.userId,
       username: input.username,
       passwordCiphertext: password.ciphertext,
@@ -192,16 +268,8 @@ export async function saveStoredZjuAccount(input: {
       passwordTag: password.tag,
       pintiaCiphertext: pintiaCookie?.ciphertext,
       pintiaIv: pintiaCookie?.iv,
-      pintiaTag: pintiaCookie?.tag
-    },
-    update: {
-      username: input.username,
-      passwordCiphertext: password.ciphertext,
-      passwordIv: password.iv,
-      passwordTag: password.tag,
-      pintiaCiphertext: pintiaCookie?.ciphertext,
-      pintiaIv: pintiaCookie?.iv,
-      pintiaTag: pintiaCookie?.tag
+      pintiaTag: pintiaCookie?.tag,
+      lastValidatedAt
     }
   });
 }
@@ -545,7 +613,8 @@ async function runMaterialDownloadJob(
 ) {
   const abort = new AbortController();
   activeJobs.set(jobId, { abort, userId });
-  const workDir = path.join(getZjuDataRoot(), userId, jobId);
+  const fs = await import("fs/promises");
+  const workDir = `${getZjuDataRoot()}/${pathSegment(userId)}/${pathSegment(jobId)}`;
 
   try {
     await fs.mkdir(workDir, { recursive: true });
@@ -566,12 +635,13 @@ async function runMaterialDownloadJob(
       ? materials.filter((item) => selectedIds.map(String).includes(String(item.id)))
       : materials;
     const files: Array<{ id: string; name: string; path: string; size: number }> = [];
+    const usedNames = new Set<string>();
 
     await appendJobLog(jobId, `准备下载 ${selected.length} 个文件，合计 ${byteToSize(selected.reduce((sum, item) => sum + item.size, 0))}。`);
     for (const material of selected) {
       if (abort.signal.aborted) throw new Error("任务已取消。");
-      const fileName = materialFileName(material.name);
-      const targetPath = path.join(workDir, fileName);
+      const fileName = uniqueMaterialFileName(material.name, usedNames);
+      const targetPath = `${workDir}/${fileName}`;
       await appendJobLog(jobId, `下载中：${fileName}`);
       const response = await client.fetch(`https://courses.zju.edu.cn/api/uploads/${material.id}/blob`, {
         signal: abort.signal
@@ -582,12 +652,13 @@ async function runMaterialDownloadJob(
       }
 
       const arrayBuffer = await response.arrayBuffer();
-      await fs.writeFile(targetPath, Buffer.from(arrayBuffer));
+      const buffer = Buffer.from(arrayBuffer);
+      await fs.writeFile(targetPath, buffer);
       files.push({
         id: String(material.id),
         name: fileName,
         path: targetPath,
-        size: Buffer.byteLength(Buffer.from(arrayBuffer))
+        size: buffer.byteLength
       });
     }
 
