@@ -1,11 +1,11 @@
 import { getMyCourses } from "../../../../lib/zju";
-import { requireUser, routeError, zjuJson } from "../_shared";
+import { requireValidZjuAccount, routeError, zjuJson } from "../_shared";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const user = await requireUser();
+  const user = await requireValidZjuAccount();
   if (!user.ok) return user.response;
 
   try {

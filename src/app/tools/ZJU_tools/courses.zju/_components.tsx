@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, KeyRound } from "lucide-react";
 import { DashboardCard } from "../../../_components/ui";
 import { useSession } from "../../../../lib/auth-client";
@@ -22,6 +23,14 @@ export type Job = {
   output: unknown;
   status: string;
   tool: string;
+};
+
+type AccountPayload = {
+  account: {
+    isValid: boolean;
+    lastValidatedAt: string | null;
+    username: string;
+  } | null;
 };
 
 export function formatDateTime(value: string | null) {
@@ -105,8 +114,50 @@ export function ZjuAuthGate({
   children: ReactNode;
 }) {
   const { data: session, isPending } = useSession();
+  const userId = session?.user?.id ?? "";
+  const [accountState, setAccountState] = useState({
+    checked: false,
+    error: "",
+    isValid: false,
+    userId: ""
+  });
+  const accountChecked = accountState.checked && accountState.userId === userId;
+  const hasValidAccount = accountChecked && accountState.isValid;
+  const accountError = accountChecked ? accountState.error : "";
 
-  if (isPending) {
+  useEffect(() => {
+    if (!userId) return;
+
+    let cancelled = false;
+
+    fetch("/api/zju/account")
+      .then((response) => response.json())
+      .then((payload: AccountPayload) => {
+        if (cancelled) return;
+        setAccountState({
+          checked: true,
+          error: "",
+          isValid: Boolean(payload.account?.isValid),
+          userId
+        });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setAccountState({
+            checked: true,
+            error: "读取 ZJU 账号状态失败。",
+            isValid: false,
+            userId
+          });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  if (isPending || (userId && !accountChecked)) {
     return (
       <section className="page-shell tools-page">
         <DashboardCard className="tool-detail-card">加载中...</DashboardCard>
@@ -124,6 +175,22 @@ export function ZjuAuthGate({
           <Link className="button primary-button tool-inline-button" href={`/login?callback=${encodeURIComponent(callback)}`}>
             <KeyRound size={18} />
             登录
+          </Link>
+        </DashboardCard>
+      </section>
+    );
+  }
+
+  if (!hasValidAccount) {
+    return (
+      <section className="page-shell tools-page">
+        <DashboardCard className="tool-detail-card zju-auth-card">
+          <p className="eyebrow">courses.zju</p>
+          <h1>请先验证 ZJU 账号</h1>
+          <p className="lead">{accountError || "保存并验证学号密码后，才能打开具体工具页面。"}</p>
+          <Link className="button primary-button tool-inline-button" href="/tools/ZJU_tools">
+            <KeyRound size={18} />
+            前往验证
           </Link>
         </DashboardCard>
       </section>

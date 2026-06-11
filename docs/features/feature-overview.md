@@ -77,12 +77,13 @@
 
 ZJU 工具合集：
 
-- `/tools/ZJU_tools`：登录用户验证、保存、更新或删除自己的 ZJU 学号、密码和可选 Pintia Cookie。已有账号可保留旧密码更新资料，也可清除 Pintia Cookie；凭据只加密保存在服务端，不回传明文。
-- `/tools/ZJU_tools/courses.zju`：学在浙大工具索引页，列出已接入的小工具。
+- `/tools/ZJU_tools`：登录用户验证、保存、更新或删除自己的 ZJU 学号、密码和可选 Pintia Cookie。已有账号可保留旧密码更新资料，也可清除 Pintia Cookie；凭据只加密保存在服务端，不回传明文。账号通过验证前，页面不显示具体工具入口。
+- `/tools/ZJU_tools/courses.zju`：学在浙大工具索引页，列出已接入的小工具；需要当前用户已有通过验证的 ZJU 账号。
 - `/tools/ZJU_tools/courses.zju/todos`：待办中心，支持刷新、搜索、来源筛选、紧急事项统计和外链跳转。
 - `/tools/ZJU_tools/courses.zju/scores`：成绩查询，支持课程选择、分数读取、数量/平均分/类型分布统计和明细查看。
 - `/tools/ZJU_tools/courses.zju/materials`：课程资料，支持课程选择、资料搜索、可见项全选、选中文件下载、任务日志、错误提示、取消运行任务和下载产物。
 - 资料下载任务写入当前用户自己的任务记录和工作目录，可在页面查看日志、取消未完成任务、下载已完成文件；前端只拿到文件名和大小，服务端负责校验文件属于当前任务目录。
+- 具体工具页面和工具 API 都要求 `lastValidatedAt` 存在；保存账号时会用同一组学号密码尝试多个学在浙大请求，任意成功即视为账号有效，直到用户删除或修改账号。
 - 原命令行工具中会直接标记视频完成或读取测验答案的能力不开放网页执行；页面只接入正常查看和资料下载类功能。
 
 新增工具建议放在 `src/app/tools/<tool-name>/page.tsx` 或 `src/app/tools/<tool-suite>/<tool-name>/page.tsx`，并在功能文档中记录入口、输入输出和状态存储方式。

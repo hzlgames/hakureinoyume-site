@@ -56,6 +56,13 @@ export async function PUT(request: Request) {
     const account = await getStoredZjuAccount(user.userId);
     return zjuJson({ account });
   } catch (error) {
+    if (error instanceof Error && error.message.startsWith("ZJU 账号验证失败")) {
+      return zjuJson({
+        error: "invalid_account",
+        message: error.message
+      }, { status: 400 });
+    }
+
     return routeError(error);
   }
 }

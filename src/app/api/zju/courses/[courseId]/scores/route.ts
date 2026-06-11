@@ -1,5 +1,5 @@
 import { getCourseScores } from "../../../../../../lib/zju";
-import { requireUser, routeError, zjuJson } from "../../../_shared";
+import { requireValidZjuAccount, routeError, zjuJson } from "../../../_shared";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,7 +11,7 @@ type Context = {
 };
 
 export async function GET(_request: Request, context: Context) {
-  const user = await requireUser();
+  const user = await requireValidZjuAccount();
   if (!user.ok) return user.response;
   const { courseId } = await context.params;
 

@@ -1,7 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import prisma from "../../../../../../../lib/prisma";
-import { requireUser, routeError, zjuJson } from "../../../../_shared";
+import { requireValidZjuAccount, routeError, zjuJson } from "../../../../_shared";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,7 +23,7 @@ function isInsideDirectory(childPath: string, parentPath: string) {
 }
 
 export async function GET(_request: Request, context: Context) {
-  const user = await requireUser();
+  const user = await requireValidZjuAccount();
   if (!user.ok) return user.response;
   const { fileName, jobId } = await context.params;
 

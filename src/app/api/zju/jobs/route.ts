@@ -1,12 +1,12 @@
 import prisma from "../../../../lib/prisma";
 import { createMaterialDownloadJob } from "../../../../lib/zju";
-import { readJsonBody, requireUser, routeError, serializeZjuJob, zjuJson } from "../_shared";
+import { readJsonBody, requireValidZjuAccount, routeError, serializeZjuJob, zjuJson } from "../_shared";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const user = await requireUser();
+  const user = await requireValidZjuAccount();
   if (!user.ok) return user.response;
 
   try {
@@ -22,7 +22,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await requireUser();
+  const user = await requireValidZjuAccount();
   if (!user.ok) return user.response;
   const body = await readJsonBody(request);
   const tool = typeof body.tool === "string" ? body.tool : "";

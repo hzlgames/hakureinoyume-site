@@ -44,7 +44,7 @@
 - `src/app/api/background/route.ts`：读取、保存、删除管理员背景图，并记录审计日志。
 - `src/app/api/weather/route.ts`：代理 Open-Meteo 当前天气。
 - `src/app/api/calendar/route.ts`：聚合节假日来源并提供本地 fallback。
-- `src/app/api/zju/**`：登录用户的 ZJU 账号、课程、待办、成绩、资料和工具任务接口。所有接口先读取 Better Auth session，并按 `userId` 限定数据。
+- `src/app/api/zju/**`：登录用户的 ZJU 账号、课程、待办、成绩、资料和工具任务接口。账号接口只要求 Better Auth session；具体工具接口还要求当前用户已有通过验证的 ZJU 账号，并按 `userId` 限定数据。
 
 ### Deployment
 
@@ -59,8 +59,8 @@
 - `/forgot-password`：发起密码重置邮件。
 - `/reset-password`：使用 token 设置新密码。
 - `/tools`：工具箱入口页。
-- `/tools/ZJU_tools`：ZJU 工具合集页，验证、保存或删除当前用户的 ZJU 学号、密码和可选 Pintia Cookie；已保存账号可保留旧密码更新资料或清除 Pintia Cookie。
-- `/tools/ZJU_tools/courses.zju`：学在浙大工具索引页。
+- `/tools/ZJU_tools`：ZJU 工具合集页，验证、保存或删除当前用户的 ZJU 学号、密码和可选 Pintia Cookie；已保存账号可保留旧密码更新资料或清除 Pintia Cookie。具体工具入口只在账号通过验证后显示。
+- `/tools/ZJU_tools/courses.zju`：学在浙大工具索引页，需要当前用户已有通过验证的 ZJU 账号。
 - `/tools/ZJU_tools/courses.zju/todos`：待办中心，读取学在浙大与可选 Pintia 待办。
 - `/tools/ZJU_tools/courses.zju/scores`：成绩查询，按课程读取作业和考试分数。
 - `/tools/ZJU_tools/courses.zju/materials`：课程资料，按课程读取资料、选择文件、创建下载任务并管理任务产物。
@@ -76,13 +76,13 @@
 - `GET /api/weather`：返回指定经纬度或默认上海位置的当前天气。
 - `GET /api/calendar`：返回指定年份的节假日和纪念日数据。
 - `GET|PUT|DELETE /api/zju/account`：读取、验证保存、删除当前登录用户的 ZJU 凭据。密码和 Pintia Cookie 只加密入库，不回传明文；更新已有账号时可不重传密码，也可清除已保存的 Pintia Cookie。
-- `GET /api/zju/courses`：读取当前用户的学在浙大课程列表。
-- `GET /api/zju/courses/todos`：读取可靠待办，合并学在浙大和可选 Pintia 待办。
-- `GET /api/zju/courses/[courseId]/scores`：读取指定课程的作业和考试分数。
-- `GET /api/zju/courses/[courseId]/materials`：读取指定课程的资料列表。
-- `GET|POST /api/zju/jobs`：列出当前用户最近 ZJU 工具任务，或创建课程资料下载任务。API 输出会过滤内部工作目录和文件绝对路径。
-- `GET|DELETE /api/zju/jobs/[jobId]`：读取或取消当前用户自己的任务，任务输出同样只暴露前端需要的文件名、大小等信息。
-- `GET /api/zju/jobs/[jobId]/files/[fileName]`：下载当前用户任务生成的资料文件，只允许读取该任务工作目录内的文件。
+- `GET /api/zju/courses`：读取当前用户的学在浙大课程列表，要求已验证 ZJU 账号。
+- `GET /api/zju/courses/todos`：读取可靠待办，合并学在浙大和可选 Pintia 待办，要求已验证 ZJU 账号。
+- `GET /api/zju/courses/[courseId]/scores`：读取指定课程的作业和考试分数，要求已验证 ZJU 账号。
+- `GET /api/zju/courses/[courseId]/materials`：读取指定课程的资料列表，要求已验证 ZJU 账号。
+- `GET|POST /api/zju/jobs`：列出当前用户最近 ZJU 工具任务，或创建课程资料下载任务，要求已验证 ZJU 账号。API 输出会过滤内部工作目录和文件绝对路径。
+- `GET|DELETE /api/zju/jobs/[jobId]`：读取或取消当前用户自己的任务，要求已验证 ZJU 账号；任务输出同样只暴露前端需要的文件名、大小等信息。
+- `GET /api/zju/jobs/[jobId]/files/[fileName]`：下载当前用户任务生成的资料文件，要求已验证 ZJU 账号，只允许读取该任务工作目录内的文件。
 
 ## 数据与状态
 
@@ -92,7 +92,7 @@
 - 管理员自定义背景图以文件方式存储在 `public/backgrounds/admin-background.webp`。
 - 背景图 API 使用文件 mtime 生成查询参数版本，避免浏览器长期缓存旧图。
 - Better Auth 会话存储在数据库 `session` 表，并通过 Next.js cookie 维持浏览器登录态。
-- ZJU 凭据存储在 `ZjuAccount`，学号明文用于识别，密码和 Pintia Cookie 使用 AES-256-GCM 加密，默认使用 `ZJU_ACCOUNT_SECRET`，未设置时回退 `BETTER_AUTH_SECRET`。保存时会用 `login-zju` 验证学在浙大登录，并更新 `lastValidatedAt`。
+- ZJU 凭据存储在 `ZjuAccount`，学号明文用于识别，密码和 Pintia Cookie 使用 AES-256-GCM 加密，默认使用 `ZJU_ACCOUNT_SECRET`，未设置时回退 `BETTER_AUTH_SECRET`。保存时会用同一组学号密码尝试多个 `courses.zju` 请求，任意请求成功后更新 `lastValidatedAt`；用户删除或修改账号前，`lastValidatedAt` 作为已验证状态。
 - ZJU 工具任务存储在 `ZjuToolJob`，记录输入、输出、日志、状态、退出码和用户专属工作目录。资料下载文件默认写入 `.data/zju-tools/<userId>/<jobId>/`，可通过 `ZJU_TOOL_DATA_DIR` 覆盖根目录。
 - `ADMIN_EMAILS` 中的邮箱在用户创建前 hook 中自动获得 `admin` 角色。
 - 首页主题状态目前为浏览器内 React state，后台会写入 `localStorage` 的背景选择 key。

@@ -2428,8 +2428,91 @@ ul {
 .tool-hub-grid,
 .zju-home-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
+}
+
+.tool-hub-grid,
+.zju-home-grid-ready {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.zju-home-grid {
+  align-items: start;
+}
+
+.zju-home-grid-auth-only {
+  grid-template-columns: minmax(0, min(760px, 100%));
+  justify-content: center;
+}
+
+.zju-account-card {
+  will-change: transform;
+}
+
+.zju-home-grid-auth-only .zju-account-card {
+  animation: zjuAccountCenter 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.zju-home-grid-ready .zju-account-card {
+  animation: zjuAccountSettle 520ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.zju-tools-card {
+  animation: zjuToolsReveal 560ms 90ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, transform;
+}
+
+.zju-tools-card.is-removing {
+  animation: zjuToolsRemove 320ms cubic-bezier(0.7, 0, 0.84, 0) both;
+  pointer-events: none;
+}
+
+@keyframes zjuAccountCenter {
+  from {
+    opacity: 0.96;
+    transform: translateX(-44px) scale(0.992);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes zjuAccountSettle {
+  from {
+    opacity: 0.92;
+    transform: translateX(48px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes zjuToolsReveal {
+  from {
+    opacity: 0;
+    transform: translateX(28px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes zjuToolsRemove {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(28px) scale(0.985);
+  }
 }
 
 .tool-hub-link {
@@ -2519,6 +2602,39 @@ ul {
 .tool-form input,
 .tool-select {
   min-height: 42px;
+}
+
+.tool-password-input {
+  position: relative;
+}
+
+.tool-password-input input {
+  padding-right: 46px;
+}
+
+.tool-password-toggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  height: 34px;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+}
+
+.tool-password-toggle:hover,
+.tool-password-toggle:focus-visible {
+  background: var(--accent-light);
+  color: var(--accent);
+  outline: none;
 }
 
 .tool-form textarea {
@@ -3241,6 +3357,12 @@ ul {
   .mascot-floating,
   .mascot-sprite {
     transition: none;
+  }
+
+  .zju-home-grid-auth-only .zju-account-card,
+  .zju-home-grid-ready .zju-account-card,
+  .zju-tools-card {
+    animation: none;
   }
 }
 

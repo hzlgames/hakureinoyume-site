@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentSession } from "../../../lib/admin";
+import { getStoredZjuAccount } from "../../../lib/zju";
 
 export function zjuJson(data: unknown, init?: ResponseInit) {
   const response = NextResponse.json(data, init);
@@ -23,6 +24,28 @@ export async function requireUser() {
   return {
     ok: true as const,
     userId: session.user.id
+  };
+}
+
+export async function requireValidZjuAccount() {
+  const user = await requireUser();
+  if (!user.ok) return user;
+
+  const account = await getStoredZjuAccount(user.userId);
+  if (!account?.isValid) {
+    return {
+      ok: false as const,
+      response: zjuJson({
+        error: "zju_account_required",
+        message: "请先在 ZJU 工具合集页保存并验证学号密码。"
+      }, { status: 403 })
+    };
+  }
+
+  return {
+    ok: true as const,
+    userId: user.userId,
+    account
   };
 }
 

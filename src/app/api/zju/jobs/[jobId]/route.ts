@@ -1,6 +1,6 @@
 import prisma from "../../../../../lib/prisma";
 import { cancelZjuJob } from "../../../../../lib/zju";
-import { requireUser, routeError, serializeZjuJob, zjuJson } from "../../_shared";
+import { requireValidZjuAccount, routeError, serializeZjuJob, zjuJson } from "../../_shared";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,7 +12,7 @@ type Context = {
 };
 
 export async function GET(_request: Request, context: Context) {
-  const user = await requireUser();
+  const user = await requireValidZjuAccount();
   if (!user.ok) return user.response;
   const { jobId } = await context.params;
 
@@ -35,7 +35,7 @@ export async function GET(_request: Request, context: Context) {
 }
 
 export async function DELETE(_request: Request, context: Context) {
-  const user = await requireUser();
+  const user = await requireValidZjuAccount();
   if (!user.ok) return user.response;
   const { jobId } = await context.params;
 

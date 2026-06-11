@@ -3,13 +3,14 @@
 import Link from "next/link";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
-import { ArrowRight, BookOpen, FileDown, KeyRound, ListChecks, Save, Trash2 } from "lucide-react";
+import { ArrowRight, BookOpen, Eye, EyeOff, FileDown, KeyRound, ListChecks, Save, Trash2 } from "lucide-react";
 import { DashboardCard } from "../../_components/ui";
 import { useSession } from "../../../lib/auth-client";
 
 type AccountPayload = {
   account: {
     hasPintiaCookie: boolean;
+    isValid: boolean;
     lastValidatedAt: string | null;
     updatedAt: string;
     username: string;
@@ -53,8 +54,10 @@ export default function ZjuToolsPage() {
   const [account, setAccount] = useState<AccountPayload["account"]>(null);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [pintiaCookie, setPintiaCookie] = useState("");
   const [clearPintiaCookie, setClearPintiaCookie] = useState(false);
+  const [isRemovingAccount, setIsRemovingAccount] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
@@ -125,6 +128,7 @@ export default function ZjuToolsPage() {
   async function deleteAccount() {
     setNotice("");
     setError("");
+    setIsRemovingAccount(false);
     const response = await fetch("/api/zju/account", {
       method: "DELETE"
     });
@@ -134,12 +138,16 @@ export default function ZjuToolsPage() {
       return;
     }
 
-    setAccount(null);
-    setUsername("");
-    setPassword("");
-    setPintiaCookie("");
-    setClearPintiaCookie(false);
-    setNotice("ZJU 账号已删除。");
+    setIsRemovingAccount(true);
+    window.setTimeout(() => {
+      setAccount(null);
+      setUsername("");
+      setPassword("");
+      setPintiaCookie("");
+      setClearPintiaCookie(false);
+      setIsRemovingAccount(false);
+      setNotice("ZJU 账号已删除。");
+    }, 360);
   }
 
   if (isPending || loading) {
@@ -166,6 +174,14 @@ export default function ZjuToolsPage() {
     );
   }
 
+  const hasValidAccount = Boolean(account?.isValid);
+  const showToolsCard = hasValidAccount || isRemovingAccount;
+  const gridStateClass = showToolsCard
+    ? isRemovingAccount
+      ? "zju-home-grid-ready zju-home-grid-removing"
+      : "zju-home-grid-ready"
+    : "zju-home-grid-auth-only";
+
   return (
     <section className="page-shell tools-page">
       <div className="intro tools-intro">
@@ -174,14 +190,20 @@ export default function ZjuToolsPage() {
         <p className="lead">凭据加密保存，工具任务仅使用当前登录用户自己的账号和目录。</p>
       </div>
 
-      <div className="zju-home-grid">
-        <DashboardCard className="tool-detail-card">
+      <div className={`zju-home-grid ${gridStateClass}`}>
+        <DashboardCard className="tool-detail-card zju-account-card">
           <div className="card-header">
             <div className="card-title">
               <KeyRound size={18} />
               ZJU 账号
             </div>
-            {account ? <span className="tool-status-pill">已保存</span> : <span className="tool-status-pill muted">未保存</span>}
+            {hasValidAccount ? (
+              <span className="tool-status-pill">已验证</span>
+            ) : account ? (
+              <span className="tool-status-pill muted">未验证</span>
+            ) : (
+              <span className="tool-status-pill muted">未保存</span>
+            )}
           </div>
           {account ? (
             <p className="tool-account-meta">
@@ -202,14 +224,25 @@ export default function ZjuToolsPage() {
             </label>
             <label>
               <span>密码</span>
-              <input
-                autoComplete="current-password"
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder={account ? "留空沿用已保存密码" : ""}
-                required={!account}
-                type="password"
-                value={password}
-              />
+              <div className="tool-password-input">
+                <input
+                  autoComplete="current-password"
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder={account ? "留空沿用已保存密码" : ""}
+                  required={!account}
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                />
+                <button
+                  aria-label={showPassword ? "隐藏密码" : "显示密码"}
+                  className="tool-password-toggle"
+                  onClick={() => setShowPassword((current) => !current)}
+                  title={showPassword ? "隐藏密码" : "显示密码"}
+                  type="button"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </label>
             <label>
               <span>Pintia Cookie</span>
@@ -234,14 +267,14 @@ export default function ZjuToolsPage() {
               </label>
             ) : null}
             <div className="tool-action-row">
-              <button className="button primary-button" disabled={saving || !username.trim() || (!password && !account)} type="submit">
+              <button className="button primary-button" disabled={saving || isRemovingAccount || !username.trim() || (!password && !account)} type="submit">
                 <Save size={18} />
                 {saving ? "验证中" : account ? "更新账号" : "保存账号"}
               </button>
               {account ? (
-                <button className="button secondary-button" onClick={deleteAccount} type="button">
+                <button className="button secondary-button" disabled={isRemovingAccount} onClick={deleteAccount} type="button">
                   <Trash2 size={18} />
-                  删除
+                  {isRemovingAccount ? "删除中" : "删除"}
                 </button>
               ) : null}
             </div>
@@ -250,27 +283,29 @@ export default function ZjuToolsPage() {
           </form>
         </DashboardCard>
 
-        <DashboardCard className="tool-detail-card">
-          <div className="zju-card-heading">
-            <div>
-              <p className="eyebrow">courses.zju</p>
-              <h2>学在浙大</h2>
-            </div>
-            <Link className="zju-text-link" href="/tools/ZJU_tools/courses.zju">
-              工具索引
-              <ArrowRight size={16} />
-            </Link>
-          </div>
-          <div className="zju-suite-grid">
-            {zjuTools.map((tool) => (
-              <Link className="zju-suite-tool" href={tool.href} key={tool.href}>
-                <span>{tool.icon}</span>
-                <strong>{tool.title}</strong>
-                <p>{tool.text}</p>
+        {showToolsCard ? (
+          <DashboardCard className={`tool-detail-card zju-tools-card ${isRemovingAccount ? "is-removing" : ""}`}>
+            <div className="zju-card-heading">
+              <div>
+                <p className="eyebrow">courses.zju</p>
+                <h2>学在浙大</h2>
+              </div>
+              <Link className="zju-text-link" href="/tools/ZJU_tools/courses.zju">
+                工具索引
+                <ArrowRight size={16} />
               </Link>
-            ))}
-          </div>
-        </DashboardCard>
+            </div>
+            <div className="zju-suite-grid">
+              {zjuTools.map((tool) => (
+                <Link className="zju-suite-tool" href={tool.href} key={tool.href}>
+                  <span>{tool.icon}</span>
+                  <strong>{tool.title}</strong>
+                  <p>{tool.text}</p>
+                </Link>
+              ))}
+            </div>
+          </DashboardCard>
+        ) : null}
       </div>
     </section>
   );

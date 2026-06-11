@@ -122,16 +122,60 @@ function buildCoursesClient(secret: StoredZjuSecret) {
 }
 
 async function validateCoursesSecret(secret: StoredZjuSecret) {
-  const client = await buildCoursesClient(secret);
-  await client.login();
+  const attempts: Array<() => Promise<void>> = [
+    async () => {
+      const client = await buildCoursesClient(secret);
+      const response = await client.fetch(
+        "https://courses.zju.edu.cn/api/my-semesters?fields=id,name,sort,is_active,code"
+      );
+      if (!response.ok) throw new Error("semesters validation failed");
+      await response.json();
+    },
+    async () => {
+      const client = await buildCoursesClient(secret);
+      const response = await client.fetch("https://courses.zju.edu.cn/api/my-courses", {
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+        body: JSON.stringify({
+          fields: "id,name,course_code,status",
+          page: 1,
+          page_size: 1,
+          conditions: {
+            status: ["ongoing", "notStarted", "closed"],
+            keyword: "",
+            classify_type: "recently_started",
+            display_studio_list: false
+          },
+          showScorePassedStatus: false
+        })
+      });
+      if (!response.ok) throw new Error("courses validation failed");
+      await response.json();
+    },
+    async () => {
+      const client = await buildCoursesClient(secret);
+      const response = await client.fetch("https://courses.zju.edu.cn/user/index");
+      if (!response.ok) throw new Error("index validation failed");
+    }
+  ];
+
+  for (const attempt of attempts) {
+    try {
+      await attempt();
+      return;
+    } catch {
+      // Try the next authenticated endpoint; transient ZJU failures are common.
+    }
+  }
+
+  throw new Error("ZJU 账号验证失败，请检查学号或密码后重试。");
 }
 
 async function requestJson<T>(client: CoursesClient, url: string, init?: RequestInit): Promise<T> {
   const response = await client.fetch(url, init);
 
   if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(`courses.zju request failed: ${response.status} ${body}`);
+    throw new Error(`courses.zju request failed: ${response.status}`);
   }
 
   return await response.json() as T;
@@ -191,6 +235,7 @@ export async function getStoredZjuAccount(userId: string) {
     id: account.id,
     username: account.username,
     hasPintiaCookie: Boolean(account.pintiaCiphertext),
+    isValid: Boolean(account.lastValidatedAt),
     lastValidatedAt: account.lastValidatedAt,
     updatedAt: account.updatedAt
   };
