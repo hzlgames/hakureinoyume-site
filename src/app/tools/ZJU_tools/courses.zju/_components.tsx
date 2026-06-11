@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { ArrowLeft, KeyRound } from "lucide-react";
+import { ArrowLeft, GraduationCap, KeyRound } from "lucide-react";
 import { DashboardCard } from "../../../_components/ui";
 import { useSession } from "../../../../lib/auth-client";
 
@@ -169,7 +169,7 @@ export function ZjuAuthGate({
     return (
       <section className="page-shell tools-page">
         <DashboardCard className="tool-detail-card zju-auth-card">
-          <p className="eyebrow">courses.zju</p>
+          <p className="eyebrow">学在浙大</p>
           <h1>请先登录</h1>
           <p className="lead">登录本站账号后，才能读取 ZJU 凭据并使用学在浙大工具。</p>
           <Link className="button primary-button tool-inline-button" href={`/login?callback=${encodeURIComponent(callback)}`}>
@@ -185,7 +185,7 @@ export function ZjuAuthGate({
     return (
       <section className="page-shell tools-page">
         <DashboardCard className="tool-detail-card zju-auth-card">
-          <p className="eyebrow">courses.zju</p>
+          <p className="eyebrow">学在浙大</p>
           <h1>请先验证 ZJU 账号</h1>
           <p className="lead">{accountError || "保存并验证学号密码后，才能打开具体工具页面。"}</p>
           <Link className="button primary-button tool-inline-button" href="/tools/ZJU_tools">
@@ -202,12 +202,18 @@ export function ZjuAuthGate({
 
 export function ZjuToolShell({
   actions,
+  backHref = "/tools/ZJU_tools/courses.zju",
+  backLabel = "课程助手",
   children,
+  eyebrow = "学在浙大",
   lead,
   title
 }: {
   actions?: ReactNode;
+  backHref?: string;
+  backLabel?: string;
   children: ReactNode;
+  eyebrow?: string;
   lead: string;
   title: string;
 }) {
@@ -215,11 +221,11 @@ export function ZjuToolShell({
     <section className="page-shell tools-page zju-tool-page">
       <div className="zju-tool-heading">
         <div>
-          <Link className="zju-back-link" href="/tools/ZJU_tools/courses.zju">
+          <Link className="zju-back-link" href={backHref}>
             <ArrowLeft size={16} />
-            学在浙大
+            {backLabel}
           </Link>
-          <p className="eyebrow">courses.zju</p>
+          <p className="eyebrow">{eyebrow}</p>
           <h1>{title}</h1>
           <p className="lead">{lead}</p>
         </div>
@@ -281,9 +287,9 @@ export function CoursePicker({
   return (
     <DashboardCard className="tool-detail-card zju-course-selector">
       <div className="zju-card-heading">
-        <div>
-          <p className="eyebrow">Course</p>
-          <h2>选择课程</h2>
+        <div className="card-title">
+          <GraduationCap size={18} />
+          选择课程
         </div>
         <button className="button secondary-button compact-button" disabled={disabled} onClick={onRefresh} type="button">
           刷新课程

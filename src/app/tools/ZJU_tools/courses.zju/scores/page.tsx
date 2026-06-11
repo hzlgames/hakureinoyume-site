@@ -116,9 +116,9 @@ export default function ZjuScoresPage() {
 
             <DashboardCard className="tool-detail-card">
               <div className="zju-card-heading">
-                <div>
-                  <p className="eyebrow">Scores</p>
-                  <h2>分数明细</h2>
+                <div className="card-title">
+                  <BookOpen size={18} />
+                  分数明细
                 </div>
                 {loadedCourseId ? <ZjuStatusPill tone="muted">课程 ID {loadedCourseId}</ZjuStatusPill> : null}
               </div>

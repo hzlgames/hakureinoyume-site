@@ -243,9 +243,9 @@ export default function ZjuMaterialsPage() {
 
             <DashboardCard className="tool-detail-card">
               <div className="zju-card-heading">
-                <div>
-                  <p className="eyebrow">Materials</p>
-                  <h2>文件列表</h2>
+                <div className="card-title">
+                  <FileDown size={18} />
+                  文件列表
                 </div>
                 <ZjuStatusPill tone="muted">{filteredMaterials.length} / {materials.length}</ZjuStatusPill>
               </div>
@@ -270,9 +270,9 @@ export default function ZjuMaterialsPage() {
 
             <DashboardCard className="tool-detail-card">
               <div className="zju-card-heading">
-                <div>
-                  <p className="eyebrow">Jobs</p>
-                  <h2>下载任务</h2>
+                <div className="card-title">
+                  <Download size={18} />
+                  下载任务
                 </div>
                 <button className="icon-action-button" onClick={() => void loadJobs()} title="刷新任务" type="button">
                   <RefreshCcw size={17} />

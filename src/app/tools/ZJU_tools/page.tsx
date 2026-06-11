@@ -3,7 +3,23 @@
 import Link from "next/link";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
-import { ArrowRight, BookOpen, Eye, EyeOff, FileDown, KeyRound, ListChecks, Save, Trash2 } from "lucide-react";
+import {
+  Archive,
+  BookMarked,
+  BookOpen,
+  Eye,
+  EyeOff,
+  FileDown,
+  FileText,
+  GraduationCap,
+  KeyRound,
+  Library,
+  ListChecks,
+  MonitorPlay,
+  PlayCircle,
+  Save,
+  Trash2
+} from "lucide-react";
 import { DashboardCard } from "../../_components/ui";
 import { useSession } from "../../../lib/auth-client";
 
@@ -17,24 +33,49 @@ type AccountPayload = {
   } | null;
 };
 
-const zjuTools = [
+const toolCategories = [
   {
-    href: "/tools/ZJU_tools/courses.zju/todos",
-    icon: <ListChecks size={24} />,
-    title: "待办中心",
-    text: "查看学在浙大与 Pintia 待办。"
+    key: "courses",
+    eyebrow: "学在浙大",
+    name: "课程助手",
+    href: "/tools/ZJU_tools/courses.zju",
+    icon: <GraduationCap size={20} />,
+    tools: [
+      { href: "/tools/ZJU_tools/courses.zju/todos", icon: <ListChecks size={22} />, title: "待办中心", text: "汇总学在浙大与 Pintia 待办。" },
+      { href: "/tools/ZJU_tools/courses.zju/scores", icon: <BookOpen size={22} />, title: "成绩查询", text: "按课程查看作业与考试分数。" },
+      { href: "/tools/ZJU_tools/courses.zju/materials", icon: <FileDown size={22} />, title: "课程资料", text: "筛选资料并创建下载任务。" },
+      { href: "/tools/ZJU_tools/courses.zju/autoplay", icon: <PlayCircle size={22} />, title: "自动刷课", text: "拟真倍速自动完成课程活动。" }
+    ]
   },
   {
-    href: "/tools/ZJU_tools/courses.zju/scores",
-    icon: <BookOpen size={24} />,
-    title: "成绩查询",
-    text: "按课程查看作业和考试分数。"
+    key: "classroom",
+    eyebrow: "智云课堂",
+    name: "课堂录播",
+    href: "/tools/ZJU_tools/classroom.zju",
+    icon: <MonitorPlay size={20} />,
+    tools: [
+      { href: "/tools/ZJU_tools/classroom.zju", icon: <MonitorPlay size={22} />, title: "回放与转录", text: "复制录播链接，导出 PPT 字幕转录。" }
+    ]
   },
   {
-    href: "/tools/ZJU_tools/courses.zju/materials",
-    icon: <FileDown size={24} />,
-    title: "课程资料",
-    text: "筛选资料并创建下载任务。"
+    key: "lib",
+    eyebrow: "图书馆",
+    name: "借阅续借",
+    href: "/tools/ZJU_tools/lib.zju",
+    icon: <Library size={20} />,
+    tools: [
+      { href: "/tools/ZJU_tools/lib.zju", icon: <BookMarked size={22} />, title: "借阅续借", text: "查询在借图书与到期，一键续借。" }
+    ]
+  },
+  {
+    key: "webplus",
+    eyebrow: "WebPlus",
+    name: "通知存档",
+    href: "/tools/ZJU_tools/webplus.zju",
+    icon: <Archive size={20} />,
+    tools: [
+      { href: "/tools/ZJU_tools/webplus.zju", icon: <FileText size={22} />, title: "通知存档", text: "保存通知页面与全部附件。" }
+    ]
   }
 ];
 
@@ -287,21 +328,30 @@ export default function ZjuToolsPage() {
           <DashboardCard className={`tool-detail-card zju-tools-card ${isRemovingAccount ? "is-removing" : ""}`}>
             <div className="zju-card-heading">
               <div>
-                <p className="eyebrow">courses.zju</p>
-                <h2>学在浙大</h2>
+                <p className="eyebrow">工具索引</p>
+                <h2>ZJU 服务</h2>
               </div>
-              <Link className="zju-text-link" href="/tools/ZJU_tools/courses.zju">
-                工具索引
-                <ArrowRight size={16} />
-              </Link>
             </div>
-            <div className="zju-suite-grid">
-              {zjuTools.map((tool) => (
-                <Link className="zju-suite-tool" href={tool.href} key={tool.href}>
-                  <span>{tool.icon}</span>
-                  <strong>{tool.title}</strong>
-                  <p>{tool.text}</p>
-                </Link>
+            <div className="zju-hub">
+              {toolCategories.map((category, index) => (
+                <section className="zju-hub-category" key={category.key} style={{ animationDelay: `${index * 80}ms` }}>
+                  <Link className="zju-hub-category-head" href={category.href}>
+                    <span className="zju-hub-category-icon">{category.icon}</span>
+                    <span className="zju-hub-category-title">
+                      <small>{category.eyebrow}</small>
+                      <strong>{category.name}</strong>
+                    </span>
+                  </Link>
+                  <div className="zju-suite-grid">
+                    {category.tools.map((tool) => (
+                      <Link className="zju-suite-tool" href={tool.href} key={tool.href}>
+                        <span>{tool.icon}</span>
+                        <strong>{tool.title}</strong>
+                        <p>{tool.text}</p>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
               ))}
             </div>
           </DashboardCard>

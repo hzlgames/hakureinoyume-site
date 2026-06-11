@@ -14,7 +14,7 @@ Accepted
 
 用户级 ZJU 凭据存储在 `ZjuAccount`，密码和 Pintia Cookie 使用 AES-256-GCM 加密。长任务存储在 `ZjuToolJob`，当前先支持课程资料下载任务，任务输出写入用户专属工作目录。
 
-`courses.zju` 页面只接入正常查看和资料下载类功能。原命令行中会直接标记视频完成或读取测验答案的能力不接入网页执行。
+`courses.zju` 页面最初只接入正常查看和资料下载类功能。原命令行中会直接标记视频完成或读取测验答案的能力当时不接入网页执行（视频完成约束后由 [0006](0006-zju-tools-expansion.md) 推翻，测验答案读取仍不接入）。
 
 ## Consequences
 

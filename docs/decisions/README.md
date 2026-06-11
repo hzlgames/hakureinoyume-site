@@ -9,6 +9,7 @@ ADR 用于记录长期技术选择及其原因。不要为每个小改动写 ADR
 - [0003 使用仓库内文档与维护 skill 管理 agent 知识](0003-repository-knowledge-skill.md)
 - [0004 使用 Better Auth 和 Prisma 实现多用户认证](0004-better-auth-prisma-authentication.md)
 - [0005 使用内置服务层承载 ZJU 工具](0005-zju-tools-service-layer.md)
+- [0006 扩展 ZJU 工具至自动刷课与多服务](0006-zju-tools-expansion.md)
 
 ## 模板
 
