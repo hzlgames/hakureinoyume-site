@@ -1,5 +1,5 @@
 import prisma from "../../../../lib/prisma";
-import { createAutoplayJob, createMaterialDownloadJob, createTranscriptJob, createWebplusArchiveJob } from "../../../../lib/zju";
+import { createAutoplayJob, createMaterialDownloadJob, createQuizAnswersJob, createTranscriptJob, createWebplusArchiveJob } from "../../../../lib/zju";
 import { readJsonBody, requireValidZjuAccount, routeError, serializeZjuJob, zjuJson } from "../_shared";
 
 export const runtime = "nodejs";
@@ -50,6 +50,16 @@ export async function POST(request: Request) {
         return zjuJson({ error: "invalid_job", message: "请填写通知链接。" }, { status: 400 });
       }
       const job = await createWebplusArchiveJob({ userId: user.userId, url });
+      return zjuJson({ job: serializeZjuJob(job) }, { status: 201 });
+    }
+
+    if (tool === "courses.zju/quiz") {
+      const classroomId = typeof body.classroomId === "string" || typeof body.classroomId === "number" ? String(body.classroomId) : "";
+      const title = typeof body.title === "string" ? body.title : "";
+      if (!classroomId) {
+        return zjuJson({ error: "invalid_job", message: "缺少互动信息。" }, { status: 400 });
+      }
+      const job = await createQuizAnswersJob({ userId: user.userId, classroomId, title });
       return zjuJson({ job: serializeZjuJob(job) }, { status: 201 });
     }
 

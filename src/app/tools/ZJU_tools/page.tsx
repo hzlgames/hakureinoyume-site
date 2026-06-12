@@ -44,7 +44,8 @@ const toolCategories = [
       { href: "/tools/ZJU_tools/courses.zju/todos", icon: <ListChecks size={22} />, title: "待办中心", text: "汇总学在浙大与 Pintia 待办。" },
       { href: "/tools/ZJU_tools/courses.zju/scores", icon: <BookOpen size={22} />, title: "成绩查询", text: "按课程查看作业与考试分数。" },
       { href: "/tools/ZJU_tools/courses.zju/materials", icon: <FileDown size={22} />, title: "课程资料", text: "筛选资料并创建下载任务。" },
-      { href: "/tools/ZJU_tools/courses.zju/autoplay", icon: <PlayCircle size={22} />, title: "自动刷课", text: "拟真倍速自动完成课程活动。" }
+      { href: "/tools/ZJU_tools/courses.zju/autoplay", icon: <PlayCircle size={22} />, title: "自动刷课", text: "拟真倍速自动完成课程活动。" },
+      { href: "/tools/ZJU_tools/courses.zju/quiz", icon: <KeyRound size={22} />, title: "测验答案", text: "读取学在浙大互动测验答案。" }
     ]
   },
   {

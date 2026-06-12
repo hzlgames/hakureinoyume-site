@@ -4,6 +4,7 @@ import {
   BookOpen,
   Download,
   FileDown,
+  KeyRound,
   ListChecks,
   PlayCircle,
   ShieldCheck
@@ -39,6 +40,13 @@ const tools = [
     title: "自动刷课",
     tag: "刷课",
     body: "按拟真倍速上报观看进度，自动完成视频、页面与资料活动。"
+  },
+  {
+    href: "/tools/ZJU_tools/courses.zju/quiz",
+    icon: <KeyRound size={26} />,
+    title: "测验答案",
+    tag: "答案",
+    body: "读取学在浙大互动测验参考答案。"
   }
 ];
 

@@ -6,7 +6,7 @@
 
 首页会读取 Better Auth session。未登录时展示登录和注册入口；已登录时展示当前用户、退出按钮；管理员用户还会看到后台入口。
 
-网易云播放器在 `src/app/_components/netease-player.tsx`。未登录本站时可使用公开/游客网易云访问能力进行搜索和播放；登录本站后，所有用户都可以通过二维码绑定自己的网易云账号，查看收藏歌单、搜索歌曲并播放。网易云接口统一经过 `/api/music/*` 服务端代理，网易云 cookie 不暴露给浏览器脚本。
+网易云播放器在 `src/app/_components/netease-player.tsx`。未登录本站时可使用公开/游客网易云访问能力进行搜索和播放；登录本站后，所有用户都可以维护站内网页歌单，通过二维码绑定自己的网易云账号，查看网易云歌单、收藏歌曲、搜索歌曲并播放。网易云接口统一经过 `/api/music/*` 服务端代理，网易云 cookie 不暴露给浏览器脚本。
 
 ## 账号系统
 
@@ -53,12 +53,12 @@
 
 ## 主题与背景
 
-`src/app/site-theme.ts` 定义站点名、背景选项、主题变量和自定义背景封装。当前预设背景包括：
+首页当前在 `src/app/home-experience.tsx` 中维护 light/dark 主题 state，并写入 `document.documentElement.dataset.theme`。实际背景图由 `src/app/globals.css` 按 `data-theme` 切换：
 
-- `dawn`：晨光神社。
-- `boundary`：樱色结界。
-- `night`：符卡夜色。
-- `custom`：由后台上传后生成。
+- light：`public/backgrounds/bg-light.png`。
+- dark：`public/backgrounds/bg-dark.png`。
+
+`src/app/site-theme.ts` 仍定义站点名、背景选项、主题变量和自定义背景封装，当前主要被后台背景管理页用于上传预览、保存和重置流程。后台会写入 `localStorage` 的 `hakurei-home-background` key，但首页当前没有读取这个背景选择 key。
 
 新增主题时，必须同时考虑正文、弱文本、边框、强调色、玻璃面板、阴影、hero wash 和背景滤镜等变量。
 
@@ -83,12 +83,13 @@ ZJU 工具合集：
 - `/tools/ZJU_tools/courses.zju/scores`：成绩查询，支持课程选择、分数读取、数量/平均分/类型分布统计和明细查看。
 - `/tools/ZJU_tools/courses.zju/materials`：课程资料，支持课程选择、资料搜索、可见项全选、选中文件下载、任务日志、错误提示、取消运行任务和下载产物。
 - `/tools/ZJU_tools/courses.zju/autoplay`：自动刷课，支持课程选择、读取可自动完成的活动、逐项挑选或刷全部未完成、选择倍速与拟真串行/强制重刷，按拟真节奏后台上报观看进度，可查看实时日志、成功/失败/跳过概览并取消任务。
+- `/tools/ZJU_tools/courses.zju/quiz`：测验答案，支持选择课程、读取进行中的互动、创建答案读取任务、查看任务日志/取消任务，并在任务完成后展示题目选项和参考答案；要求当前用户已有验证 ZJU 账号。
 - `/tools/ZJU_tools/classroom.zju`：智云课堂录播，支持课程选择、录播搜索、复制回放链接或在新标签打开，以及导出 PPT 截图 + 字幕的 Markdown 转录任务并下载产物。
 - `/tools/ZJU_tools/lib.zju`：图书馆借阅，读取在借图书与到期状态（借阅中/即将到期/逾期），勾选可续借图书并一键续借。
 - `/tools/ZJU_tools/webplus.zju`：WebPlus 通知存档，粘贴通知链接创建存档任务，保存页面 HTML 与全部附件并还原附件原名，可查看日志、取消任务、下载产物。
-- 任务（资料下载、自动刷课、课堂转录、WebPlus 存档）写入当前用户自己的任务记录和工作目录，可在页面查看日志、取消未完成任务、下载已完成文件；前端只拿到文件名和大小，服务端负责校验文件属于当前任务目录。
+- 任务（资料下载、自动刷课、测验答案、课堂转录、WebPlus 存档）写入当前用户自己的任务记录和工作目录，可在页面查看日志、取消未完成任务、下载已完成文件；前端只拿到文件名和大小，服务端负责校验文件属于当前任务目录。
 - 具体工具页面和工具 API 都要求 `lastValidatedAt` 存在；保存账号时会用同一组学号密码尝试多个学在浙大请求，任意成功即视为账号有效，直到用户删除或修改账号。
-- 测验答案读取仍不开放网页执行（用于考试作弊）；`materialMaintainer` 增量维护暂未接入。
+- `materialMaintainer` 增量维护暂未接入。
 
 新增工具建议放在 `src/app/tools/<tool-name>/page.tsx` 或 `src/app/tools/<tool-suite>/<tool-name>/page.tsx`，并在功能文档中记录入口、输入输出和状态存储方式。
 

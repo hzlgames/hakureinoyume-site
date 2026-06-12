@@ -6,9 +6,11 @@
 - `npm run lint`：运行 ESLint，当前配置要求 0 warning。
 - `npm run build`：构建 Next.js 应用。
 - `npm run start`：以生产模式启动 Next.js server。
-- `npm run deploy`：当前等同于 `npm run build`。
+- `npm run deploy`：执行 `scripts/deploy.sh`，默认依次运行 `npm ci`、lint、Prisma 迁移、构建、systemd 重启和健康检查。
 
 Prisma 相关命令通过 `npx prisma ...` 执行。当前仓库没有单独 npm script。
+
+部署脚本可用环境变量调整：`SERVICE_NAME`、`HEALTH_URL`、`HEALTH_RETRIES`、`HEALTH_DELAY_SECONDS`，以及 `SKIP_LINT=1`、`SKIP_MIGRATE=1`、`SKIP_RESTART=1`、`SKIP_HEALTHCHECK=1`。
 
 ## 环境变量
 
@@ -64,7 +66,7 @@ Prisma 配置在 `prisma.config.ts`，schema 在 `prisma/schema.prisma`，迁移
 
 网易云播放器需要额外运行兼容 NeteaseCloudMusicApi Enhanced 的服务。本站只保存加密后的用户级网易云 cookie；当上游返回登录失效时，`/api/music/*` 会标记该用户的网易云登录态过期并提示重新扫码。
 
-ZJU 工具直接在 Next.js Node runtime 内调用 `login-zju` 和学在浙大 API。本站只保存加密后的用户级 ZJU 密码和可选 Pintia Cookie；资料下载任务会写入 `ZjuToolJob` 并使用用户专属工作目录。生产环境需要执行迁移 `0005_zju_tools`，并确认 `ZJU_TOOL_DATA_DIR` 或默认 `.data/zju-tools/` 对服务进程可写。
+ZJU 工具直接在 Next.js Node runtime 内调用 `login-zju` 的 `COURSES`/`CLASSROOM`/`APILIB` 客户端、Pintia 和 WebPlus，覆盖学在浙大、智云课堂、图书馆和 WebPlus。本站只保存加密后的用户级 ZJU 密码和可选 Pintia Cookie；资料下载、自动刷课、测验答案、课堂转录和 WebPlus 存档任务会写入 `ZjuToolJob`，其中有文件产物的任务使用用户专属工作目录。生产环境需要执行迁移 `0005_zju_tools`，并确认 `ZJU_TOOL_DATA_DIR` 或默认 `.data/zju-tools/` 对服务进程可写。
 
 `out/` 是生成产物，已在 ESLint 和 Git 忽略配置中排除。维护文档时不要把 `out/` 当作源码事实来源。
 
@@ -77,5 +79,5 @@ ZJU 工具直接在 Next.js Node runtime 内调用 `login-zju` 和学在浙大 A
 - 保存后前台仍显示旧背景：检查 API 返回的 `?v=<mtime>` 是否变化，必要时刷新浏览器缓存。
 - 生产 API 404 或不可用：确认服务不是静态文件托管，必须是 `npm run start` 后由 Caddy 代理。
 - ZJU 工具提示未保存账号：确认用户已登录本站并在 `/tools/ZJU_tools` 保存过学号和密码。保存账号会即时验证学在浙大登录，失败时检查账号密码、ZJU 登录状态和 `login-zju` 是否仍兼容当前登录流程。
-- ZJU 资料下载失败：检查 ZJU 凭据是否有效、服务进程是否能写入 `ZJU_TOOL_DATA_DIR`，以及任务日志中的 HTTP 状态。
-- 样式异常：优先检查 `src/app/globals.css` 中变量和响应式断点，再检查 `site-theme.ts` 注入的 CSS 变量。
+- ZJU 工具任务失败：检查 ZJU 凭据是否有效、服务进程是否能写入 `ZJU_TOOL_DATA_DIR`，以及任务日志中的 HTTP 状态；自动刷课只产出日志与统计概览，不写下载文件。
+- 样式异常：优先检查 `src/app/globals.css` 中变量、`data-theme` 分支和响应式断点；后台背景管理异常再检查 `site-theme.ts` 的背景配置。
