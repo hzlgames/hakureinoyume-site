@@ -21,4 +21,4 @@
 
 ## 当前项目摘要
 
-本项目是 `hakureinoyume.com` 的个人网站，使用 Next.js App Router 和 TypeScript。当前主要功能包括首页仪表盘、互动灵梦小宠物、Better Auth 多用户账号系统、后台账号与背景管理、工具页占位、天气与节日日历 API，以及通过 Caddy 和 systemd 运行的生产部署。
+本项目是 `hakureinoyume.com` 的个人网站，使用 Next.js App Router 和 TypeScript。当前主要功能包括首页仪表盘、互动灵梦小宠物、Better Auth 多用户账号系统、后台账号与背景管理、网易云播放器、ZJU 工具箱、天气与节日日历 API，以及通过 Caddy 和 systemd 运行的生产部署。

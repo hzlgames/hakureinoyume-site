@@ -62,6 +62,17 @@ type WeatherApiResponse = {
 const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
 const DEFAULT_COORDS = { latitude: 31.2304, longitude: 121.4737, location: "上海" };
 
+const toolboxItems = [
+  { href: "/tools", icon: <Book size={20} />, name: "笔记本" },
+  { href: "/tools", icon: <Timer size={20} />, name: "番茄钟" },
+  { href: "/tools/ZJU_tools/courses.zju/todos", icon: <CheckSquare size={20} />, name: "ZJU 待办" },
+  { href: "/tools", icon: <Languages size={20} />, name: "翻译" },
+  { href: "/tools", icon: <Calculator size={20} />, name: "计算器" },
+  { href: "/tools", icon: <Dices size={20} />, name: "随机灵签" },
+  { href: "/tools", icon: <Palette size={20} />, name: "配色助手" },
+  { href: "/tools", icon: <MoreHorizontal size={20} />, name: "更多工具" },
+];
+
 const weatherDescriptions: Record<number, string> = {
   0: "晴",
   1: "大部晴朗",
@@ -369,11 +380,11 @@ export default function HomeExperience() {
           <span>博麗の夢</span>
         </div>
         <nav className={`header-nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
-          <span className="nav-item active">首页</span>
+          <Link className="nav-item active" href="/" onClick={() => setIsMobileMenuOpen(false)}>首页</Link>
           <span className="nav-item">学习</span>
           <span className="nav-item">生活</span>
           <span className="nav-item">东方</span>
-          <span className="nav-item">工具</span>
+          <Link className="nav-item" href="/tools" onClick={() => setIsMobileMenuOpen(false)}>工具</Link>
           <span className="nav-item">关于</span>
         </nav>
         <div className="header-right">
@@ -425,7 +436,7 @@ export default function HomeExperience() {
             <div className="hero-motto">结缘东方 · 博丽神社 · 梦想常在</div>
           </div>
           
-          <GlassPanel className="tools-entry">
+          <Link className="glass-panel tools-entry" href="/tools">
             <div className="tools-entry-icon">
               <div className="torii-icon">⛩</div>
             </div>
@@ -434,7 +445,7 @@ export default function HomeExperience() {
               <p>进入工具箱</p>
             </div>
             <ChevronRight size={20} color="var(--text-tertiary)" style={{marginLeft: 'auto'}} />
-          </GlassPanel>
+          </Link>
         </section>
 
         {/* Dashboard Grid */}
@@ -705,38 +716,12 @@ export default function HomeExperience() {
           <DashboardCard>
             <CardHeader icon={<div className="torii-icon card-title-icon">⛩️</div>} title="工具箱" />
             <div className="toolbox-grid">
-              <div className="tool-item">
-                <div className="tool-icon"><Book size={20} /></div>
-                <span className="tool-name">笔记本</span>
-              </div>
-              <div className="tool-item">
-                <div className="tool-icon"><Timer size={20} /></div>
-                <span className="tool-name">番茄钟</span>
-              </div>
-              <div className="tool-item">
-                <div className="tool-icon"><CheckSquare size={20} /></div>
-                <span className="tool-name">待办清单</span>
-              </div>
-              <div className="tool-item">
-                <div className="tool-icon"><Languages size={20} /></div>
-                <span className="tool-name">翻译</span>
-              </div>
-              <div className="tool-item">
-                <div className="tool-icon"><Calculator size={20} /></div>
-                <span className="tool-name">计算器</span>
-              </div>
-              <div className="tool-item">
-                <div className="tool-icon"><Dices size={20} /></div>
-                <span className="tool-name">随机灵签</span>
-              </div>
-              <div className="tool-item">
-                <div className="tool-icon"><Palette size={20} /></div>
-                <span className="tool-name">配色助手</span>
-              </div>
-              <div className="tool-item">
-                <div className="tool-icon"><MoreHorizontal size={20} /></div>
-                <span className="tool-name">更多工具</span>
-              </div>
+              {toolboxItems.map((tool) => (
+                <Link className="tool-item" href={tool.href} key={tool.name}>
+                  <div className="tool-icon">{tool.icon}</div>
+                  <span className="tool-name">{tool.name}</span>
+                </Link>
+              ))}
             </div>
           </DashboardCard>
 

@@ -173,6 +173,7 @@ ul {
   position: relative;
   padding: 8px 0;
   cursor: pointer;
+  text-decoration: none;
   transition: color 0.2s;
 }
 
@@ -400,9 +401,18 @@ ul {
   gap: 16px;
   padding: 16px 24px;
   cursor: pointer;
+  color: inherit;
+  text-decoration: none;
   width: 240px;
   margin-left: 260px; /* offset from mascot */
   margin-top: 120px;
+}
+
+.nav-item:focus-visible,
+.tools-entry:focus-visible,
+.tool-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
 }
 
 .tools-entry-icon {
@@ -1866,6 +1876,7 @@ ul {
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .tool-icon {
@@ -1884,6 +1895,10 @@ ul {
   background: var(--accent);
   color: white;
   transform: translateY(-2px);
+}
+
+.tool-item:hover .tool-name {
+  color: var(--accent);
 }
 
 .tool-name {
@@ -2359,6 +2374,1309 @@ ul {
   padding: 28px;
 }
 
+/* Tools */
+.page-shell {
+  margin: 0 auto;
+  max-width: 1240px;
+  padding: 104px 24px 48px;
+}
+
+.intro {
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.intro h1,
+.tool-detail-card h1 {
+  font-size: 42px;
+  letter-spacing: 0;
+  line-height: 1.1;
+  margin-top: 6px;
+}
+
+.lead {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-top: 10px;
+  max-width: 720px;
+}
+
+.secondary-button {
+  background: var(--accent-light);
+  color: var(--text-primary);
+}
+
+.secondary-button:hover {
+  background: var(--calendar-day-hover-bg);
+}
+
+.tools-page {
+  min-height: 100vh;
+}
+
+.tools-intro {
+  max-width: 760px;
+}
+
+.tool-hub-grid,
+.zju-home-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.tool-hub-grid,
+.zju-home-grid-ready {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.zju-home-grid {
+  align-items: start;
+}
+
+.zju-home-grid-auth-only {
+  grid-template-columns: minmax(0, min(760px, 100%));
+  justify-content: center;
+}
+
+.zju-account-card {
+  will-change: transform;
+}
+
+.zju-home-grid-auth-only .zju-account-card {
+  animation: zjuAccountCenter 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.zju-home-grid-ready .zju-account-card {
+  animation: zjuAccountSettle 520ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.zju-tools-card {
+  animation: zjuToolsReveal 560ms 90ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, transform;
+}
+
+.zju-tools-card.is-removing {
+  animation: zjuToolsRemove 320ms cubic-bezier(0.7, 0, 0.84, 0) both;
+  pointer-events: none;
+}
+
+@keyframes zjuAccountCenter {
+  from {
+    opacity: 0.96;
+    transform: translateX(-44px) scale(0.992);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes zjuAccountSettle {
+  from {
+    opacity: 0.92;
+    transform: translateX(48px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes zjuToolsReveal {
+  from {
+    opacity: 0;
+    transform: translateX(28px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes zjuToolsRemove {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(28px) scale(0.985);
+  }
+}
+
+.tool-hub-link {
+  display: block;
+  min-width: 0;
+}
+
+.tool-hub-card,
+.tool-launch-card {
+  align-items: center;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 150px;
+  gap: 18px;
+  position: relative;
+}
+
+.tool-hub-card h2,
+.tool-detail-card h2 {
+  font-size: 22px;
+  letter-spacing: 0;
+  margin: 4px 0 8px;
+}
+
+.tool-hub-card p:not(.eyebrow),
+.tool-detail-card p:not(.eyebrow) {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.tool-hub-icon {
+  align-items: center;
+  background: var(--accent-light);
+  border-radius: 14px;
+  color: var(--accent);
+  display: inline-flex;
+  height: 54px;
+  justify-content: center;
+  width: 54px;
+}
+
+.tool-hub-arrow {
+  color: var(--text-tertiary);
+}
+
+.tool-hub-card-muted {
+  opacity: 0.7;
+}
+
+.tool-detail-card {
+  min-width: 0;
+}
+
+.tool-form {
+  display: grid;
+  gap: 14px;
+}
+
+.tool-account-meta {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.tool-form label {
+  color: var(--text-secondary);
+  display: grid;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 8px;
+}
+
+.tool-form input,
+.tool-form textarea,
+.tool-select {
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font: inherit;
+  outline: none;
+  padding: 0 12px;
+  width: 100%;
+}
+
+.tool-form input,
+.tool-select {
+  min-height: 42px;
+}
+
+.tool-password-input {
+  position: relative;
+}
+
+.tool-password-input input {
+  padding-right: 46px;
+}
+
+.tool-password-toggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  height: 34px;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+}
+
+.tool-password-toggle:hover,
+.tool-password-toggle:focus-visible {
+  background: var(--accent-light);
+  color: var(--accent);
+  outline: none;
+}
+
+.tool-form textarea {
+  min-height: 96px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.tool-form input:focus,
+.tool-form textarea:focus,
+.tool-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.tool-checkbox-label {
+  align-items: center;
+  color: var(--text-secondary);
+  display: flex;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 10px;
+}
+
+.tool-checkbox-label input {
+  accent-color: var(--accent);
+  height: 16px;
+  width: 16px;
+}
+
+.tool-action-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tool-inline-button {
+  margin-top: 16px;
+}
+
+.tool-status-pill {
+  align-items: center;
+  background: var(--status-ok-bg);
+  border-radius: 999px;
+  color: var(--status-ok);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  min-height: 28px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.tool-status-pill.muted {
+  background: var(--accent-light);
+  color: var(--text-secondary);
+}
+
+.zju-tools-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.1fr);
+  gap: 18px;
+}
+
+.zju-tool-heading {
+  align-items: flex-end;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.zju-tool-heading h1 {
+  font-size: 42px;
+  letter-spacing: 0;
+  line-height: 1.1;
+  margin-top: 6px;
+}
+
+.zju-heading-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.zju-back-link,
+.zju-text-link {
+  align-items: center;
+  color: var(--text-secondary);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.zju-text-link {
+  color: var(--accent);
+  margin-bottom: 0;
+}
+
+.zju-tool-index,
+.zju-info-grid,
+.zju-metric-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.zju-tool-index {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.zju-info-grid,
+.zju-metric-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+.zju-info-grid-pair {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.zju-index-card {
+  min-height: 172px;
+}
+
+.zju-auth-card {
+  max-width: 560px;
+}
+
+.zju-suite-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.zju-suite-tool {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, background 0.25s ease;
+}
+
+.zju-suite-tool:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.zju-suite-tool:hover span {
+  background: var(--accent);
+  color: #fff;
+}
+
+.zju-suite-tool {
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  display: grid;
+  gap: 6px;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 12px;
+}
+
+.zju-suite-tool span {
+  align-items: center;
+  background: var(--accent-light);
+  border-radius: 10px;
+  color: var(--accent);
+  display: inline-flex;
+  grid-row: span 2;
+  height: 42px;
+  justify-content: center;
+  transition: background 0.25s ease, color 0.25s ease;
+  width: 42px;
+}
+
+.zju-suite-tool strong {
+  font-size: 15px;
+}
+
+.zju-suite-tool p {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.zju-card-heading {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.zju-card-heading h2 {
+  font-size: 22px;
+  letter-spacing: 0;
+  margin-top: 4px;
+}
+
+.zju-metric-card {
+  display: grid;
+  gap: 6px;
+  min-height: 118px;
+}
+
+.zju-metric-card > span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.zju-metric-card > strong {
+  color: var(--text-primary);
+  font-size: 32px;
+  line-height: 1;
+}
+
+.zju-metric-card > p {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.tool-status-pill.active {
+  background: var(--calendar-workday-glow);
+  color: var(--calendar-workday);
+}
+
+.tool-status-pill.danger {
+  background: var(--status-danger-bg);
+  color: var(--status-danger);
+}
+
+.zju-course-panel,
+.zju-jobs-card,
+.zju-disabled-card {
+  align-self: start;
+}
+
+.zju-materials-card,
+.zju-jobs-card {
+  grid-column: span 2;
+}
+
+.zju-page-message {
+  margin-bottom: 16px;
+}
+
+.icon-action-button {
+  align-items: center;
+  background: var(--accent-light);
+  border: 0;
+  border-radius: 999px;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: inline-flex;
+  height: 36px;
+  justify-content: center;
+  transition: transform 0.2s ease, background 0.2s ease;
+  width: 36px;
+}
+
+.icon-action-button:hover {
+  background: var(--calendar-day-hover-bg);
+  transform: translateY(-1px);
+}
+
+.compact-button {
+  min-height: 34px;
+  padding: 0 12px;
+}
+
+.zju-course-meta {
+  color: var(--text-secondary);
+  display: grid;
+  font-size: 13px;
+  gap: 6px;
+  margin: 14px 0;
+}
+
+.zju-detail-layout {
+  align-items: start;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(280px, 0.38fr) minmax(0, 1fr);
+}
+
+.zju-detail-main,
+.zju-side-stack {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.zju-course-facts {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.zju-course-facts div {
+  border-bottom: 1px solid var(--glass-border);
+  display: grid;
+  gap: 4px;
+  padding-bottom: 10px;
+}
+
+.zju-course-facts div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.zju-course-facts dt {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.zju-course-facts dd {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.tool-empty {
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+
+.zju-empty-state {
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.zju-control-card {
+  padding: 16px;
+}
+
+.zju-filter-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) 180px;
+}
+
+.zju-search-field {
+  align-items: center;
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 12px;
+}
+
+.zju-search-field input {
+  background: transparent;
+  border: 0;
+  color: var(--text-primary);
+  font: inherit;
+  min-width: 0;
+  outline: none;
+  width: 100%;
+}
+
+.zju-todo-list,
+.zju-material-list,
+.zju-score-table,
+.zju-job-list {
+  display: grid;
+  gap: 10px;
+}
+
+.zju-todo-row,
+.zju-material-row,
+.zju-score-row {
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  display: flex;
+  gap: 14px;
+  min-width: 0;
+  padding: 14px;
+}
+
+.zju-todo-row,
+.zju-score-row {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.zju-todo-main {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.zju-todo-title-line {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.zju-todo-title-line strong,
+.zju-score-row strong,
+.zju-material-row strong {
+  font-size: 15px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.zju-todo-main > p,
+.zju-score-row span,
+.zju-material-row span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.zju-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.zju-tag-row span {
+  background: var(--accent-light);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 26px;
+  padding: 5px 9px;
+}
+
+.zju-score-row > div,
+.zju-material-row > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.zju-material-row {
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.zju-material-row input {
+  accent-color: var(--accent);
+  flex: 0 0 auto;
+  margin-top: 4px;
+}
+
+.zju-list {
+  display: grid;
+  gap: 10px;
+  max-height: 520px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.zju-list-row {
+  align-items: center;
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 12px;
+}
+
+.zju-list-row strong,
+.zju-list-row span {
+  display: block;
+  min-width: 0;
+}
+
+.zju-list-row strong {
+  font-size: 14px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.zju-list-row span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+  margin-top: 3px;
+}
+
+.zju-row-side {
+  align-items: center;
+  color: var(--text-secondary);
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.zju-checkbox-row {
+  cursor: pointer;
+  justify-content: flex-start;
+}
+
+.zju-checkbox-row input {
+  accent-color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.zju-job {
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.zju-job-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.zju-job pre {
+  color: var(--text-secondary);
+  font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  max-height: 160px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.zju-job-error {
+  color: var(--status-danger);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.zju-file-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.zju-file-links a {
+  align-items: center;
+  background: var(--accent-light);
+  border-radius: 999px;
+  color: var(--text-primary);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 10px;
+}
+
+/* ZJU index cards: Chinese category tag + staggered entrance */
+.zju-index-body {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.zju-index-tag {
+  align-items: center;
+  align-self: start;
+  background: var(--accent-light);
+  border-radius: 999px;
+  color: var(--accent);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  min-height: 24px;
+  padding: 0 10px;
+}
+
+.zju-index-body h2 {
+  margin: 2px 0 0;
+}
+
+.tool-hub-link {
+  animation: zjuCardRise 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.zju-index-card {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.zju-index-card .tool-hub-icon {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease;
+}
+
+.tool-hub-link:hover .zju-index-card {
+  border-color: var(--accent);
+}
+
+.tool-hub-link:hover .tool-hub-icon {
+  background: var(--accent);
+  color: #fff;
+  transform: translateY(-2px) rotate(-4deg) scale(1.05);
+}
+
+.tool-hub-link:hover .tool-hub-arrow {
+  color: var(--accent);
+  transform: translateX(4px);
+}
+
+.tool-hub-arrow {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease;
+}
+
+@keyframes zjuCardRise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Autoplay:播放节奏控制 */
+.zju-speed-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 14px;
+}
+
+.zju-speed-chip {
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 800;
+  min-height: 42px;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.zju-speed-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.zju-speed-chip.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.zju-switch-row {
+  align-items: center;
+  border-top: 1px solid var(--glass-border);
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  padding: 12px 0 2px;
+}
+
+.zju-switch-row span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.zju-switch-row strong {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.zju-switch-row small {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.zju-switch-row input {
+  accent-color: var(--accent);
+  flex: 0 0 auto;
+  height: 18px;
+  width: 18px;
+}
+
+.zju-rhythm-actions {
+  margin-top: 16px;
+}
+
+/* Autoplay: 活动列表 */
+.zju-activity-row {
+  align-items: center;
+  animation: zjuRowFade 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 14px;
+  transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+}
+
+.zju-activity-row:hover {
+  border-color: var(--accent);
+  transform: translateX(2px);
+}
+
+.zju-activity-row.is-selected {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.zju-activity-row.is-done {
+  cursor: default;
+  opacity: 0.62;
+}
+
+.zju-activity-row.is-done:hover {
+  border-color: var(--glass-border);
+  transform: none;
+}
+
+.zju-activity-row input {
+  accent-color: var(--accent);
+  flex: 0 0 auto;
+  height: 16px;
+  width: 16px;
+}
+
+.zju-activity-icon {
+  align-items: center;
+  background: var(--accent-light);
+  border-radius: 10px;
+  color: var(--accent);
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 38px;
+  justify-content: center;
+  width: 38px;
+}
+
+.zju-activity-body {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.zju-activity-body strong {
+  font-size: 14px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.zju-activity-done {
+  align-items: center;
+  color: var(--status-ok);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 800;
+  gap: 4px;
+}
+
+@keyframes zjuRowFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Autoplay: 任务结果概览 */
+.zju-summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.zju-summary-row span {
+  align-items: center;
+  background: var(--accent-light);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 5px;
+  min-height: 28px;
+  padding: 0 11px;
+}
+
+.zju-summary-row strong {
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+/* ZJU 工具索引中枢：按服务分组 */
+.zju-hub {
+  display: grid;
+  gap: 22px;
+}
+
+.zju-hub-category {
+  animation: zjuCardRise 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  display: grid;
+  gap: 12px;
+}
+
+.zju-hub-category-head {
+  align-items: center;
+  color: var(--text-primary);
+  display: flex;
+  gap: 10px;
+}
+
+.zju-hub-category-icon {
+  align-items: center;
+  background: var(--accent-light);
+  border-radius: 11px;
+  color: var(--accent);
+  display: inline-flex;
+  height: 38px;
+  justify-content: center;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+  width: 38px;
+}
+
+.zju-hub-category-title {
+  display: grid;
+  gap: 1px;
+}
+
+.zju-hub-category-title small {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.zju-hub-category-title strong {
+  color: var(--text-primary);
+  font-size: 17px;
+}
+
+.zju-hub-category-head:hover .zju-hub-category-icon {
+  background: var(--accent);
+  color: #fff;
+  transform: translateY(-1px) scale(1.04);
+}
+
+/* 智云课堂录播行 + 图书馆借阅行 */
+.zju-activity-body {
+  flex: 1 1 auto;
+}
+
+.zju-activity-row.is-locked {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.zju-activity-row.is-locked:hover {
+  border-color: var(--glass-border);
+  transform: none;
+}
+
+.zju-replay-row {
+  cursor: default;
+}
+
+.zju-replay-row:hover {
+  transform: none;
+}
+
+.zju-replay-actions {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.zju-replay-actions .icon-action-button {
+  text-decoration: none;
+}
+
+.zju-loan-side {
+  align-items: flex-end;
+  display: grid;
+  flex: 0 0 auto;
+  gap: 5px;
+  justify-items: end;
+}
+
+.zju-loan-remaining {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.zju-loan-renewable {
+  align-items: center;
+  color: var(--accent);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 4px;
+}
+
+/* 互动测验答案 */
+.zju-quiz-classroom-select {
+  margin-top: 12px;
+}
+
+.zju-quiz-list {
+  display: grid;
+  gap: 12px;
+}
+
+.zju-quiz-item {
+  animation: zjuRowFade 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  background: var(--surface-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.zju-quiz-head {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.zju-quiz-number {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.zju-quiz-point {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.zju-quiz-desc {
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.zju-quiz-options {
+  display: grid;
+  gap: 6px;
+}
+
+.zju-quiz-option {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: var(--text-secondary);
+  display: flex;
+  font-size: 13px;
+  gap: 8px;
+  line-height: 1.5;
+  padding: 7px 10px;
+}
+
+.zju-quiz-option.is-answer {
+  background: var(--status-ok-bg);
+  border-color: var(--status-ok);
+  color: var(--text-primary);
+}
+
+.zju-quiz-option.is-answer svg {
+  color: var(--status-ok);
+  margin-left: auto;
+}
+
+.zju-quiz-option > span {
+  overflow-wrap: anywhere;
+}
+
+.zju-quiz-answers {
+  border-top: 1px solid var(--glass-border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 10px;
+}
+
+.zju-quiz-answer {
+  align-items: center;
+  background: var(--status-ok-bg);
+  border-radius: 999px;
+  color: var(--status-ok);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 5px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  padding: 5px 11px;
+}
+
+.zju-quiz-answer-empty {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tool-hub-link,
+  .zju-activity-row,
+  .zju-hub-category,
+  .zju-quiz-item {
+    animation: none;
+  }
+}
+
 .auth-required-card p {
   color: var(--text-secondary);
 }
@@ -2535,6 +3853,12 @@ ul {
   .mascot-sprite {
     transition: none;
   }
+
+  .zju-home-grid-auth-only .zju-account-card,
+  .zju-home-grid-ready .zju-account-card,
+  .zju-tools-card {
+    animation: none;
+  }
 }
 
 /* Responsive Design */
@@ -2681,6 +4005,104 @@ ul {
   .admin-card,
   .auth-card {
     padding: 18px;
+  }
+
+  .page-shell {
+    padding: 82px 14px 32px;
+  }
+
+  .intro h1,
+  .tool-detail-card h1,
+  .zju-tool-heading h1 {
+    font-size: 34px;
+  }
+
+  .tool-hub-grid,
+  .zju-home-grid,
+  .zju-tools-grid,
+  .zju-tool-index,
+  .zju-info-grid,
+  .zju-metric-grid,
+  .zju-detail-layout,
+  .zju-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .zju-tool-heading,
+  .zju-card-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .zju-heading-actions .button {
+    width: 100%;
+  }
+
+  .zju-materials-card,
+  .zju-jobs-card {
+    grid-column: auto;
+  }
+
+  .tool-hub-card,
+  .tool-launch-card {
+    grid-template-columns: auto minmax(0, 1fr);
+    min-height: 132px;
+  }
+
+  .tool-hub-arrow {
+    display: none;
+  }
+
+  .tool-action-row,
+  .zju-list-row,
+  .zju-todo-row,
+  .zju-score-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .zju-suite-tool {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .zju-replay-row,
+  .zju-activity-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .zju-replay-actions,
+  .zju-loan-side {
+    align-items: flex-start;
+    justify-items: start;
+    width: 100%;
+  }
+
+  .zju-loan-side {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .tool-action-row .button,
+  .compact-button {
+    width: 100%;
+  }
+
+  .zju-metric-card {
+    min-height: auto;
+  }
+
+  .zju-todo-title-line {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .zju-row-side {
+    justify-content: space-between;
+  }
+
+  .zju-list {
+    max-height: none;
   }
 
   .netease-now {

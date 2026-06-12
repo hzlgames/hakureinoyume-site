@@ -390,6 +390,8 @@ export const ModelName = {
   Verification: 'Verification',
   AdminAuditLog: 'AdminAuditLog',
   NeteaseAccount: 'NeteaseAccount',
+  ZjuAccount: 'ZjuAccount',
+  ZjuToolJob: 'ZjuToolJob',
   WebMusicPlaylist: 'WebMusicPlaylist',
   WebMusicPlaylistSong: 'WebMusicPlaylistSong'
 } as const
@@ -407,7 +409,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "adminAuditLog" | "neteaseAccount" | "webMusicPlaylist" | "webMusicPlaylistSong"
+    modelProps: "user" | "session" | "account" | "verification" | "adminAuditLog" | "neteaseAccount" | "zjuAccount" | "zjuToolJob" | "webMusicPlaylist" | "webMusicPlaylistSong"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -855,6 +857,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ZjuAccount: {
+      payload: Prisma.$ZjuAccountPayload<ExtArgs>
+      fields: Prisma.ZjuAccountFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ZjuAccountFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuAccountPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ZjuAccountFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuAccountPayload>
+        }
+        findFirst: {
+          args: Prisma.ZjuAccountFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuAccountPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ZjuAccountFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuAccountPayload>
+        }
+        findMany: {
+          args: Prisma.ZjuAccountFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuAccountPayload>[]
+        }
+        create: {
+          args: Prisma.ZjuAccountCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuAccountPayload>
+        }
+        createMany: {
+          args: Prisma.ZjuAccountCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ZjuAccountCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuAccountPayload>[]
+        }
+        delete: {
+          args: Prisma.ZjuAccountDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuAccountPayload>
+        }
+        update: {
+          args: Prisma.ZjuAccountUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuAccountPayload>
+        }
+        deleteMany: {
+          args: Prisma.ZjuAccountDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ZjuAccountUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ZjuAccountUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuAccountPayload>[]
+        }
+        upsert: {
+          args: Prisma.ZjuAccountUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuAccountPayload>
+        }
+        aggregate: {
+          args: Prisma.ZjuAccountAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateZjuAccount>
+        }
+        groupBy: {
+          args: Prisma.ZjuAccountGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuAccountGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ZjuAccountCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuAccountCountAggregateOutputType> | number
+        }
+      }
+    }
+    ZjuToolJob: {
+      payload: Prisma.$ZjuToolJobPayload<ExtArgs>
+      fields: Prisma.ZjuToolJobFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ZjuToolJobFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolJobPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ZjuToolJobFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolJobPayload>
+        }
+        findFirst: {
+          args: Prisma.ZjuToolJobFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolJobPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ZjuToolJobFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolJobPayload>
+        }
+        findMany: {
+          args: Prisma.ZjuToolJobFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolJobPayload>[]
+        }
+        create: {
+          args: Prisma.ZjuToolJobCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolJobPayload>
+        }
+        createMany: {
+          args: Prisma.ZjuToolJobCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ZjuToolJobCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolJobPayload>[]
+        }
+        delete: {
+          args: Prisma.ZjuToolJobDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolJobPayload>
+        }
+        update: {
+          args: Prisma.ZjuToolJobUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolJobPayload>
+        }
+        deleteMany: {
+          args: Prisma.ZjuToolJobDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ZjuToolJobUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ZjuToolJobUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolJobPayload>[]
+        }
+        upsert: {
+          args: Prisma.ZjuToolJobUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolJobPayload>
+        }
+        aggregate: {
+          args: Prisma.ZjuToolJobAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateZjuToolJob>
+        }
+        groupBy: {
+          args: Prisma.ZjuToolJobGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuToolJobGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ZjuToolJobCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuToolJobCountAggregateOutputType> | number
+        }
+      }
+    }
     WebMusicPlaylist: {
       payload: Prisma.$WebMusicPlaylistPayload<ExtArgs>
       fields: Prisma.WebMusicPlaylistFieldRefs
@@ -1137,6 +1287,44 @@ export const NeteaseAccountScalarFieldEnum = {
 export type NeteaseAccountScalarFieldEnum = (typeof NeteaseAccountScalarFieldEnum)[keyof typeof NeteaseAccountScalarFieldEnum]
 
 
+export const ZjuAccountScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  username: 'username',
+  passwordCiphertext: 'passwordCiphertext',
+  passwordIv: 'passwordIv',
+  passwordTag: 'passwordTag',
+  pintiaCiphertext: 'pintiaCiphertext',
+  pintiaIv: 'pintiaIv',
+  pintiaTag: 'pintiaTag',
+  lastValidatedAt: 'lastValidatedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ZjuAccountScalarFieldEnum = (typeof ZjuAccountScalarFieldEnum)[keyof typeof ZjuAccountScalarFieldEnum]
+
+
+export const ZjuToolJobScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tool: 'tool',
+  status: 'status',
+  input: 'input',
+  output: 'output',
+  logs: 'logs',
+  error: 'error',
+  workDir: 'workDir',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  exitCode: 'exitCode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ZjuToolJobScalarFieldEnum = (typeof ZjuToolJobScalarFieldEnum)[keyof typeof ZjuToolJobScalarFieldEnum]
+
+
 export const WebMusicPlaylistScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -1403,6 +1591,8 @@ export type GlobalOmitConfig = {
   verification?: Prisma.VerificationOmit
   adminAuditLog?: Prisma.AdminAuditLogOmit
   neteaseAccount?: Prisma.NeteaseAccountOmit
+  zjuAccount?: Prisma.ZjuAccountOmit
+  zjuToolJob?: Prisma.ZjuToolJobOmit
   webMusicPlaylist?: Prisma.WebMusicPlaylistOmit
   webMusicPlaylistSong?: Prisma.WebMusicPlaylistSongOmit
 }

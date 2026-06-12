@@ -57,6 +57,8 @@ export const ModelName = {
   Verification: 'Verification',
   AdminAuditLog: 'AdminAuditLog',
   NeteaseAccount: 'NeteaseAccount',
+  ZjuAccount: 'ZjuAccount',
+  ZjuToolJob: 'ZjuToolJob',
   WebMusicPlaylist: 'WebMusicPlaylist',
   WebMusicPlaylistSong: 'WebMusicPlaylistSong'
 } as const
@@ -170,6 +172,44 @@ export const NeteaseAccountScalarFieldEnum = {
 } as const
 
 export type NeteaseAccountScalarFieldEnum = (typeof NeteaseAccountScalarFieldEnum)[keyof typeof NeteaseAccountScalarFieldEnum]
+
+
+export const ZjuAccountScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  username: 'username',
+  passwordCiphertext: 'passwordCiphertext',
+  passwordIv: 'passwordIv',
+  passwordTag: 'passwordTag',
+  pintiaCiphertext: 'pintiaCiphertext',
+  pintiaIv: 'pintiaIv',
+  pintiaTag: 'pintiaTag',
+  lastValidatedAt: 'lastValidatedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ZjuAccountScalarFieldEnum = (typeof ZjuAccountScalarFieldEnum)[keyof typeof ZjuAccountScalarFieldEnum]
+
+
+export const ZjuToolJobScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tool: 'tool',
+  status: 'status',
+  input: 'input',
+  output: 'output',
+  logs: 'logs',
+  error: 'error',
+  workDir: 'workDir',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  exitCode: 'exitCode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ZjuToolJobScalarFieldEnum = (typeof ZjuToolJobScalarFieldEnum)[keyof typeof ZjuToolJobScalarFieldEnum]
 
 
 export const WebMusicPlaylistScalarFieldEnum = {
