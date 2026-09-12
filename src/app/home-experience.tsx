@@ -1,20 +1,18 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { 
-  Search, Bell, BookOpen, Heart,
+import {
+  BookOpen, Heart,
   CloudSun, CalendarDays, Book, Timer, CheckSquare,
   Languages, Calculator, Dices, Palette, MoreHorizontal,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
-  Star, Moon, Sun, Target, AlignLeft, MapPin, Menu, X,
-  LogIn, LogOut, ShieldCheck, UserPlus
+  Star, Target, AlignLeft, MapPin
 } from 'lucide-react';
 import { CardHeader, DashboardCard, GlassPanel, ProgressBar } from "./_components/ui";
 import { InteractiveMascot } from "./_components/interactive-mascot";
 import { NeteasePlayer } from "./_components/netease-player";
-import { signOut, useSession } from "../lib/auth-client";
 
 type WeatherState = {
   temperature: number | null;
@@ -185,12 +183,37 @@ function buildCalendarDays(
 }
 
 export default function HomeExperience() {
-  const { data: session } = useSession();
-  const [theme, setTheme] = useState('light');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [now, setNow] = useState(() => new Date());
-  const [calendarViewDate, setCalendarViewDate] = useState(() => new Date());
-  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const dashboardRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const grid = dashboardRef.current;
+    if (!grid) return;
+    const cards = Array.from(grid.children) as HTMLElement[];
+    let frame = 0;
+    const arrange = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const gap = Number.parseFloat(getComputedStyle(grid).rowGap);
+        const heights = cards.map(card => card.getBoundingClientRect().height);
+        cards.forEach((card, index) => {
+          card.style.gridRowEnd = `span ${Math.ceil((heights[index] + gap) / (8 + gap))}`;
+        });
+        grid.classList.add("is-packed");
+      });
+    };
+    const observer = new ResizeObserver(arrange);
+    cards.forEach(card => observer.observe(card));
+    arrange();
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+      grid.classList.remove("is-packed");
+      cards.forEach(card => card.style.removeProperty("grid-row-end"));
+    };
+  }, []);
+  // A deterministic first render prevents clock/calendar hydration mismatches.
+  const [now, setNow] = useState(() => new Date(2000, 0, 1));
+  const [calendarViewDate, setCalendarViewDate] = useState(() => new Date(2000, 0, 1));
+  const [selectedDate, setSelectedDate] = useState(() => new Date(2000, 0, 1));
   const [calendarEvents, setCalendarEvents] = useState<Record<string, CalendarEvent[]>>({});
   const [calendarSources, setCalendarSources] = useState<Record<string, boolean>>({});
   const [loadedCalendarYears, setLoadedCalendarYears] = useState<number[]>([]);
@@ -205,12 +228,14 @@ export default function HomeExperience() {
   });
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  useEffect(() => {
+    const initialize = window.setTimeout(() => {
+      const today = new Date();
+      setNow(today);
+      setCalendarViewDate(today);
+      setSelectedDate(today);
+    }, 0);
     const timer = window.setInterval(() => setNow(new Date()), 1000);
-    return () => window.clearInterval(timer);
+    return () => { window.clearTimeout(initialize); window.clearInterval(timer); };
   }, []);
 
   useEffect(() => {
@@ -280,9 +305,12 @@ export default function HomeExperience() {
     };
   }, []);
 
+  const clockReady = now.getFullYear() !== 2000;
+
   useEffect(() => {
     let isMounted = true;
     const viewYear = calendarViewDate.getFullYear();
+    if (!clockReady) return;
     const yearsToLoad = new Set([viewYear]);
 
     if (calendarViewDate.getMonth() === 0) yearsToLoad.add(viewYear - 1);
@@ -330,7 +358,7 @@ export default function HomeExperience() {
     return () => {
       isMounted = false;
     };
-  }, [calendarViewDate, loadedCalendarYears]);
+  }, [calendarViewDate, loadedCalendarYears, clockReady]);
 
   const calendarDays = useMemo(
     () => buildCalendarDays(calendarViewDate, now, selectedDate, calendarEvents),
@@ -348,10 +376,6 @@ export default function HomeExperience() {
   const windSpeed = weather.windSpeed === null ? "--" : `${weather.windSpeed} km/h`;
   const humidity = weather.humidity === null ? "--" : `${weather.humidity}%`;
 
-  const toggleTheme = () => {
-    setTheme(t => t === 'light' ? 'dark' : 'light');
-  };
-
   const selectCalendarDay = (day: CalendarDay) => {
     setSelectedDate(day.date);
 
@@ -366,76 +390,21 @@ export default function HomeExperience() {
     setSelectedDate(today);
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    window.location.reload();
-  };
-
   return (
     <div className="app-container">
-      {/* Header */}
-      <header className="header">
-        <div className="header-left">
-          <div className="header-logo">☯</div>
-          <span>博麗の夢</span>
-        </div>
-        <nav className={`header-nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
-          <Link className="nav-item active" href="/" onClick={() => setIsMobileMenuOpen(false)}>首页</Link>
-          <span className="nav-item">学习</span>
-          <span className="nav-item">生活</span>
-          <span className="nav-item">东方</span>
-          <Link className="nav-item" href="/tools" onClick={() => setIsMobileMenuOpen(false)}>工具</Link>
-          <span className="nav-item">关于</span>
-        </nav>
-        <div className="header-right">
-          <div className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </div>
-          <Search className="header-icon" size={20} />
-          <Bell className="header-icon" size={20} />
-          <div className="header-icon" onClick={toggleTheme}>
-            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-          </div>
-          {session?.user ? (
-            <div className="header-account">
-              {session.user.role === "admin" ? (
-                <Link className="header-auth-link admin" href="/admin">
-                  <ShieldCheck size={16} />
-                  管理
-                </Link>
-              ) : null}
-              <span className="header-user-name">{session.user.name}</span>
-              <button className="header-auth-icon" onClick={handleSignOut} type="button" aria-label="退出登录">
-                <LogOut size={17} />
-              </button>
-            </div>
-          ) : (
-            <div className="header-account">
-              <Link className="header-auth-link" href="/login">
-                <LogIn size={16} />
-                登录
-              </Link>
-              <Link className="header-auth-icon" href="/register" aria-label="注册">
-                <UserPlus size={17} />
-              </Link>
-            </div>
-          )}
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="main-container">
-        
+
         {/* Top Section */}
         <section className="top-section">
           <InteractiveMascot />
-          
+
           <div className="hero-text">
             <h1 className="hero-title">博麗の夢</h1>
             <p className="hero-subtitle">一个记录学习与生活的小站</p>
             <div className="hero-motto">结缘东方 · 博丽神社 · 梦想常在</div>
           </div>
-          
+
           <Link className="glass-panel tools-entry" href="/tools">
             <div className="tools-entry-icon">
               <div className="torii-icon">⛩</div>
@@ -449,9 +418,10 @@ export default function HomeExperience() {
         </section>
 
         {/* Dashboard Grid */}
-        <section className="dashboard-grid">
+        <div className="home-dashboard">
+        <section ref={dashboardRef} className="dashboard-grid" aria-label="学习与生活">
           {/* Card 1: 今日任务 */}
-          <DashboardCard>
+          <DashboardCard id="study">
             <CardHeader
               action={<div className="card-more" style={{fontWeight: 'bold', color: 'var(--text-primary)'}}>3/6</div>}
               icon={<CheckSquare className="card-title-icon" size={18} />}
@@ -557,7 +527,7 @@ export default function HomeExperience() {
           </DashboardCard>
 
           {/* Card 4: 最近收藏 */}
-          <DashboardCard>
+          <DashboardCard id="touhou">
             <CardHeader
               action={<div className="card-more">更多 &gt;</div>}
               icon={<Heart className="card-title-icon" size={18} />}
@@ -565,7 +535,7 @@ export default function HomeExperience() {
             />
             <div className="collection-list">
               <div className="collection-item">
-                <Image src="https://placeholder.co/60x40" alt="东方雅乐集" width={60} height={40} className="collection-img" />
+                <Image src="/backgrounds/bg-dark.png" alt="东方雅乐集" width={60} height={40} className="collection-img" />
                 <div className="collection-info">
                   <div className="collection-title">东方雅乐集 · Vol.4</div>
                   <div className="collection-desc">森罗万象 / 神灵庙</div>
@@ -573,21 +543,21 @@ export default function HomeExperience() {
                 <Heart size={16} className="collection-like" fill="var(--accent)" />
               </div>
               <div className="collection-item">
-                <Image src="https://placeholder.co/60x40" alt="幻想乡缘起" width={60} height={40} className="collection-img" />
+                <Image src="/backgrounds/bg-dark.png" alt="幻想乡缘起" width={60} height={40} className="collection-img" />
                 <div className="collection-info">
                   <div className="collection-title">幻想乡缘起</div>
                   <div className="collection-desc">ZUN / 官方设定集</div>
                 </div>
               </div>
               <div className="collection-item">
-                <Image src="https://placeholder.co/60x40" alt="东方梦想" width={60} height={40} className="collection-img" />
+                <Image src="/backgrounds/bg-dark.png" alt="东方梦想" width={60} height={40} className="collection-img" />
                 <div className="collection-info">
                   <div className="collection-title">东方梦想</div>
                   <div className="collection-desc">黄昏Frontier / 同人音乐</div>
                 </div>
               </div>
               <div className="collection-item">
-                <Image src="https://placeholder.co/60x40" alt="异变解读笔记" width={60} height={40} className="collection-img" />
+                <Image src="/backgrounds/bg-dark.png" alt="异变解读笔记" width={60} height={40} className="collection-img" />
                 <div className="collection-info">
                   <div className="collection-title">异变解读笔记</div>
                   <div className="collection-desc">个人笔记 / 研究记录</div>
@@ -596,31 +566,19 @@ export default function HomeExperience() {
             </div>
           </DashboardCard>
 
-          {/* Card 5: 正在播放 & 装饰 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <NeteasePlayer />
-            
-            <DashboardCard>
-              <div className="quote-card">
-                <div className="quote-icon">☯</div>
-                <div className="quote-text">境界既定，<br/>缘起缘灭，<br/>一切皆在博丽之梦。</div>
-              </div>
-            </DashboardCard>
-          </div>
-
           {/* Row 2: 时间/天气 */}
-          <GlassPanel className="time-weather-card">
+          <GlassPanel id="life" className="time-weather-card">
             <div className="time-content">
               <div className="card-title" style={{marginBottom: 0}}><MapPin className="card-title-icon" size={18} /> 时间/天气</div>
               <div style={{fontSize: '12px', color: 'var(--text-tertiary)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4}}><MapPin size={12} /> {weather.location}</div>
-              <div className="time-display">{formatTime(now)}</div>
-              <div className="date-display">{formatDate(now)}</div>
+              <div className="time-display">{clockReady ? formatTime(now) : "--:--:--"}</div>
+              <div className="date-display">{clockReady ? formatDate(now) : "正在同步日期…"}</div>
               <div className="weather-display">
                 <div className="weather-main"><CloudSun size={24} /> {weatherTemperature} {weather.condition}</div>
                 <div className="weather-detail">{weather.windDirection} {windSpeed} · 湿度 {humidity}</div>
               </div>
             </div>
-            <Image src="https://placeholder.co/140x140" width={140} height={140} className="time-weather-bg" alt="Shrine" />
+            <Image src="/backgrounds/bg-light.png" width={140} height={140} className="time-weather-bg" alt="Shrine" />
           </GlassPanel>
 
           {/* Row 2: 日历 */}
@@ -725,17 +683,25 @@ export default function HomeExperience() {
             </div>
           </DashboardCard>
 
-          {/* Row 2: Decorative Omamori */}
-          <div className="decorative-widget">
-            <Image src={theme === 'light' ? "https://placeholder.co/120x180/d33c46/fff?text=Omamori" : "https://placeholder.co/120x120/11162d/5e84f5?text=Butterfly"} alt="Decoration" width={120} height={180} className="decorative-img" />
-          </div>
-
         </section>
+          {/* Card 5: 正在播放 & 装饰 */}
+          <aside className="home-music" aria-label="音乐与寄语">
+            <NeteasePlayer />
+
+            <DashboardCard>
+              <div className="quote-card">
+                <div className="quote-icon">☯</div>
+                <div className="quote-text">境界既定，<br/>缘起缘灭，<br/>一切皆在博丽之梦。</div>
+              </div>
+            </DashboardCard>
+          </aside>
+
+        </div>
 
       </main>
 
       {/* Footer */}
-      <footer className="footer">
+      <footer className="footer" id="about">
         <div>© 2025 博麗の夢 · 记录学习与生活的点滴</div>
         <div className="footer-icons">
           <BookOpen className="footer-icon" size={16} />

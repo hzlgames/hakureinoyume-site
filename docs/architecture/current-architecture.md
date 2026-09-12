@@ -31,11 +31,12 @@
 
 ### Component
 
+- `src/app/_components/site-header.tsx`：根布局共享导航，读取会话、控制全站主题和导航面板；主题脚本在根布局中避免首次绘制闪烁。
 - `src/app/_components/ui.tsx`：轻量 UI primitives，包括 `GlassPanel`、`DashboardCard`、`CardHeader`、`ProgressBar`。
 - `src/app/_components/auth/auth-shell.tsx`：账号页面共享布局。
 - `src/app/_components/interactive-mascot.tsx`：客户端小宠物组件，管理动画帧、拖动、悬停、点击、降级动效和视口约束。
 - `src/app/_components/netease-player.tsx`：网易云播放器，处理公开搜索/播放、二维码绑定、用户歌单、网页歌单和播放状态。
-- `src/app/site-theme.ts`：站点名、背景选项、CSS 变量集合和自定义背景封装，当前主要供后台背景管理页使用；首页主题切换由 `home-experience.tsx` 的本地 state 写入 `data-theme`。
+- `src/app/site-theme.ts`：站点名、背景选项、CSS 变量集合和自定义背景封装，当前主要供后台背景管理页使用；全站明暗主题由共享 `SiteHeader` 管理，写入根节点 `data-theme` 并持久化。
 - `src/lib/auth.ts`：Better Auth 配置，接入 Prisma adapter、邮箱密码登录、邮箱验证、密码重置和 admin 插件。
 - `src/lib/auth-client.ts`：浏览器端 Better Auth client。
 - `src/lib/admin.ts`：读取当前 session，提供 `requireAdmin()` 和 `auditAdminAction()`。

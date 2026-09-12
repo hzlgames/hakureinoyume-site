@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import {
   Album,
   Heart,
@@ -135,7 +135,21 @@ async function fetchJson<T>(url: string, init?: RequestInit) {
   return data;
 }
 
+function subscribeDisplay(callback: () => void) {
+  window.addEventListener("music-display-change", callback);
+  window.addEventListener("storage", callback);
+  return () => { window.removeEventListener("music-display-change", callback); window.removeEventListener("storage", callback); };
+}
+function readDisplay() {
+  try { return localStorage.getItem("hakurei-music-display") === "compact"; } catch { return false; }
+}
+
 export function NeteasePlayer() {
+  const compact = useSyncExternalStore(subscribeDisplay, readDisplay, () => false);
+  function setDisplay(next: boolean) {
+    try { localStorage.setItem("hakurei-music-display", next ? "compact" : "detailed"); } catch {}
+    window.dispatchEvent(new Event("music-display-change"));
+  }
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const qrRef = useRef<QrState | null>(null);
   const qrCheckInFlightRef = useRef(false);
@@ -833,13 +847,17 @@ export function NeteasePlayer() {
 
   const progressPercent = duration > 0 ? Math.min((progress / duration) * 100, 100) : 0;
   const canSeek = duration > 0 && Number.isFinite(duration);
-  const coverUrl = currentSong?.coverUrl || account.profile?.avatarUrl || "https://placeholder.co/140x140";
+  const coverUrl = currentSong?.coverUrl || account.profile?.avatarUrl || "/backgrounds/bg-dark.png";
 
   return (
-    <DashboardCard className="netease-player">
+    <DashboardCard className={`netease-player ${compact ? "is-compact" : ""}`}>
       <CardHeader
         action={
-          playerBusy ? <LoaderCircle className="netease-spin" size={16} /> : <Music size={16} color="var(--text-tertiary)" />
+          <div className="player-display" aria-label="播放器显示模式">
+            {playerBusy && <LoaderCircle className="netease-spin" size={14} aria-label="加载中" />}
+            <button type="button" aria-pressed={compact} onClick={() => setDisplay(true)}>简易</button>
+            <button type="button" aria-pressed={!compact} onClick={() => setDisplay(false)}>详细</button>
+          </div>
         }
         icon={<Music className="card-title-icon" size={18} />}
         title="网易云音乐"
@@ -991,6 +1009,7 @@ export function NeteasePlayer() {
         </div>
       </div>
 
+      <div className="player-library" inert={compact} aria-hidden={compact}><div className="player-library-inner">
       <form className="netease-search" onSubmit={submitSearch}>
         <Search size={15} />
         <input
@@ -1235,7 +1254,8 @@ export function NeteasePlayer() {
         ) : null}
       </div>
 
-      <div className="netease-status">{message}</div>
+      </div></div>
+      <div className="netease-status" role="status">{message}</div>
     </DashboardCard>
   );
 }

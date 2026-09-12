@@ -6,21 +6,22 @@ export function cx(...classes: Array<string | false | null | undefined>) {
 
 type CommonProps = {
   children: ReactNode;
+  id?: string;
   className?: string;
   style?: CSSProperties;
 };
 
-export function GlassPanel({ children, className, style }: CommonProps) {
+export function GlassPanel({ children, className, style, id }: CommonProps) {
   return (
-    <div className={cx("glass-panel", className)} style={style}>
+    <div id={id} className={cx("glass-panel", className)} style={style}>
       {children}
     </div>
   );
 }
 
-export function DashboardCard({ children, className, style }: CommonProps) {
+export function DashboardCard({ children, className, style, id }: CommonProps) {
   return (
-    <GlassPanel className={cx("p-24", className)} style={style}>
+    <GlassPanel id={id} className={cx("p-24", className)} style={style}>
       {children}
     </GlassPanel>
   );
