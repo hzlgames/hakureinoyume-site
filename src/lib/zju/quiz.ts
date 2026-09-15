@@ -1,8 +1,11 @@
+import fs from "node:fs/promises";
+import { safeRichHtml, escapeHtml } from "./rich-html";
+import { getZjuDataRoot, pathSegment, materialFileName } from "./shared";
 // 互动测验答案（courses.zju/quizanswer）：获取互动测验（不计平时分）的答案
 import prisma from "../prisma";
 import { getZjuSecret } from "./account";
 import { activeJobs, createJobLogger } from "./jobs";
-import { buildCoursesClient, readNumber, readString, requestJson, stripHtmlTags, toJsonValue } from "./shared";
+import { buildCoursesClient, readNumber, readString, requestJson, toJsonValue } from "./shared";
 import type { CoursesClient } from "./shared";
 import type { ZjuQuizAnswer, ZjuQuizClassroom, ZjuQuizCourse, ZjuQuizOption, ZjuQuizSubject } from "./types";
 
@@ -71,7 +74,7 @@ export async function getQuizAnswers(userId: string, classroomId: string, init?:
     const type = readString(subject.type);
     const options: ZjuQuizOption[] = (Array.isArray(subject.options) ? subject.options as Array<Record<string, unknown>> : []).map((option) => ({
       label: quizOptionLabel(option.sort),
-      content: stripHtmlTags(readString(option.content)),
+      content: safeRichHtml(readString(option.content)),
       isAnswer: Boolean(option.is_answer)
     }));
 
@@ -79,14 +82,14 @@ export async function getQuizAnswers(userId: string, classroomId: string, init?:
       ? options.filter((option) => option.isAnswer).map((option) => ({ label: option.label, content: option.content }))
       : (Array.isArray(subject.correct_answers) ? subject.correct_answers as Array<Record<string, unknown>> : []).map((answer, index) => ({
         label: `填空 ${index + 1}`,
-        content: stripHtmlTags(readString(answer.content))
+        content: safeRichHtml(readString(answer.content))
       }));
 
     return {
       id: String(readNumber(subject.id) ?? readString(subject.id)),
       type,
       point: readString(subject.point),
-      description: stripHtmlTags(readString(subject.description)),
+      description: safeRichHtml(readString(subject.description)),
       options,
       answers
     };
@@ -124,12 +127,20 @@ async function runQuizAnswersJob(jobId: string, userId: string, classroomId: str
       where: { id: jobId },
       data: {
         status: "running",
-        startedAt: new Date()
+        startedAt: new Date(),
+        workDir: `${getZjuDataRoot()}/${pathSegment(userId)}/${pathSegment(jobId)}`
       }
     });
 
     logger.log(`读取互动测验答案：${title || classroomId}`);
     const subjects = await getQuizAnswers(userId, classroomId, { signal: abort.signal });
+    const workDir = `${getZjuDataRoot()}/${pathSegment(userId)}/${pathSegment(jobId)}`;
+    await fs.mkdir(workDir, { recursive: true });
+    const name = `QA-${materialFileName(title || classroomId).replace(/\s+/g, "_")}.html`;
+    const html = `<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title || "Quiz Answer")}</title><style>body{font-family:sans-serif}.question{font-size:20px;font-weight:bold}.choice{margin-left:20px}.answer{font-size:20px;margin-left:20px;font-weight:bold;color:blue}img{max-width:100%;height:auto}</style></head><body><h1>Quiz Answer</h1>${subjects.map((subject) => `<div class="question">Q#${escapeHtml(subject.id)} -: ${subject.description}</div>${subject.options.map((option) => `<div class="choice">Choice ${escapeHtml(option.label)}: ${option.content}</div>`).join("")}${subject.answers.map((answer) => `<div class="answer">Answer ${escapeHtml(answer.label)}: ${answer.content}</div>`).join("")}`).join("")}</body></html>`;
+    const filePath = `${workDir}/${name}`;
+    await fs.writeFile(filePath, html);
+    const files = [{ name, path: filePath, size: Buffer.byteLength(html) }];
     logger.log(`读取完成，共 ${subjects.length} 题。`);
     await logger.flush();
 
@@ -139,7 +150,7 @@ async function runQuizAnswersJob(jobId: string, userId: string, classroomId: str
         status: "succeeded",
         exitCode: 0,
         finishedAt: new Date(),
-        output: toJsonValue({ subjects })
+        output: toJsonValue({ subjects, files })
       }
     });
   } catch (error) {

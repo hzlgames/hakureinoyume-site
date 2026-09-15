@@ -1,3 +1,4 @@
+import { artifactExpiresAt, artifactsExpired } from "../../../lib/zju/artifacts";
 import { NextResponse } from "next/server";
 import { getCurrentSession } from "../../../lib/admin";
 import { getStoredZjuAccount } from "../../../lib/zju";
@@ -90,7 +91,9 @@ export function serializeZjuJob<T extends Record<string, unknown>>(job: T) {
 
   return {
     ...result,
-    output: sanitizeZjuJobOutput(job.output)
+    expiresAt: artifactExpiresAt(job.createdAt as Date).toISOString(),
+    filesExpired: artifactsExpired(job.createdAt as Date),
+    output: sanitizeZjuJobOutput(artifactsExpired(job.createdAt as Date) ? { ...asRecord(job.output), files: [] } : job.output)
   };
 }
 

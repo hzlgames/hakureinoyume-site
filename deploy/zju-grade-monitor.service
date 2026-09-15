@@ -1,0 +1,10 @@
+[Unit]
+Description=Check enabled per-user ZJU grade monitors
+After=network.target
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/hakureinoyume-site
+EnvironmentFile=/etc/hakureinoyume-site.env
+ExecStart=/usr/local/bin/node --import tsx scripts/zju-maintenance.ts
+TimeoutStartSec=1800

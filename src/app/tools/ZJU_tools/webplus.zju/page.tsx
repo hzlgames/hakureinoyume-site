@@ -1,14 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Archive, Download, FileText, Link2, RefreshCcw, XCircle } from "lucide-react";
+import { Archive, Link2, RefreshCcw, XCircle } from "lucide-react";
 import { DashboardCard } from "../../../_components/ui";
 import {
   fetchJson,
   formatFullDateTime,
-  formatSize,
   Job,
-  outputFiles,
+  ZjuDownloads,
   toolStatusLabel,
   toolStatusTone,
   ZjuAuthGate,
@@ -79,7 +78,7 @@ export default function ZjuWebplusPage() {
         backHref="/tools/ZJU_tools"
         backLabel="ZJU 工具"
         eyebrow="WebPlus"
-        lead="保存 WebPlus 通知页面及其全部附件，自动还原被命名为 UUID 的附件原始文件名。"
+        lead="文件最多保留两天，请尽快下载。保存 WebPlus 通知页面及其全部附件，自动还原被命名为 UUID 的附件原始文件名。"
         title="通知存档"
       >
         <ZjuErrorMessage message={error} />
@@ -133,7 +132,6 @@ export default function ZjuWebplusPage() {
               <div className="zju-job-list">
                 {jobs.length === 0 ? <p className="tool-empty">暂无存档任务。</p> : null}
                 {jobs.map((job) => {
-                  const files = outputFiles(job.output);
                   const active = ["queued", "running"].includes(job.status);
                   return (
                     <div className="zju-job" key={job.id}>
@@ -150,16 +148,7 @@ export default function ZjuWebplusPage() {
                       </div>
                       <pre>{job.logs || job.error || "等待开始..."}</pre>
                       {job.error && job.logs ? <p className="zju-job-error">{job.error}</p> : null}
-                      {files.length > 0 ? (
-                        <div className="zju-file-links">
-                          {files.map((file) => (
-                            <a href={`/api/zju/jobs/${job.id}/files/${encodeURIComponent(file.name)}`} key={file.name}>
-                              {file.name.endsWith(".html") ? <FileText size={14} /> : <Download size={14} />}
-                              {file.name} · {formatSize(file.size)}
-                            </a>
-                          ))}
-                        </div>
-                      ) : null}
+                      <ZjuDownloads job={job} />
                     </div>
                   );
                 })}

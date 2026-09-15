@@ -1,3 +1,5 @@
+import { packageArtifacts } from "./artifacts";
+import { readToolState, writeToolState, withToolLock } from "./state";
 // 学在浙大（courses.zju）：课程、待办、成绩、资料读取与资料下载任务。
 import prisma from "../prisma";
 import { getZjuSecret } from "./account";
@@ -171,7 +173,7 @@ export async function getReliableTodos(userId: string): Promise<ZjuTodo[]> {
     }
   }));
 
-  const pintiaTodos = await getPintiaTodos(secret.pintiaCookie);
+  const pintiaTodos = await getPintiaTodos(secret.pintiaCookie).catch(() => []);
   return [...todos, ...pintiaTodos].sort((left, right) => {
     const leftTime = left.dueAt ? new Date(left.dueAt).getTime() : Number.POSITIVE_INFINITY;
     const rightTime = right.dueAt ? new Date(right.dueAt).getTime() : Number.POSITIVE_INFINITY;
@@ -286,13 +288,14 @@ export async function getCourseMaterials(userId: string, courseId: string): Prom
 
 export async function createMaterialDownloadJob(input: {
   courseId: string;
+  incremental?: boolean;
   selectedIds?: Array<string | number>;
   userId: string;
 }) {
   const job = await prisma.zjuToolJob.create({
     data: {
       userId: input.userId,
-      tool: "courses.zju/materialDown",
+      tool: input.incremental ? "courses.zju/materialMaintainer" : "courses.zju/materialDown",
       status: "queued",
       input: toJsonValue({
         courseId: input.courseId,
@@ -301,7 +304,9 @@ export async function createMaterialDownloadJob(input: {
     }
   });
 
-  void runMaterialDownloadJob(job.id, input.userId, input.courseId, input.selectedIds ?? []);
+  void withToolLock(input.userId, `materials:${input.courseId}`, () => runMaterialDownloadJob(job.id, input.userId, input.courseId, input.selectedIds ?? [], input.incremental ?? false)).catch(async (error) => {
+    await prisma.zjuToolJob.update({ where: { id: job.id }, data: { status: "failed", error: error.message, finishedAt: new Date() } });
+  });
   return job;
 }
 
@@ -322,7 +327,8 @@ async function runMaterialDownloadJob(
   jobId: string,
   userId: string,
   courseId: string,
-  selectedIds: Array<string | number>
+  selectedIds: Array<string | number>,
+  incremental: boolean
 ) {
   const abort = new AbortController();
   activeJobs.set(jobId, { abort, userId });
@@ -330,6 +336,7 @@ async function runMaterialDownloadJob(
   const workDir = `${getZjuDataRoot()}/${pathSegment(userId)}/${pathSegment(jobId)}`;
 
   try {
+    if ((await prisma.zjuToolJob.findUnique({ where: { id: jobId } }))?.status === "cancelled") return;
     await fs.mkdir(workDir, { recursive: true });
     await prisma.zjuToolJob.update({
       where: { id: jobId },
@@ -344,9 +351,13 @@ async function runMaterialDownloadJob(
     const secret = await getZjuSecret(userId);
     const client = await buildCoursesClient(secret);
     const materials = await getCourseMaterials(userId, courseId);
-    const selected = selectedIds.length > 0
+    const state = await readToolState(userId, `materials:${courseId}`);
+    const cache = Array.isArray(state.cache) ? state.cache as Array<Record<string, unknown>> : [];
+    const known = new Set(cache.map((item) => String(item.id)));
+    const candidates = selectedIds.length > 0
       ? materials.filter((item) => selectedIds.map(String).includes(String(item.id)))
       : materials;
+    const selected = incremental ? candidates.filter((item) => !known.has(String(item.id))) : candidates;
     const files: Array<{ id: string; name: string; path: string; size: number }> = [];
     const usedNames = new Set<string>();
 
@@ -375,13 +386,15 @@ async function runMaterialDownloadJob(
       });
     }
 
+    const output = await packageArtifacts(workDir, files);
+    if (incremental) await writeToolState(userId, `materials:${courseId}`, { xid: courseId, cache: [...cache, ...selected] });
     await prisma.zjuToolJob.update({
       where: { id: jobId },
       data: {
         status: "succeeded",
         exitCode: 0,
         finishedAt: new Date(),
-        output: toJsonValue({ files })
+        output: toJsonValue(output)
       }
     });
     await appendJobLog(jobId, "下载完成。");

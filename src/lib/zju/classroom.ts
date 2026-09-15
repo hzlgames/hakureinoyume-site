@@ -1,3 +1,4 @@
+import { packageArtifacts } from "./artifacts";
 // 智云课堂（classroom.zju）：录播回放链接与 PPT+字幕转录导出任务。
 import prisma from "../prisma";
 import { getZjuSecret } from "./account";
@@ -178,7 +179,7 @@ async function runTranscriptJob(
     await logger.flush();
     await prisma.zjuToolJob.update({
       where: { id: jobId },
-      data: { status: "succeeded", exitCode: 0, finishedAt: new Date(), output: toJsonValue({ files }) }
+      data: { status: "succeeded", exitCode: 0, finishedAt: new Date(), output: toJsonValue(await packageArtifacts(workDir, files, `${materialFileName(title || "课堂转录")}.zip`)) }
     });
   } catch (error) {
     const cancelled = abort.signal.aborted;

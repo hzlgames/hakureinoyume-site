@@ -39,6 +39,15 @@ npm run build
 
 if [[ "${SKIP_RESTART:-0}" != "1" ]]; then
   log "Restarting ${SERVICE_NAME}"
+  for unit in zju-artifact-cleanup.service zju-artifact-cleanup.timer zju-grade-monitor.service zju-grade-monitor.timer; do
+    if [[ "$(id -u)" -eq 0 ]]; then
+      install -m 644 "deploy/$unit" "/etc/systemd/system/$unit"
+    else
+      sudo install -m 644 "deploy/$unit" "/etc/systemd/system/$unit"
+    fi
+  done
+  run_systemctl daemon-reload
+  run_systemctl enable --now zju-artifact-cleanup.timer zju-grade-monitor.timer
   run_systemctl restart "$SERVICE_NAME"
 fi
 

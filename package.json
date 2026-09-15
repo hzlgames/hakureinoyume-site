@@ -14,13 +14,17 @@
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "better-auth": "^1.6.15",
-    "login-zju": "^1.0.8",
+    "cheerio": "^1.2.0",
+    "hls.js": "^1.7.3",
+    "login-zju": "^1.0.9",
     "lucide-react": "^1.17.0",
     "next": "latest",
     "nodemailer": "^8.0.10",
     "pg": "^8.21.0",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "sanitize-html": "^2.17.7",
+    "yazl": "^3.3.1"
   },
   "devDependencies": {
     "@types/node": "latest",
@@ -28,6 +32,8 @@
     "@types/pg": "^8.20.0",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "@types/sanitize-html": "^2.16.1",
+    "@types/yazl": "^3.3.1",
     "dotenv": "^17.4.2",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.7",

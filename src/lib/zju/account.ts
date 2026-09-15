@@ -109,6 +109,7 @@ export async function saveStoredZjuAccount(input: {
   const lastValidatedAt = new Date();
 
   if (existing) {
+    if (existing.username !== input.username) await prisma.zjuToolState.deleteMany({ where: { userId: input.userId } });
     await prisma.zjuAccount.update({
       where: { userId: input.userId },
       data: {
@@ -149,6 +150,7 @@ export async function saveStoredZjuAccount(input: {
 }
 
 export async function deleteStoredZjuAccount(userId: string) {
+  await prisma.zjuToolState.deleteMany({ where: { userId } });
   await prisma.zjuAccount.deleteMany({
     where: { userId }
   });

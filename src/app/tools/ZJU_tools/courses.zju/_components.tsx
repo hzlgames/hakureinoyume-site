@@ -17,6 +17,8 @@ export type Course = {
 
 export type Job = {
   id: string;
+  expiresAt?: string;
+  filesExpired?: boolean;
   createdAt: string;
   error: string | null;
   logs: string;
@@ -308,6 +310,7 @@ export function CoursePicker({
           </option>
         ))}
       </select>
+      <label className="tool-form"><span>或手动输入课程 ID</span><input aria-label="手动输入课程 ID" value={selectedCourseId} onChange={(event) => onSelect(event.target.value.trim())} disabled={disabled} /></label>
       {selectedCourse ? (
         <dl className="zju-course-facts">
           <div>
@@ -337,4 +340,14 @@ export async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> 
     throw new Error(payload.message ?? "请求失败。");
   }
   return payload;
+}
+
+export function ZjuDownloads({ job }: { job: Job }) {
+  const files = outputFiles(job.output);
+  if (job.filesExpired) return <p className="tool-account-meta">文件已到期清理，需要时请重新创建下载任务。</p>;
+  if (!files.length) return null;
+  return <div>
+    <p className="tool-account-meta">文件最多保留两天，请尽快下载。{job.expiresAt ? `到期时间：${formatFullDateTime(job.expiresAt)}` : ""}</p>
+    <div className="zju-file-links">{files.map((file) => <a href={`/api/zju/jobs/${job.id}/files/${encodeURIComponent(file.name)}`} key={file.name}>{file.name} · {formatSize(file.size)}</a>)}</div>
+  </div>;
 }

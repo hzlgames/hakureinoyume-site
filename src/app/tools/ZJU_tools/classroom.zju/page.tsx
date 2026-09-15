@@ -6,9 +6,8 @@ import { DashboardCard } from "../../../_components/ui";
 import {
   fetchJson,
   formatFullDateTime,
-  formatSize,
   Job,
-  outputFiles,
+  ZjuDownloads,
   toolStatusLabel,
   toolStatusTone,
   ZjuAuthGate,
@@ -173,7 +172,7 @@ export default function ZjuClassroomPage() {
         backHref="/tools/ZJU_tools"
         backLabel="ZJU 工具"
         eyebrow="智云课堂"
-        lead="读取智云课堂录播，复制回放链接在外部播放器打开，或导出 PPT 截图与字幕组成的 Markdown 转录。"
+        lead="读取智云课堂录播，复制回放链接在外部播放器打开，或导出 PPT 截图与字幕组成的 Markdown 转录。文档与图片一起打包，文件最多保留两天，请尽快下载。"
         title="课堂录播"
       >
         <ZjuErrorMessage message={error} />
@@ -203,6 +202,7 @@ export default function ZjuClassroomPage() {
                   </option>
                 ))}
               </select>
+              <label className="tool-form"><span>或手动输入课程 ID</span><input aria-label="手动输入课程 ID" value={selectedCourseId} onChange={(event) => selectCourse(event.target.value.trim())} /></label>
               {selectedCourse ? (
                 <dl className="zju-course-facts">
                   <div>
@@ -311,7 +311,6 @@ export default function ZjuClassroomPage() {
               <div className="zju-job-list">
                 {jobs.length === 0 ? <p className="tool-empty">暂无转录任务。</p> : null}
                 {jobs.map((job) => {
-                  const files = outputFiles(job.output);
                   const active = ["queued", "running"].includes(job.status);
                   return (
                     <div className="zju-job" key={job.id}>
@@ -328,16 +327,7 @@ export default function ZjuClassroomPage() {
                       </div>
                       <pre>{job.logs || job.error || "等待开始..."}</pre>
                       {job.error && job.logs ? <p className="zju-job-error">{job.error}</p> : null}
-                      {files.length > 0 ? (
-                        <div className="zju-file-links">
-                          {files.map((file) => (
-                            <a href={`/api/zju/jobs/${job.id}/files/${encodeURIComponent(file.name)}`} key={file.name}>
-                              <FileText size={14} />
-                              {file.name} · {formatSize(file.size)}
-                            </a>
-                          ))}
-                        </div>
-                      ) : null}
+                      <ZjuDownloads job={job} />
                     </div>
                   );
                 })}

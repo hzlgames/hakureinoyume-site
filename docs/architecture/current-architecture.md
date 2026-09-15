@@ -42,7 +42,7 @@
 - `src/lib/admin.ts`：读取当前 session，提供 `requireAdmin()` 和 `auditAdminAction()`。
 - `src/lib/email.ts`：通过 SMTP 发送验证和密码重置邮件。
 - `src/lib/netease.ts`：网易云 API 调用、匿名 cookie 获取、用户级 cookie AES-256-GCM 加密存储和登录态过期标记。
-- `src/lib/zju/`：ZJU 服务层目录，`index.ts` 统一导出账号加密保存、`login-zju` 的 `COURSES`/`CLASSROOM`/`APILIB` 客户端封装，以及学在浙大、智云课堂、图书馆、WebPlus 和互动测验的数据读取与后端任务执行（资料下载、自动刷课、测验答案、课堂转录、通知存档）。
+- `src/lib/zju/`：ZJU 服务层目录，`index.ts` 统一导出账号加密保存、`login-zju` 的 `COURSES`/`CLASSROOM`/`APILIB`/`ALT`/`ZDBK` 客户端封装，以及学在浙大、智云课堂、图书馆、WebPlus 和互动测验的数据读取与后端任务执行（资料下载、自动刷课、测验答案、课堂转录、通知存档）。
 - `src/app/api/auth/[...all]/route.ts`：Better Auth 的 Next.js API handler。
 - `src/app/api/admin/users/**`：管理员用户查询、角色切换、停用/恢复、会话撤销和密码重置。
 - `src/app/api/background/route.ts`：读取、保存、删除管理员背景图，并记录审计日志。
@@ -64,7 +64,7 @@
 - `/forgot-password`：发起密码重置邮件。
 - `/reset-password`：使用 token 设置新密码。
 - `/tools`：工具箱入口页。
-- `/tools/ZJU_tools`：ZJU 工具合集页，验证、保存或删除当前用户的 ZJU 学号、密码和可选 Pintia Cookie；已保存账号可保留旧密码更新资料或清除 Pintia Cookie。账号通过验证后显示按服务分组（学在浙大 / 智云课堂 / 图书馆 / WebPlus）的工具索引。
+- `/tools/ZJU_tools`：ZJU 工具合集页，验证、保存或删除当前用户的 ZJU 学号、密码和可选 Pintia Cookie；已保存账号可保留旧密码更新资料或清除 Pintia Cookie。未验证时仅居中显示账号表单；验证后默认仅居中显示工具列表，左侧悬浮按钮可展开或收起账号设置，桌面展开为双栏、手机纵向排列。工具列表显示按服务分组（学在浙大 / 智云课堂 / 图书馆 / WebPlus）的工具索引。
 - `/tools/ZJU_tools/courses.zju`：学在浙大工具索引页，需要当前用户已有通过验证的 ZJU 账号。
 - `/tools/ZJU_tools/courses.zju/todos`：待办中心，读取学在浙大与可选 Pintia 待办。
 - `/tools/ZJU_tools/courses.zju/scores`：成绩查询，按课程读取作业和考试分数。
@@ -72,6 +72,7 @@
 - `/tools/ZJU_tools/courses.zju/autoplay`：自动刷课，按拟真倍速分段上报观看进度，自动完成视频/页面/资料活动，作为可取消的后端任务运行。
 - `/tools/ZJU_tools/courses.zju/quiz`：测验答案，读取进行中的互动测验列表，并通过可取消的后端任务读取题目参考答案。
 - `/tools/ZJU_tools/classroom.zju`：智云课堂录播，复制回放链接，或导出 PPT 截图与字幕的 Markdown 转录任务。
+- `/tools/ZJU_tools/classroom.zju/live`：直播与回放播放器，复用账号门禁、页面组件和统一任务系统；`live.ts` 管理用户隔离的客户端，`live-core.ts` 负责目录、取流和每批最多四门课的直播检测。
 - `/tools/ZJU_tools/lib.zju`：图书馆借阅，查询在借图书与到期状态并续借。
 - `/tools/ZJU_tools/webplus.zju`：WebPlus 通知存档，保存通知页面 HTML 与全部附件并还原附件原名。
 - `/api/auth/[...all]`：Better Auth 统一认证接口，支持登录、注册、登出、邮箱验证、密码重置等动作。
@@ -96,6 +97,8 @@
 - `GET /api/zju/quiz/courses/[courseId]/classrooms`：读取指定课程中进行中的互动列表，要求已验证 ZJU 账号，并使用当前用户的 `COURSES` 客户端。
 - `GET /api/zju/quiz/classrooms/[classroomId]/answers`：读取指定互动的题目、选项和参考答案，要求已验证 ZJU 账号，并使用当前用户的 `COURSES` 客户端；页面读取答案时通过 `courses.zju/quiz` 任务运行。
 - `GET /api/zju/classroom/courses`：读取智云课堂课程列表，要求已验证 ZJU 账号。
+- `GET /api/zju/classroom/live?action=today|courses|lessons|streams`：使用当前用户的 `CLASSROOM` 客户端查询直播、课程、课节与播放画面。课程缓存 5 分钟，目录和今日直播缓存 1 分钟，`refresh=1` 绕过缓存；直播签名链接不缓存。缓存按用户和凭据指纹隔离，客户端最多保留 50 个、单客户端目录最多 200 条。
+- `POST /api/zju/jobs` 支持 `classroom.zju/live-scan`，刷新并检测我的课程直播；结果包含直播课节、检测失败课程和检测数量，可通过统一任务接口轮询及取消。
 - `GET /api/zju/classroom/courses/[courseId]/videos`：读取指定智云课堂课程的录播列表与回放链接，要求已验证 ZJU 账号。
 - `GET /api/zju/library/loans`：读取当前用户的图书馆在借图书与到期/可续借状态，要求已验证 ZJU 账号。
 - `POST /api/zju/library/renew`：按条码续借选中的图书，要求已验证 ZJU 账号。
@@ -113,7 +116,7 @@
 - Better Auth 会话存储在数据库 `session` 表，并通过 Next.js cookie 维持浏览器登录态。
 - 网易云 cookie 存储在 `NeteaseAccount`，使用 `NETEASE_COOKIE_SECRET` 加密，未设置时回退 `BETTER_AUTH_SECRET`；网页歌单存储在 `WebMusicPlaylist` 和 `WebMusicPlaylistSong`。
 - ZJU 凭据存储在 `ZjuAccount`，学号明文用于识别，密码和 Pintia Cookie 使用 AES-256-GCM 加密，默认使用 `ZJU_ACCOUNT_SECRET`，未设置时回退 `BETTER_AUTH_SECRET`。保存时会用同一组学号密码尝试多个 `courses.zju` 请求，任意请求成功后更新 `lastValidatedAt`；用户删除或修改账号前，`lastValidatedAt` 作为已验证状态。
-- ZJU 工具任务存储在 `ZjuToolJob`，记录输入、输出、日志、状态、退出码和用户专属工作目录。资料下载、课堂转录（Markdown 与 PPT 截图）和 WebPlus 存档（HTML 与附件）的产物默认写入 `.data/zju-tools/<userId>/<jobId>/`，可通过 `ZJU_TOOL_DATA_DIR` 覆盖根目录；自动刷课和测验答案任务只产出日志与结构化输出，不写文件。
+- ZJU 工具任务存储在 `ZjuToolJob`，记录输入、输出、日志、状态、退出码和用户专属工作目录。资料下载、课堂转录（Markdown 与 PPT 截图）和 WebPlus 存档（HTML 与附件）的产物默认写入 `.data/zju-tools/<userId>/<jobId>/`，可通过 `ZJU_TOOL_DATA_DIR` 覆盖根目录；测验答案任务也导出 HTML；自动刷课只产出日志与结构化输出。
 - `ADMIN_EMAILS` 中的邮箱在用户创建前 hook 中自动获得 `admin` 角色。
 - 首页主题状态目前为浏览器内 React state，并写入 `data-theme` 切换 light/dark CSS 背景。后台会写入 `localStorage` 的背景选择 key，但首页当前未读取该 key。
 
@@ -123,6 +126,18 @@
 - 生产不能只使用静态导出；动态 API 需要 `next start`。
 - 生产必须设置 `DATABASE_URL`、`BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`、SMTP 配置、`AUTH_EMAIL_FROM` 和 `ADMIN_EMAILS`。
 - 网易云播放器依赖兼容 NeteaseCloudMusicApi Enhanced 的服务；生产建议设置 `NETEASE_API_BASE_URL` 和 `NETEASE_COOKIE_SECRET`。
-- ZJU 工具依赖 `login-zju` 包（`COURSES`/`CLASSROOM`/`APILIB` 客户端）和 Node.js runtime，并直连学在浙大、智云课堂、图书馆 aleph 与 WebPlus 站点。WebPlus 通知解析用定向正则，不依赖外部 HTML 解析库。生产建议设置 `ZJU_ACCOUNT_SECRET`，任务产物目录需要服务进程可写。
+- ZJU 工具依赖 `login-zju` 包（`COURSES`/`CLASSROOM`/`APILIB`/`ALT`/`ZDBK` 客户端）和 Node.js runtime，并直连学在浙大、智云课堂、图书馆 aleph 与 WebPlus 站点。WebPlus 通知解析与正文提取使用 Cheerio，对齐上游 SaveDoc。生产建议设置 `ZJU_ACCOUNT_SECRET`，任务产物目录需要服务进程可写。
 - 管理后台权限只认 session user 的 `role === "admin"`。
 - 全局 CSS 体量较大，新增视觉能力前优先复用现有变量和 primitives。
+
+
+## ZJU 上游对齐与文件生命周期（2026-09-13）
+
+- `login-zju` 升级到 1.0.9；新增页面 `/tools/ZJU_tools/alt.zju`、`/tools/ZJU_tools/zdbk.zju`。
+- `GET/POST /api/zju/evaluation`：列出当前用户待评课程、确认后创建评教任务。
+- `GET/PUT/POST /api/zju/grades`：读取状态、保存监控设置、立即检查或测试通知。
+- `GET/PUT /api/zju/courses/[courseId]/cache`：读取或初始化/导入当前用户的课程资料缓存。
+- `ZjuToolState` 以 `(userId, key)` 隔离资料缓存、成绩基线/历史与监控配置；钉钉 Webhook/密钥沿用 AES-256-GCM 加密，不返回明文。带租约的数据库锁防止同用户并发检查或增量下载。
+- `artifacts.ts` 统一 ZIP 生成与 47 小时有效期；`cleanup.ts` 删除到期目录和孤立目录。下载端点和序列化均检查过期，产物路径不向前端暴露。
+- systemd 的独立清理/成绩监控定时器每分钟启动维护脚本；成绩检查根据用户时段和间隔决定是否执行。成绩通知全部成功后才更新基线，失败保留旧基线以便重试。
+- 用户删除 ZJU 绑定时一并删除工具状态及监控配置；下载文件仍由统一清理处理。

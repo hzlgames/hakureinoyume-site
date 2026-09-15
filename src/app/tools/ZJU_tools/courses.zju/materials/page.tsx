@@ -10,7 +10,7 @@ import {
   formatFullDateTime,
   formatSize,
   Job,
-  outputFiles,
+  ZjuDownloads,
   toolStatusLabel,
   toolStatusTone,
   ZjuAuthGate,
@@ -102,8 +102,8 @@ export default function ZjuMaterialsPage() {
     .filter((material) => selectedMaterials.has(String(material.id)))
     .reduce((sum, material) => sum + material.size, 0);
 
-  async function startDownload() {
-    if (!selectedCourseId || selectedMaterials.size === 0) return;
+  async function startDownload(incremental = false) {
+    if (!selectedCourseId || (!incremental && selectedMaterials.size === 0)) return;
     setLoading("download");
     setError("");
     try {
@@ -113,9 +113,9 @@ export default function ZjuMaterialsPage() {
           "content-type": "application/json"
         },
         body: JSON.stringify({
-          tool: "courses.zju/materialDown",
+          tool: incremental ? "courses.zju/materialMaintainer" : "courses.zju/materialDown",
           courseId: selectedCourseId,
-          selectedIds: [...selectedMaterials]
+          selectedIds: incremental ? [] : [...selectedMaterials]
         })
       });
       setSelectedMaterials(new Set());
@@ -125,6 +125,27 @@ export default function ZjuMaterialsPage() {
     } finally {
       setLoading("");
     }
+  }
+
+  async function resetCache() {
+    if (!selectedCourseId || !window.confirm("重置该课程的增量记录？下次增量下载将重新获取全部资料。")) return;
+    try { await fetchJson(`/api/zju/courses/${selectedCourseId}/cache`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ cache: [] }) }); }
+    catch (error) { setError(error instanceof Error ? error.message : "初始化失败。"); }
+  }
+  async function importCache(file: File | undefined) {
+    if (!file || !selectedCourseId) return;
+    try {
+      const config = JSON.parse(await file.text());
+      if (String(config.xid) !== selectedCourseId) throw new Error("配置中的课程 ID 与当前课程不一致。");
+      await fetchJson(`/api/zju/courses/${selectedCourseId}/cache`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(config) });
+    } catch (error) { setError(error instanceof Error ? error.message : "配置导入失败。"); }
+  }
+  async function exportCache() {
+    try {
+      const config = await fetchJson(`/api/zju/courses/${selectedCourseId}/cache`);
+      const url = URL.createObjectURL(new Blob([JSON.stringify(config, null, 2)], { type: "application/json" }));
+      const link = document.createElement("a"); link.href = url; link.download = ".cache.json"; link.click(); URL.revokeObjectURL(url);
+    } catch (error) { setError(error instanceof Error ? error.message : "导出失败。"); }
   }
 
   async function cancelJob(jobId: string) {
@@ -182,14 +203,14 @@ export default function ZjuMaterialsPage() {
           <button
             className="button primary-button"
             disabled={!selectedCourseId || selectedMaterials.size === 0 || loading === "download"}
-            onClick={startDownload}
+            onClick={() => void startDownload()}
             type="button"
           >
             <Download size={18} />
             {loading === "download" ? "创建中" : "下载选中"}
           </button>
         )}
-        lead="按课程浏览资料，筛选文件后创建下载任务；任务日志、取消和文件下载都在同一页处理。"
+        lead="按课程浏览资料，筛选文件后创建下载任务；超过 5 个文件自动打包，文件最多保留两天，请尽快下载。"
         title="课程资料"
       >
         <ZjuErrorMessage message={error} />
@@ -218,6 +239,13 @@ export default function ZjuMaterialsPage() {
                 <button className="button secondary-button" disabled={filteredMaterials.length === 0} onClick={() => toggleVisibleMaterials(!allVisibleSelected)} type="button">
                   {allVisibleSelected ? "取消全选" : "全选可见"}
                 </button>
+              </div>
+              <p className="tool-account-meta">增量下载按上游缓存记录跳过已下载的资料；文件过期后如需重取，可选中下载或重置记录。</p>
+              <div className="tool-action-row">
+                <button className="button secondary-button" disabled={!selectedCourseId || !!loading} onClick={() => void startDownload(true)}>增量下载</button>
+                <button className="button secondary-button" disabled={!selectedCourseId || !!loading} onClick={() => void resetCache()}>初始化 / 重置记录</button>
+                <button className="button secondary-button" disabled={!selectedCourseId} onClick={() => void exportCache()}>导出配置</button>
+                <label className="tool-form">导入上游 .cache.json<input aria-label="导入上游缓存配置" type="file" accept=".json" disabled={!selectedCourseId} onChange={(event) => void importCache(event.target.files?.[0])} /></label>
               </div>
             </DashboardCard>
           </div>
@@ -281,7 +309,6 @@ export default function ZjuMaterialsPage() {
               <div className="zju-job-list">
                 {jobs.length === 0 ? <p className="tool-empty">暂无任务。</p> : null}
                 {jobs.map((job) => {
-                  const files = outputFiles(job.output);
                   const active = ["queued", "running"].includes(job.status);
                   return (
                     <div className="zju-job" key={job.id}>
@@ -298,16 +325,7 @@ export default function ZjuMaterialsPage() {
                       </div>
                       <pre>{job.logs || job.error || "等待开始..."}</pre>
                       {job.error && job.logs ? <p className="zju-job-error">{job.error}</p> : null}
-                      {files.length > 0 ? (
-                        <div className="zju-file-links">
-                          {files.map((file) => (
-                            <a href={`/api/zju/jobs/${job.id}/files/${encodeURIComponent(file.name)}`} key={file.name}>
-                              <Download size={14} />
-                              {file.name} · {formatSize(file.size)}
-                            </a>
-                          ))}
-                        </div>
-                      ) : null}
+                      <ZjuDownloads job={job} />
                     </div>
                   );
                 })}

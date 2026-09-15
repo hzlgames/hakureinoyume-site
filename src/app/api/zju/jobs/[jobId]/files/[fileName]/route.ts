@@ -1,4 +1,7 @@
+import { artifactsExpired } from "../../../../../../../lib/zju/artifacts";
 import fs from "fs/promises";
+import { createReadStream } from "node:fs";
+import { Readable } from "node:stream";
 import path from "path";
 import prisma from "../../../../../../../lib/prisma";
 import { requireValidZjuAccount, routeError, zjuJson } from "../../../../_shared";
@@ -39,6 +42,7 @@ export async function GET(_request: Request, context: Context) {
       return zjuJson({ error: "not_found", message: "任务不存在。" }, { status: 404 });
     }
 
+    if (artifactsExpired(job.createdAt)) return zjuJson({ error: "expired", message: "文件已到期清理，请重新创建下载任务。" }, { status: 410 });
     const output = asRecord(job.output);
     const files = Array.isArray(output.files) ? output.files : [];
     const file = files
@@ -55,12 +59,14 @@ export async function GET(_request: Request, context: Context) {
       return zjuJson({ error: "not_found", message: "文件不存在。" }, { status: 404 });
     }
 
-    const data = await fs.readFile(file.path);
-    return new Response(data, {
+    const stat = await fs.stat(file.path);
+    const stream = Readable.toWeb(createReadStream(file.path)) as ReadableStream<Uint8Array>;
+    return new Response(stream, {
       headers: {
         "Cache-Control": "no-store, max-age=0",
         "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(fileName)}`,
-        "Content-Type": "application/octet-stream"
+        "Content-Type": "application/octet-stream",
+        "Content-Length": String(stat.size)
       }
     });
   } catch (error) {

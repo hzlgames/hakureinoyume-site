@@ -1,45 +1,30 @@
+import { load } from "cheerio";
+import { packageArtifacts } from "./artifacts";
+import { escapeHtml } from "./rich-html";
 // WebPlus（webplus.zju）：通知页面与全部附件存档任务（定向正则解析）。
 import prisma from "../prisma";
 import { activeJobs, createJobLogger } from "./jobs";
 import {
-  getZjuDataRoot, materialFileName, pathSegment, stripHtmlTags, toJsonValue, uniqueMaterialFileName
+  getZjuDataRoot, materialFileName, pathSegment, toJsonValue, uniqueMaterialFileName
 } from "./shared";
 
-function parseWebplusDoc(html: string, baseUrl: string) {
-  const titleMatch = html.match(/<h1[^>]*class=["'][^"']*\barti_title\b[^"']*["'][^>]*>([\s\S]*?)<\/h1>/i);
-  const title = titleMatch ? stripHtmlTags(titleMatch[1]) || "无标题" : "无标题";
-
+export function parseWebplusDoc(html: string, baseUrl: string) {
+  const $ = load(html);
+  const title = $('h1.arti_title').text().trim() || '无标题';
+  const articleContent = $('div .article').html() || $('body').html() || '';
   const attachments: Array<{ fileName: string; url: string }> = [];
-  const anchorRegex = /<a\b([^>]*\bsudyfile-attr\b[^>]*)>([\s\S]*?)<\/a>/gi;
-  let match: RegExpExecArray | null;
-  while ((match = anchorRegex.exec(html)) !== null) {
-    const attrs = match[1];
-    const innerText = stripHtmlTags(match[2]);
-    const hrefMatch = attrs.match(/\bhref\s*=\s*(["'])(.*?)\1/i);
-    const href = hrefMatch ? hrefMatch[2] : "";
-    if (!href || href.startsWith("javascript:")) continue;
-
-    let fileName = innerText;
-    const attrMatch = attrs.match(/\bsudyfile-attr\s*=\s*(["'])(.*?)\1/i);
-    if (attrMatch) {
-      try {
-        const parsed = JSON.parse(attrMatch[2].replace(/'/g, '"')) as { title?: string };
-        if (parsed.title) fileName = parsed.title;
-      } catch {
-        // 解析失败时回退到链接文本
-      }
-    }
-
-    let resolved = href;
+  $('a[sudyfile-attr]').each((_index, element) => {
+    const link = $(element);
+    const href = link.attr('href');
+    if (!href || href.startsWith('javascript:')) return;
+    let fileName = link.text().trim();
     try {
-      resolved = new URL(href, baseUrl).href;
-    } catch {
-      continue;
-    }
-    attachments.push({ url: resolved, fileName: materialFileName(fileName || "attachment") });
-  }
-
-  return { title, attachments };
+      const attr = JSON.parse((link.attr('sudyfile-attr') || '').replace(/'/g, '"'));
+      if (attr.title) fileName = attr.title;
+    } catch { /* Same fallback as upstream: use the visible link text. */ }
+    attachments.push({ url: new URL(href, baseUrl).href, fileName: materialFileName(fileName || 'attachment') });
+  });
+  return { title, attachments, html: `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title></head><body>${articleContent}</body></html>` };
 }
 
 export async function createWebplusArchiveJob(input: { url: string; userId: string }) {
@@ -83,7 +68,7 @@ async function runWebplusArchiveJob(jobId: string, userId: string, url: string) 
     const pageResponse = await fetch(target.href, { signal: abort.signal, cache: "no-store" });
     if (!pageResponse.ok) throw new Error(`页面抓取失败 ${pageResponse.status}`);
     const html = await pageResponse.text();
-    const { title, attachments } = parseWebplusDoc(html, target.href);
+    const { title, attachments, html: documentHtml } = parseWebplusDoc(html, target.href);
     logger.log(`标题：${title}，发现 ${attachments.length} 个附件。`);
 
     const files: Array<{ name: string; path: string; size: number }> = [];
@@ -91,8 +76,8 @@ async function runWebplusArchiveJob(jobId: string, userId: string, url: string) 
 
     const htmlName = uniqueMaterialFileName(`${title}.html`, usedNames);
     const htmlPath = `${workDir}/${htmlName}`;
-    await fs.writeFile(htmlPath, html, "utf-8");
-    files.push({ name: htmlName, path: htmlPath, size: Buffer.byteLength(html, "utf-8") });
+    await fs.writeFile(htmlPath, documentHtml, "utf-8");
+    files.push({ name: htmlName, path: htmlPath, size: Buffer.byteLength(documentHtml, "utf-8") });
 
     for (const attachment of attachments) {
       if (abort.signal.aborted) throw new Error("任务已取消。");
@@ -118,7 +103,7 @@ async function runWebplusArchiveJob(jobId: string, userId: string, url: string) 
     await logger.flush();
     await prisma.zjuToolJob.update({
       where: { id: jobId },
-      data: { status: "succeeded", exitCode: 0, finishedAt: new Date(), output: toJsonValue({ files }) }
+      data: { status: "succeeded", exitCode: 0, finishedAt: new Date(), output: toJsonValue(await packageArtifacts(workDir, files, `${materialFileName(title)}.zip`)) }
     });
   } catch (error) {
     const cancelled = abort.signal.aborted;

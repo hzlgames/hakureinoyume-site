@@ -5,6 +5,7 @@ export { cancelZjuJob } from "./jobs";
 export { getMyCourses, getReliableTodos, getCourseScores, getCourseMaterials, createMaterialDownloadJob } from "./courses";
 export { getCourseActivities, createAutoplayJob } from "./autoplay";
 export { getClassroomCourses, getClassroomVideos, createTranscriptJob } from "./classroom";
+export { getLiveApi, createLiveScanJob } from "./live";
 export { getLibraryLoans, renewLibraryBooks } from "./library";
 export { createWebplusArchiveJob } from "./webplus";
 export { getQuizCourses, getQuizClassrooms, getQuizAnswers, createQuizAnswersJob } from "./quiz";

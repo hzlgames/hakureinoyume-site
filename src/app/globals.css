@@ -2440,9 +2440,71 @@ ul {
   align-items: start;
 }
 
-.zju-home-grid-auth-only {
+.zju-home-grid-auth-only,
+.zju-home-grid-tools-only {
   grid-template-columns: minmax(0, min(760px, 100%));
   justify-content: center;
+}
+
+.zju-account-settings {
+  min-width: 0;
+  scroll-margin-top: 100px;
+}
+
+.zju-account-toggle {
+  position: fixed;
+  left: 12px;
+  top: 50%;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(20px);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.zju-account-toggle:hover,
+.zju-account-toggle[aria-expanded="true"] {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.zju-account-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.zju-account-toggle:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+@media (min-width: 801px) and (max-width: 1360px) {
+  .zju-home-page {
+    padding-inline: 64px;
+  }
+
+  .zju-account-toggle span {
+    display: none;
+  }
+}
+
+@media (max-width: 800px) {
+  .zju-account-toggle {
+    top: auto;
+    bottom: max(18px, env(safe-area-inset-bottom));
+    flex-direction: row;
+  }
 }
 
 .zju-account-card {
@@ -3520,6 +3582,16 @@ ul {
 .zju-activity-row.is-locked:hover {
   border-color: var(--glass-border);
   transform: none;
+}
+
+.zju-live-video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin: 16px 0;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--bg-color);
 }
 
 .zju-replay-row {
@@ -4614,3 +4686,18 @@ a.glass-panel:hover {
     grid-row-end: auto !important;
   }
 }
+
+/* ZJU upstream attribution, rich questions and formal grades. */
+.zju-upstream-credit { margin: 24px 0 0; color: var(--text-tertiary); font-size: 12px; line-height: 1.8; }
+.zju-upstream-credit a { color: var(--text-secondary); text-decoration: underline; text-underline-offset: 3px; }
+.zju-upstream-credit a:hover, .zju-upstream-credit a:focus-visible { color: var(--accent); }
+.zju-quiz-item img { max-width: 100%; height: auto; }
+.zju-table-scroll { overflow-x: auto; }
+.zju-grade-table { width: 100%; border-collapse: collapse; text-align: left; }
+.zju-grade-table th, .zju-grade-table td { padding: 12px; border-bottom: 1px solid var(--glass-border); }
+.zju-grade-table td small { display: block; color: var(--text-tertiary); overflow-wrap: anywhere; }
+.zju-tool-page > .tool-detail-card { margin-top: 18px; }
+
+.zju-tool-page .tool-form .tool-checkbox-label { display: flex; align-items: center; gap: 10px; }
+.zju-grade-table th { white-space: nowrap; }
+.zju-grade-table td:first-child { min-width: 120px; }

@@ -17,6 +17,8 @@ import {
   ListChecks,
   MonitorPlay,
   PlayCircle,
+  PanelLeftClose,
+  PanelLeftOpen,
   Save,
   Trash2
 } from "lucide-react";
@@ -34,6 +36,8 @@ type AccountPayload = {
 };
 
 const toolCategories = [
+  { key: "alt", eyebrow: "教在浙大", name: "自动评教", href: "/tools/ZJU_tools/alt.zju", icon: <ListChecks size={20} />, tools: [{ href: "/tools/ZJU_tools/alt.zju", icon: <ListChecks size={22} />, title: "自动评教", text: "选择课程与教师，确认提交满分评价。" }] },
+  { key: "zdbk", eyebrow: "本科教学管理", name: "正式成绩", href: "/tools/ZJU_tools/zdbk.zju", icon: <GraduationCap size={20} />, tools: [{ href: "/tools/ZJU_tools/zdbk.zju", icon: <GraduationCap size={22} />, title: "正式成绩与监控", text: "查询正式成绩，监控变化与钉钉通知。" }] },
   {
     key: "courses",
     eyebrow: "学在浙大",
@@ -51,10 +55,11 @@ const toolCategories = [
   {
     key: "classroom",
     eyebrow: "智云课堂",
-    name: "课堂录播",
+    name: "直播与录播",
     href: "/tools/ZJU_tools/classroom.zju",
     icon: <MonitorPlay size={20} />,
     tools: [
+      { href: "/tools/ZJU_tools/classroom.zju/live", icon: <PlayCircle size={22} />, title: "直播与回放播放器", text: "浏览今日直播、检测我的直播，切换画面播放。" },
       { href: "/tools/ZJU_tools/classroom.zju", icon: <MonitorPlay size={22} />, title: "回放与转录", text: "复制录播链接，导出 PPT 字幕转录。" }
     ]
   },
@@ -100,6 +105,7 @@ export default function ZjuToolsPage() {
   const [pintiaCookie, setPintiaCookie] = useState("");
   const [clearPintiaCookie, setClearPintiaCookie] = useState(false);
   const [isRemovingAccount, setIsRemovingAccount] = useState(false);
+  const [accountExpanded, setAccountExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
@@ -164,6 +170,7 @@ export default function ZjuToolsPage() {
     setPassword("");
     setPintiaCookie("");
     setClearPintiaCookie(false);
+    setAccountExpanded(false);
     setNotice("ZJU 账号已验证并保存。");
   }
 
@@ -188,6 +195,7 @@ export default function ZjuToolsPage() {
       setPintiaCookie("");
       setClearPintiaCookie(false);
       setIsRemovingAccount(false);
+      setAccountExpanded(false);
       setNotice("ZJU 账号已删除。");
     }, 360);
   }
@@ -218,21 +226,41 @@ export default function ZjuToolsPage() {
 
   const hasValidAccount = Boolean(account?.isValid);
   const showToolsCard = hasValidAccount || isRemovingAccount;
+  const showAccountCard = !hasValidAccount || accountExpanded;
   const gridStateClass = showToolsCard
-    ? isRemovingAccount
-      ? "zju-home-grid-ready zju-home-grid-removing"
-      : "zju-home-grid-ready"
+    ? accountExpanded ? "zju-home-grid-ready" : "zju-home-grid-tools-only"
     : "zju-home-grid-auth-only";
 
   return (
-    <section className="page-shell tools-page">
+    <section className="page-shell tools-page zju-home-page">
       <div className="intro tools-intro">
         <p className="eyebrow">ZJU</p>
         <h1>ZJU 工具合集</h1>
         <p className="lead">凭据加密保存，工具任务仅使用当前登录用户自己的账号和目录。</p>
       </div>
 
+      {hasValidAccount ? (
+        <button
+          className="zju-account-toggle"
+          type="button"
+          aria-expanded={accountExpanded}
+          aria-controls="zju-account-settings"
+          aria-label={accountExpanded ? "收起账号设置" : "展开账号设置"}
+          disabled={saving || isRemovingAccount}
+          onClick={() => {
+            setAccountExpanded(current => !current);
+            if (!accountExpanded && window.innerWidth <= 800) {
+              window.requestAnimationFrame(() => document.getElementById("zju-account-settings")?.scrollIntoView({ block: "start" }));
+            }
+          }}
+        >
+          {accountExpanded ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
+          <span>{accountExpanded ? "收起设置" : "账号设置"}</span>
+        </button>
+      ) : null}
+      {notice && !showAccountCard ? <p className="auth-message success" role="status">{notice}</p> : null}
       <div className={`zju-home-grid ${gridStateClass}`}>
+        <div id="zju-account-settings" className="zju-account-settings" hidden={!showAccountCard}>
         <DashboardCard className="tool-detail-card zju-account-card">
           <div className="card-header">
             <div className="card-title">
@@ -324,6 +352,7 @@ export default function ZjuToolsPage() {
             {error ? <p className="auth-message error">{error}</p> : null}
           </form>
         </DashboardCard>
+        </div>
 
         {showToolsCard ? (
           <DashboardCard className={`tool-detail-card zju-tools-card ${isRemovingAccount ? "is-removing" : ""}`}>
@@ -358,6 +387,7 @@ export default function ZjuToolsPage() {
           </DashboardCard>
         ) : null}
       </div>
+      <p className="zju-upstream-credit">部分工具基于 <a href="https://github.com/5dbwat4/ZJU-live-better" target="_blank" rel="noopener noreferrer">5dbwat4 / ZJU-live-better</a> 开发，感谢作者的开发与开源分享，欢迎前往上游支持作者。</p>
     </section>
   );
 }

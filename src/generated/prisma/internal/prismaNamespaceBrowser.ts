@@ -60,7 +60,8 @@ export const ModelName = {
   ZjuAccount: 'ZjuAccount',
   ZjuToolJob: 'ZjuToolJob',
   WebMusicPlaylist: 'WebMusicPlaylist',
-  WebMusicPlaylistSong: 'WebMusicPlaylistSong'
+  WebMusicPlaylistSong: 'WebMusicPlaylistSong',
+  ZjuToolState: 'ZjuToolState'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -239,6 +240,17 @@ export const WebMusicPlaylistSongScalarFieldEnum = {
 export type WebMusicPlaylistSongScalarFieldEnum = (typeof WebMusicPlaylistSongScalarFieldEnum)[keyof typeof WebMusicPlaylistSongScalarFieldEnum]
 
 
+export const ZjuToolStateScalarFieldEnum = {
+  userId: 'userId',
+  key: 'key',
+  value: 'value',
+  lockedUntil: 'lockedUntil',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ZjuToolStateScalarFieldEnum = (typeof ZjuToolStateScalarFieldEnum)[keyof typeof ZjuToolStateScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -253,6 +265,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {

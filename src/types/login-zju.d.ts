@@ -3,6 +3,14 @@ declare module "login-zju" {
     constructor(username?: string, password?: string);
   }
 
+  export class ALT {
+    constructor(auth: ZJUAM);
+    fetch(input: string, init: RequestInit): Promise<Response>;
+  }
+  export class ZDBK {
+    constructor(auth: ZJUAM);
+    fetch(input: string | URL, init?: RequestInit): Promise<Response>;
+  }
   export class COURSES {
     constructor(auth: ZJUAM);
     fetch(input: string | URL, init?: RequestInit): Promise<Response>;

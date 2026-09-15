@@ -13,6 +13,7 @@ import {
   ZjuErrorMessage,
   ZjuMetricCard,
   ZjuStatusPill,
+  ZjuDownloads,
   ZjuToolShell
 } from "../_components";
 
@@ -155,7 +156,7 @@ export default function ZjuQuizPage() {
         body: JSON.stringify({
           tool: "courses.zju/quiz",
           classroomId: selectedClassroomId,
-          title: classroom?.title ?? ""
+          title: `${courses.find((course) => course.id === selectedCourseId)?.name || selectedCourseId}-${classroom?.title || selectedClassroomId}`
         })
       });
       setActiveJobId(payload.job?.id ?? "");
@@ -300,6 +301,7 @@ export default function ZjuQuizPage() {
                 {subjects.length === 0 ? (
                   <p className="tool-empty">{selectedJob && ["queued", "running"].includes(selectedJob.status) ? "答案任务执行中..." : "选择互动后创建读取任务。"}</p>
                 ) : null}
+                {selectedJob ? <ZjuDownloads job={selectedJob} /> : null}
                 {subjects.map((subject, index) => (
                   <div className="zju-quiz-item" key={subject.id || index} style={{ animationDelay: `${Math.min(index * 30, 320)}ms` }}>
                     <div className="zju-quiz-head">
@@ -307,13 +309,13 @@ export default function ZjuQuizPage() {
                       <span className="zju-quiz-number">Q{index + 1}</span>
                       {subject.point ? <span className="zju-quiz-point">{subject.point} 分</span> : null}
                     </div>
-                    <p className="zju-quiz-desc">{subject.description}</p>
+                    <div className="zju-quiz-desc" dangerouslySetInnerHTML={{ __html: subject.description }} />
                     {subject.options.length > 0 ? (
                       <div className="zju-quiz-options">
                         {subject.options.map((option) => (
                           <div className={`zju-quiz-option ${option.isAnswer ? "is-answer" : ""}`} key={option.label}>
                             <strong>{option.label}.</strong>
-                            <span>{option.content}</span>
+                            <span dangerouslySetInnerHTML={{ __html: option.content }} />
                             {option.isAnswer ? <CheckCircle2 size={15} /> : null}
                           </div>
                         ))}
@@ -326,7 +328,7 @@ export default function ZjuQuizPage() {
                         subject.answers.map((answer, answerIndex) => (
                           <span className="zju-quiz-answer" key={`${answer.label}-${answerIndex}`}>
                             <CheckCircle2 size={14} />
-                            {answer.label ? `${answer.label}. ` : ""}{answer.content}
+                            {answer.label ? `${answer.label}. ` : ""}<span dangerouslySetInnerHTML={{ __html: answer.content }} />
                           </span>
                         ))
                       )}

@@ -66,7 +66,7 @@ Prisma 配置在 `prisma.config.ts`，schema 在 `prisma/schema.prisma`，迁移
 
 网易云播放器需要额外运行兼容 NeteaseCloudMusicApi Enhanced 的服务。本站只保存加密后的用户级网易云 cookie；当上游返回登录失效时，`/api/music/*` 会标记该用户的网易云登录态过期并提示重新扫码。
 
-ZJU 工具直接在 Next.js Node runtime 内调用 `login-zju` 的 `COURSES`/`CLASSROOM`/`APILIB` 客户端、Pintia 和 WebPlus，覆盖学在浙大、智云课堂、图书馆和 WebPlus。本站只保存加密后的用户级 ZJU 密码和可选 Pintia Cookie；资料下载、自动刷课、测验答案、课堂转录和 WebPlus 存档任务会写入 `ZjuToolJob`，其中有文件产物的任务使用用户专属工作目录。生产环境需要执行迁移 `0005_zju_tools`，并确认 `ZJU_TOOL_DATA_DIR` 或默认 `.data/zju-tools/` 对服务进程可写。
+ZJU 工具直接在 Next.js Node runtime 内调用 `login-zju` 的 `COURSES`/`CLASSROOM`/`APILIB`/`ALT`/`ZDBK` 客户端、Pintia 和 WebPlus，覆盖学在浙大、智云课堂、图书馆和 WebPlus。本站只保存加密后的用户级 ZJU 密码和可选 Pintia Cookie；资料下载、自动刷课、测验答案、课堂转录和 WebPlus 存档任务会写入 `ZjuToolJob`，其中有文件产物的任务使用用户专属工作目录。生产环境需要执行迁移 `0005_zju_tools`，并确认 `ZJU_TOOL_DATA_DIR` 或默认 `.data/zju-tools/` 对服务进程可写。
 
 `out/` 是生成产物，已在 ESLint 和 Git 忽略配置中排除。维护文档时不要把 `out/` 当作源码事实来源。
 
@@ -81,3 +81,13 @@ ZJU 工具直接在 Next.js Node runtime 内调用 `login-zju` 的 `COURSES`/`CL
 - ZJU 工具提示未保存账号：确认用户已登录本站并在 `/tools/ZJU_tools` 保存过学号和密码。保存账号会即时验证学在浙大登录，失败时检查账号密码、ZJU 登录状态和 `login-zju` 是否仍兼容当前登录流程。
 - ZJU 工具任务失败：检查 ZJU 凭据是否有效、服务进程是否能写入 `ZJU_TOOL_DATA_DIR`，以及任务日志中的 HTTP 状态；自动刷课只产出日志与统计概览，不写下载文件。
 - 样式异常：优先检查 `src/app/globals.css` 中变量、`data-theme` 分支和响应式断点；后台背景管理异常再检查 `site-theme.ts` 的背景配置。
+
+
+## ZJU 定时维护
+
+- 迁移 `0006_zju_tool_state` 保存用户级增量缓存、成绩和监控设置。
+- `zju-artifact-cleanup.timer` 每分钟执行 `scripts/zju-maintenance.ts --cleanup-only`，独立于网页访问和成绩请求。任务文件从创建起 47 小时到期，在两天上限前留出余量。原文件与 ZIP 一起删除，成绩基线和资料缓存元数据不属于下载文件，不按两天清理。
+- `zju-grade-monitor.timer` 每分钟检查启用监控的用户；使用北京时间，默认 08:00–24:00、间隔 3600 秒，最短可设 60 秒。不在部署时自动启用任何用户监控或发送测试通知。
+- 两项 service 均使用现有 `/etc/hakureinoyume-site.env`，无需新建全局钉钉配置。钉钉设置由用户在网页保存并加密入库。
+- 部署脚本在构建成功后安装并启用两个 timer。排障：`systemctl status zju-artifact-cleanup.timer zju-grade-monitor.timer`；清理失败查看对应 service 日志。成绩检查错误也在用户页面显示。
+- 验证：`node --import tsx --test tests/zju-tools.test.ts`（打包、过期、SaveDoc、富文本、成绩计算）。

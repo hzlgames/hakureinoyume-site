@@ -19,9 +19,9 @@ Accepted
 服务层按能力拆分，`src/lib/zju/index.ts` 统一导出：
 
 - 学在浙大（`COURSES` 客户端）：待办、成绩、课程资料下载、互动测验答案读取和可取消的自动刷课任务。
-- 智云课堂（`CLASSROOM` 客户端）：录播回放链接读取，以及 PPT 截图 + 字幕的 Markdown 转录导出任务。
+- 智云课堂（`CLASSROOM` 客户端）：录播回放链接读取、直播与回放 Web 播放器、课程直播检测，以及 PPT 截图 + 字幕的 Markdown 转录导出任务。直播批量检测使用 `classroom.zju/live-scan` 任务，保留部分失败提示；签名播放链接按需获取，不持久化缓存。
 - 图书馆（`APILIB` 客户端）：在借图书查询与续借。
-- WebPlus：通知页面与附件存档任务；离线环境无法引入 cheerio，改用定向正则解析。
+- WebPlus：通知页面与附件存档任务；使用 Cheerio 按上游提取正文和附件。
 
 工具索引（`/tools/ZJU_tools`）按服务分组：学在浙大 / 智云课堂 / 图书馆 / WebPlus。
 
@@ -33,4 +33,9 @@ Accepted
 - 当前内置任务执行器适合单个 Next.js 服务实例；如果未来多实例部署，需要把任务调度和取消状态迁移到外部队列或 worker。
 - 服务边界从单一 `courses.zju` 扩展到 `login-zju` 的 `COURSES`、`CLASSROOM`、`APILIB` 多个客户端，触达 `education.cmc.zju.edu.cn`、`yjapi.cmc.zju.edu.cn`、`classroom.zju.edu.cn`、`api.lib.zju.edu.cn` 及 WebPlus 站点。
 - 任务执行器并行上报时用单写者日志器整体覆盖写入，避免并行任务互相覆盖日志行。
-- 资料下载、课堂转录和 WebPlus 存档任务都沿用既有文件下载接口与路径校验；自动刷课和测验答案任务只产出日志与结构化输出。
+- 资料下载、课堂转录和 WebPlus 存档任务都沿用既有文件下载接口与路径校验；测验答案任务同时导出 HTML，自动刷课只产出日志与结构化输出。
+
+
+## 2026-09-13 扩展
+
+对齐上游 `d63adc8`（不包含 autosign），新增 `ALT` 评教和 `ZDBK` 正式成绩监控，以及资料增量缓存、测验富文本/HTML 导出。`ZjuToolState` 保存用户级状态和加密通知配置，独立 systemd timer 驱动监控与文件清理。下载产物从创建起保留 47 小时（小于两天），多文件 ZIP 与 Markdown 图片打包由统一产物模块处理。

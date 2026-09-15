@@ -12,3 +12,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+!deploy/zju-artifact-cleanup.service
+!deploy/zju-grade-monitor.service

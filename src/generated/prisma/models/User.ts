@@ -230,6 +230,7 @@ export type UserWhereInput = {
   banned?: Prisma.BoolNullableFilter<"User"> | boolean | null
   banReason?: Prisma.StringNullableFilter<"User"> | string | null
   banExpires?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
   auditLogs?: Prisma.AdminAuditLogListRelationFilter
@@ -251,6 +252,7 @@ export type UserOrderByWithRelationInput = {
   banned?: Prisma.SortOrderInput | Prisma.SortOrder
   banReason?: Prisma.SortOrderInput | Prisma.SortOrder
   banExpires?: Prisma.SortOrderInput | Prisma.SortOrder
+  zjuToolStates?: Prisma.ZjuToolStateOrderByRelationAggregateInput
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   accounts?: Prisma.AccountOrderByRelationAggregateInput
   auditLogs?: Prisma.AdminAuditLogOrderByRelationAggregateInput
@@ -275,6 +277,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   banned?: Prisma.BoolNullableFilter<"User"> | boolean | null
   banReason?: Prisma.StringNullableFilter<"User"> | string | null
   banExpires?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
   auditLogs?: Prisma.AdminAuditLogListRelationFilter
@@ -330,6 +333,7 @@ export type UserCreateInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
@@ -351,6 +355,7 @@ export type UserUncheckedCreateInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
@@ -372,6 +377,7 @@ export type UserUpdateInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
@@ -393,6 +399,7 @@ export type UserUncheckedUpdateInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
@@ -620,6 +627,20 @@ export type UserUpdateOneRequiredWithoutWebMusicPlaylistsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutWebMusicPlaylistsInput, Prisma.UserUpdateWithoutWebMusicPlaylistsInput>, Prisma.UserUncheckedUpdateWithoutWebMusicPlaylistsInput>
 }
 
+export type UserCreateNestedOneWithoutZjuToolStatesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutZjuToolStatesInput, Prisma.UserUncheckedCreateWithoutZjuToolStatesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutZjuToolStatesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutZjuToolStatesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutZjuToolStatesInput, Prisma.UserUncheckedCreateWithoutZjuToolStatesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutZjuToolStatesInput
+  upsert?: Prisma.UserUpsertWithoutZjuToolStatesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutZjuToolStatesInput, Prisma.UserUpdateWithoutZjuToolStatesInput>, Prisma.UserUncheckedUpdateWithoutZjuToolStatesInput>
+}
+
 export type UserCreateWithoutSessionsInput = {
   id: string
   name: string
@@ -632,6 +653,7 @@ export type UserCreateWithoutSessionsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
@@ -652,6 +674,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
@@ -688,6 +711,7 @@ export type UserUpdateWithoutSessionsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
@@ -708,6 +732,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
@@ -728,6 +753,7 @@ export type UserCreateWithoutAccountsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
@@ -748,6 +774,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
@@ -784,6 +811,7 @@ export type UserUpdateWithoutAccountsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
@@ -804,6 +832,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
@@ -824,6 +853,7 @@ export type UserCreateWithoutAuditLogsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
@@ -844,6 +874,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
@@ -880,6 +911,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
@@ -900,6 +932,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
@@ -920,6 +953,7 @@ export type UserCreateWithoutNeteaseAccountInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
@@ -940,6 +974,7 @@ export type UserUncheckedCreateWithoutNeteaseAccountInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
@@ -976,6 +1011,7 @@ export type UserUpdateWithoutNeteaseAccountInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
@@ -996,6 +1032,7 @@ export type UserUncheckedUpdateWithoutNeteaseAccountInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
@@ -1016,6 +1053,7 @@ export type UserCreateWithoutZjuAccountInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
@@ -1036,6 +1074,7 @@ export type UserUncheckedCreateWithoutZjuAccountInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
@@ -1072,6 +1111,7 @@ export type UserUpdateWithoutZjuAccountInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
@@ -1092,6 +1132,7 @@ export type UserUncheckedUpdateWithoutZjuAccountInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
@@ -1112,6 +1153,7 @@ export type UserCreateWithoutZjuToolJobsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
@@ -1132,6 +1174,7 @@ export type UserUncheckedCreateWithoutZjuToolJobsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
@@ -1168,6 +1211,7 @@ export type UserUpdateWithoutZjuToolJobsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
@@ -1188,6 +1232,7 @@ export type UserUncheckedUpdateWithoutZjuToolJobsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
@@ -1208,6 +1253,7 @@ export type UserCreateWithoutWebMusicPlaylistsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
@@ -1228,6 +1274,7 @@ export type UserUncheckedCreateWithoutWebMusicPlaylistsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
@@ -1264,6 +1311,7 @@ export type UserUpdateWithoutWebMusicPlaylistsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
@@ -1284,6 +1332,7 @@ export type UserUncheckedUpdateWithoutWebMusicPlaylistsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
@@ -1292,12 +1341,113 @@ export type UserUncheckedUpdateWithoutWebMusicPlaylistsInput = {
   zjuToolJobs?: Prisma.ZjuToolJobUncheckedUpdateManyWithoutUserNestedInput
 }
 
+export type UserCreateWithoutZjuToolStatesInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
+  neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobCreateNestedManyWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutZjuToolStatesInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
+  neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedCreateNestedManyWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutZjuToolStatesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutZjuToolStatesInput, Prisma.UserUncheckedCreateWithoutZjuToolStatesInput>
+}
+
+export type UserUpsertWithoutZjuToolStatesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutZjuToolStatesInput, Prisma.UserUncheckedUpdateWithoutZjuToolStatesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutZjuToolStatesInput, Prisma.UserUncheckedCreateWithoutZjuToolStatesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutZjuToolStatesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutZjuToolStatesInput, Prisma.UserUncheckedUpdateWithoutZjuToolStatesInput>
+}
+
+export type UserUpdateWithoutZjuToolStatesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
+  neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUpdateManyWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutZjuToolStatesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
+  neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedUpdateManyWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedUpdateManyWithoutUserNestedInput
+}
+
 
 /**
  * Count Type UserCountOutputType
  */
 
 export type UserCountOutputType = {
+  zjuToolStates: number
   sessions: number
   accounts: number
   auditLogs: number
@@ -1306,6 +1456,7 @@ export type UserCountOutputType = {
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  zjuToolStates?: boolean | UserCountOutputTypeCountZjuToolStatesArgs
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
@@ -1321,6 +1472,13 @@ export type UserCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensi
    * Select specific fields to fetch from the UserCountOutputType
    */
   select?: Prisma.UserCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountZjuToolStatesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ZjuToolStateWhereInput
 }
 
 /**
@@ -1371,6 +1529,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   banned?: boolean
   banReason?: boolean
   banExpires?: boolean
+  zjuToolStates?: boolean | Prisma.User$zjuToolStatesArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
@@ -1425,6 +1584,7 @@ export type UserSelectScalar = {
 
 export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "createdAt" | "updatedAt" | "role" | "banned" | "banReason" | "banExpires", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  zjuToolStates?: boolean | Prisma.User$zjuToolStatesArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
@@ -1440,6 +1600,7 @@ export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
 export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "User"
   objects: {
+    zjuToolStates: Prisma.$ZjuToolStatePayload<ExtArgs>[]
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     accounts: Prisma.$AccountPayload<ExtArgs>[]
     auditLogs: Prisma.$AdminAuditLogPayload<ExtArgs>[]
@@ -1854,6 +2015,7 @@ readonly fields: UserFieldRefs;
  */
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  zjuToolStates<T extends Prisma.User$zjuToolStatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$zjuToolStatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ZjuToolStatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   auditLogs<T extends Prisma.User$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdminAuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2291,6 +2453,30 @@ export type UserDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Limit how many Users to delete.
    */
   limit?: number
+}
+
+/**
+ * User.zjuToolStates
+ */
+export type User$zjuToolStatesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ZjuToolState
+   */
+  select?: Prisma.ZjuToolStateSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ZjuToolState
+   */
+  omit?: Prisma.ZjuToolStateOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ZjuToolStateInclude<ExtArgs> | null
+  where?: Prisma.ZjuToolStateWhereInput
+  orderBy?: Prisma.ZjuToolStateOrderByWithRelationInput | Prisma.ZjuToolStateOrderByWithRelationInput[]
+  cursor?: Prisma.ZjuToolStateWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ZjuToolStateScalarFieldEnum | Prisma.ZjuToolStateScalarFieldEnum[]
 }
 
 /**

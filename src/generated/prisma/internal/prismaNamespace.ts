@@ -393,7 +393,8 @@ export const ModelName = {
   ZjuAccount: 'ZjuAccount',
   ZjuToolJob: 'ZjuToolJob',
   WebMusicPlaylist: 'WebMusicPlaylist',
-  WebMusicPlaylistSong: 'WebMusicPlaylistSong'
+  WebMusicPlaylistSong: 'WebMusicPlaylistSong',
+  ZjuToolState: 'ZjuToolState'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -409,7 +410,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "adminAuditLog" | "neteaseAccount" | "zjuAccount" | "zjuToolJob" | "webMusicPlaylist" | "webMusicPlaylistSong"
+    modelProps: "user" | "session" | "account" | "verification" | "adminAuditLog" | "neteaseAccount" | "zjuAccount" | "zjuToolJob" | "webMusicPlaylist" | "webMusicPlaylistSong" | "zjuToolState"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1153,6 +1154,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ZjuToolState: {
+      payload: Prisma.$ZjuToolStatePayload<ExtArgs>
+      fields: Prisma.ZjuToolStateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ZjuToolStateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolStatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ZjuToolStateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolStatePayload>
+        }
+        findFirst: {
+          args: Prisma.ZjuToolStateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolStatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ZjuToolStateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolStatePayload>
+        }
+        findMany: {
+          args: Prisma.ZjuToolStateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolStatePayload>[]
+        }
+        create: {
+          args: Prisma.ZjuToolStateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolStatePayload>
+        }
+        createMany: {
+          args: Prisma.ZjuToolStateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ZjuToolStateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolStatePayload>[]
+        }
+        delete: {
+          args: Prisma.ZjuToolStateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolStatePayload>
+        }
+        update: {
+          args: Prisma.ZjuToolStateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolStatePayload>
+        }
+        deleteMany: {
+          args: Prisma.ZjuToolStateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ZjuToolStateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ZjuToolStateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolStatePayload>[]
+        }
+        upsert: {
+          args: Prisma.ZjuToolStateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuToolStatePayload>
+        }
+        aggregate: {
+          args: Prisma.ZjuToolStateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateZjuToolState>
+        }
+        groupBy: {
+          args: Prisma.ZjuToolStateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuToolStateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ZjuToolStateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuToolStateCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1352,6 +1427,17 @@ export const WebMusicPlaylistSongScalarFieldEnum = {
 export type WebMusicPlaylistSongScalarFieldEnum = (typeof WebMusicPlaylistSongScalarFieldEnum)[keyof typeof WebMusicPlaylistSongScalarFieldEnum]
 
 
+export const ZjuToolStateScalarFieldEnum = {
+  userId: 'userId',
+  key: 'key',
+  value: 'value',
+  lockedUntil: 'lockedUntil',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ZjuToolStateScalarFieldEnum = (typeof ZjuToolStateScalarFieldEnum)[keyof typeof ZjuToolStateScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1366,6 +1452,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -1595,6 +1688,7 @@ export type GlobalOmitConfig = {
   zjuToolJob?: Prisma.ZjuToolJobOmit
   webMusicPlaylist?: Prisma.WebMusicPlaylistOmit
   webMusicPlaylistSong?: Prisma.WebMusicPlaylistSongOmit
+  zjuToolState?: Prisma.ZjuToolStateOmit
 }
 
 /* Types for Logging */

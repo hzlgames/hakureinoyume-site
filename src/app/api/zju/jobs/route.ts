@@ -1,4 +1,5 @@
 import prisma from "../../../../lib/prisma";
+import { createLiveScanJob } from "../../../../lib/zju/live";
 import { createAutoplayJob, createMaterialDownloadJob, createQuizAnswersJob, createTranscriptJob, createWebplusArchiveJob } from "../../../../lib/zju";
 import { readJsonBody, requireValidZjuAccount, routeError, serializeZjuJob, zjuJson } from "../_shared";
 
@@ -34,6 +35,11 @@ export async function POST(request: Request) {
     : [];
 
   try {
+    if (tool === "classroom.zju/live-scan") {
+      const job = await createLiveScanJob(user.userId);
+      return zjuJson({ job: serializeZjuJob(job) }, { status: 201 });
+    }
+
     if (tool === "classroom.zju/transcript") {
       const subId = typeof body.subId === "string" || typeof body.subId === "number" ? String(body.subId) : "";
       const title = typeof body.title === "string" ? body.title : "";
@@ -82,8 +88,9 @@ export async function POST(request: Request) {
       return zjuJson({ job: serializeZjuJob(job) }, { status: 201 });
     }
 
-    if (tool === "courses.zju/materialDown") {
+    if (tool === "courses.zju/materialDown" || tool === "courses.zju/materialMaintainer") {
       const job = await createMaterialDownloadJob({
+        incremental: tool === "courses.zju/materialMaintainer",
         userId: user.userId,
         courseId,
         selectedIds
