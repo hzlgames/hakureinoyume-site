@@ -109,3 +109,12 @@ PLAYWRIGHT_MODULE=/path/to/playwright CHROMIUM_PATH=/path/to/chrome MUSIC_TEST_U
 `tests/browser/music-live.mjs` 提供真实音源/封面/暂停继续与登录后歌单读取的只读回归；可用 `MUSIC_SESSION_FILE` 指向隔离站内会话文件（`{ cookie }`），不得提交该文件。
 
 内存较小的共享服务器，构建与浏览器应共用 `/tmp/hakurei-heavy-work.lock` 串行执行。`CIRCLE_NODE_TOTAL=2 NODE_OPTIONS=--max-old-space-size=640 npm run build -- --webpack` 使用一个静态生成 worker；启动预览前确认端口未占用。真实扫码验证使用独立测试数据库与测试站内会话，用户亲自扫码确认后再验证账号读取，测试产物不得包含明文凭据。无需新增数据库迁移或生产环境变量。
+
+## 2FA 验证器
+
+- 部署前执行 `npx prisma generate`、`npx prisma migrate deploy`，确认 `0007_two_factor_accounts` 已应用。
+- 可设置独立的 `TWO_FACTOR_ENCRYPTION_KEY`（至少 32 字符的随机字符串），为空时使用 `BETTER_AUTH_SECRET`；通过 HKDF 派生专用加密密钥。应在首次保存前决定配置，之后保持稳定。
+- 数据库备份和所选密钥应分开保管。直接更换密钥（包括从回退密钥切换到独立密钥）会导致已有数据无法解密；当前没有在线轮换工具，需要使用原密钥解密并重新加密，不能直接覆盖环境变量。
+- `BETTER_AUTH_URL` 必须匹配对外访问的 origin，写接口会检查请求来源。摄像头要求 HTTPS 或 localhost。
+- 保持服务器时间准确；页面用接口返回的服务器时间校准本地 TOTP。API 响应禁止缓存；不要在代理、APM 或调试日志中采集此接口的请求/响应正文。
+- 验证命令：`npx tsx --test tests/two-factor.test.ts`、`npm run lint`、`npm run build`。实际保存、跨用户隔离及二维码浏览器行为应在隔离数据库与测试账号上验证。

@@ -72,3 +72,8 @@ export type WebMusicPlaylistSong = Prisma.WebMusicPlaylistSongModel
  *
  */
 export type ZjuToolState = Prisma.ZjuToolStateModel
+/**
+ * Model TwoFactorAccount
+ *
+ */
+export type TwoFactorAccount = Prisma.TwoFactorAccountModel

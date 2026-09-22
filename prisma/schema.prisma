@@ -8,6 +8,7 @@ datasource db {
 }
 
 model User {
+  twoFactorAccounts TwoFactorAccount[]
   zjuToolStates ZjuToolState[]
   id                String             @id
   name              String
@@ -197,4 +198,18 @@ model ZjuToolState {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@id([userId, key])
   @@index([key])
+}
+
+model TwoFactorAccount {
+  id          String   @id
+  userId      String
+  fingerprint String
+  ciphertext  String
+  iv          String
+  tag         String
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, fingerprint])
+  @@index([userId, createdAt])
 }

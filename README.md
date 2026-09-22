@@ -17,7 +17,8 @@ Personal website for `hakureinoyume.com`, built with Next.js App Router. Authent
 - `/register`: account registration.
 - `/forgot-password`: password reset request.
 - `/reset-password`: password reset completion.
-- `/tools`: tools placeholder.
+- `/tools`: tools hub.
+- `/tools/2fa`: encrypted, user-isolated TOTP authenticator with Google Authenticator imports.
 
 Add new pages by creating folders under `src/app`, for example `src/app/about/page.tsx` or `src/app/tools/example/page.tsx`.
 

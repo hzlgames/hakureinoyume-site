@@ -61,7 +61,8 @@ export const ModelName = {
   ZjuToolJob: 'ZjuToolJob',
   WebMusicPlaylist: 'WebMusicPlaylist',
   WebMusicPlaylistSong: 'WebMusicPlaylistSong',
-  ZjuToolState: 'ZjuToolState'
+  ZjuToolState: 'ZjuToolState',
+  TwoFactorAccount: 'TwoFactorAccount'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -249,6 +250,19 @@ export const ZjuToolStateScalarFieldEnum = {
 } as const
 
 export type ZjuToolStateScalarFieldEnum = (typeof ZjuToolStateScalarFieldEnum)[keyof typeof ZjuToolStateScalarFieldEnum]
+
+
+export const TwoFactorAccountScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  fingerprint: 'fingerprint',
+  ciphertext: 'ciphertext',
+  iv: 'iv',
+  tag: 'tag',
+  createdAt: 'createdAt'
+} as const
+
+export type TwoFactorAccountScalarFieldEnum = (typeof TwoFactorAccountScalarFieldEnum)[keyof typeof TwoFactorAccountScalarFieldEnum]
 
 
 export const SortOrder = {

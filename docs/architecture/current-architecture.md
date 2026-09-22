@@ -64,6 +64,7 @@
 - `/forgot-password`：发起密码重置邮件。
 - `/reset-password`：使用 token 设置新密码。
 - `/tools`：工具箱入口页。
+- `/tools/2fa`：用户独立的 2FA 验证器，实时 TOTP、密钥查看、批量迁移导入及删除。
 - `/tools/ZJU_tools`：ZJU 工具合集页，验证、保存或删除当前用户的 ZJU 学号、密码和可选 Pintia Cookie；已保存账号可保留旧密码更新资料或清除 Pintia Cookie。未验证时仅居中显示账号表单；验证后默认仅居中显示工具列表，左侧悬浮按钮可展开或收起账号设置，桌面展开为双栏、手机纵向排列。工具列表显示按服务分组（学在浙大 / 智云课堂 / 图书馆 / WebPlus）的工具索引。
 - `/tools/ZJU_tools/courses.zju`：学在浙大工具索引页，需要当前用户已有通过验证的 ZJU 账号。
 - `/tools/ZJU_tools/courses.zju/todos`：待办中心，读取学在浙大与可选 Pintia 待办。
@@ -87,6 +88,9 @@
 - `GET /api/weather`：返回指定经纬度或默认上海位置的当前天气。
 - `GET /api/calendar`：返回指定年份的节假日和纪念日数据。
 - `/api/music/*`：网易云音乐代理，支持账号状态、二维码登录/登出、搜索、专辑歌曲、用户歌单、网页歌单增删排序、歌单歌曲、播放地址、收藏和歌词；公开访问使用匿名网易云 cookie，用户绑定网易云后使用加密保存的用户级 cookie。`GET /api/music/likes` 返回当前网易云账号已收藏的歌曲 ID；`song-url` 同时返回匹配歌曲的元数据、试听标记与地址有效期；二维码开始接口返回 `ticket`，检查接口必须同时提交 `key` 和 `ticket`。
+- `GET /api/two-factor`：返回当前用户解密后的账号列表和服务器时间，供登录浏览器内存中的 OTPAuth 生成验证码；响应为 `private, no-store`。
+- `POST /api/two-factor`：验证、加密并原子批量保存账号；HMAC 去重，按用户行锁限制最多 500 条。
+- `DELETE /api/two-factor/[id]`：仅删除当前用户所属的账号，写请求校验 Origin。错误不回显密钥或底层存储详情。
 - `GET|PUT|DELETE /api/zju/account`：读取、验证保存、删除当前登录用户的 ZJU 凭据。密码和 Pintia Cookie 只加密入库，不回传明文；更新已有账号时可不重传密码，也可清除已保存的 Pintia Cookie。
 - `GET /api/zju/courses`：读取当前用户的学在浙大课程列表，要求已验证 ZJU 账号。
 - `GET /api/zju/courses/todos`：读取可靠待办，合并学在浙大和可选 Pintia 待办，要求已验证 ZJU 账号。
@@ -109,6 +113,7 @@
 ## 数据与状态
 
 - PostgreSQL 是账号、会话、审计日志、网易云播放器状态和 ZJU 工具状态的数据源。
+- `TwoFactorAccount` 存储 AES-256-GCM 加密账号和用户内 HMAC 指纹；AAD 绑定用户及行 ID，删除用户时级联删除。迁移为 `0007_two_factor_accounts`，详见 ADR 0007。
 - Prisma schema 位于 `prisma/schema.prisma`，生成客户端位于 `src/generated/prisma/`。
 - 迁移位于 `prisma/migrations/`，当前包括认证初始化、网易云账号、网页歌单、歌单排序和 ZJU 工具表。
 - 管理员自定义背景图以文件方式存储在 `public/backgrounds/admin-background.webp`。
