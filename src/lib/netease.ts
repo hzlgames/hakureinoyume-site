@@ -1,6 +1,8 @@
 import crypto from "crypto";
 import type { Prisma } from "../generated/prisma/client";
 import prisma from "./prisma";
+import { isLoginExpiredPayload, normalizeCookie } from "./netease-protocol";
+export { isLoginExpiredPayload } from "./netease-protocol";
 
 type NeteasePrimitive = string | number | boolean | null | undefined;
 type NeteaseParams = Record<string, NeteasePrimitive>;
@@ -31,6 +33,7 @@ export class NeteaseServiceError extends Error {
   }
 }
 
+let anonymousCookieRequest: Promise<string | null> | null = null;
 let anonymousCookieCache: {
   cookie: string;
   expiresAt: number;
@@ -116,7 +119,7 @@ export function extractCookie(payload: unknown, headers?: Headers) {
   const data = asRecord(payload);
   const cookie = readString(data?.cookie);
 
-  if (cookie) return cookie;
+  if (cookie) return normalizeCookie(cookie);
 
   const cookies = Array.isArray(data?.cookies) ? data?.cookies : null;
   if (cookies) {
@@ -125,10 +128,11 @@ export function extractCookie(payload: unknown, headers?: Headers) {
       .filter((item): item is string => Boolean(item))
       .join("; ");
 
-    if (joined) return joined;
+    if (joined) return normalizeCookie(joined);
   }
 
-  return headers ? extractSetCookie(headers) : null;
+  const headerCookie = headers ? extractSetCookie(headers) : null;
+  return headerCookie ? normalizeCookie(headerCookie) : null;
 }
 
 export function extractProfile(payload: unknown): NeteaseProfile | null {
@@ -160,10 +164,14 @@ export function extractProfile(payload: unknown): NeteaseProfile | null {
 export async function requestNetease<T extends NeteaseRecord = NeteaseRecord>(
   path: string,
   params: NeteaseParams = {},
-  options: { cookie?: string | null; method?: "GET" | "POST" } = {}
+  options: { cookie?: string | null; method?: "GET" | "POST"; timeoutMs?: number } = {}
 ) {
   const url = new URL(path.startsWith("/") ? path : `/${path}`, getApiBaseUrl());
   const method = options.method ?? "POST";
+  // Enhanced caches by URL + HTTP cookies, ignoring POST body parameters/cookies.
+  // Both bypass and a unique URL are needed to prevent cross-query/account responses.
+  url.searchParams.set("timestamp", String(Date.now()));
+  url.searchParams.set("_request", crypto.randomUUID());
   const requestParams = {
     ...params,
     timestamp: Date.now()
@@ -181,7 +189,9 @@ export async function requestNetease<T extends NeteaseRecord = NeteaseRecord>(
 
       response = await fetch(url, {
         method,
-        cache: "no-store"
+        headers: { "x-apicache-bypass": "1", "cache-control": "no-store" },
+        cache: "no-store",
+        signal: AbortSignal.timeout(options.timeoutMs ?? 18000)
       });
     } else {
       const body = new URLSearchParams();
@@ -194,15 +204,18 @@ export async function requestNetease<T extends NeteaseRecord = NeteaseRecord>(
       response = await fetch(url, {
         method,
         headers: {
-          "content-type": "application/x-www-form-urlencoded"
+          "content-type": "application/x-www-form-urlencoded",
+          "x-apicache-bypass": "1",
+          "cache-control": "no-store"
         },
         body,
-        cache: "no-store"
+        cache: "no-store",
+        signal: AbortSignal.timeout(options.timeoutMs ?? 18000)
       });
     }
-  } catch (error) {
+  } catch {
     throw new NeteaseServiceError(
-      error instanceof Error ? error.message : "Failed to reach NetEase API service.",
+      "网易云服务暂时无法连接，请稍后重试。",
       503,
       "netease_unreachable"
     );
@@ -215,12 +228,25 @@ export async function requestNetease<T extends NeteaseRecord = NeteaseRecord>(
     try {
       payload = JSON.parse(text);
     } catch {
-      payload = { raw: text };
+      throw new NeteaseServiceError("网易云服务返回了无效数据，请稍后重试。", 502, "netease_invalid_response");
     }
   }
 
-  if (!response.ok) {
-    throw new NeteaseServiceError(`NetEase API responded with ${response.status}.`, response.status);
+  if (!asRecord(payload) || Object.keys(asRecord(payload)!).length === 0) {
+    throw new NeteaseServiceError("网易云返回了空数据，请稍后重试。", 502, "netease_invalid_response");
+  }
+  if (isLoginExpiredPayload(payload)) {
+    throw new NeteaseServiceError("网易云登录已过期，请重新连接。", 401, "netease_login_required");
+  }
+  if (!response.ok || (Number(asRecord(payload)?.code) >= 400 && ![800, 801, 802, 803].includes(Number(asRecord(payload)?.code)))) {
+    const code = Number(asRecord(payload)?.code);
+    throw new NeteaseServiceError(
+      code === -462 || code === 405 ? "网易云触发了安全验证，请在官方 App 完成验证后重试。" : "网易云暂时无法完成此请求，请稍后重试。",
+      502, "netease_upstream_error"
+    );
+  }
+  if (Number(asRecord(payload)?.code) === -462) {
+    throw new NeteaseServiceError("网易云触发了安全验证，请在官方 App 完成验证后重试。", 502, "netease_risk_control");
   }
 
   return {
@@ -236,10 +262,17 @@ export async function getStoredNeteaseAccount(userId: string): Promise<StoredNet
 
   if (!account || account.loginStatus !== "active") return null;
 
+  let cookie;
+  try { cookie = decryptCookie(account); }
+  catch (error) {
+    if (error instanceof NeteaseServiceError) throw error;
+    await prisma.neteaseAccount.updateMany({ where: { userId, updatedAt: account.updatedAt }, data: { loginStatus: "expired" } });
+    return null;
+  }
   return {
     id: account.id,
     userId: account.userId,
-    cookie: decryptCookie(account),
+    cookie,
     profile: account.neteaseUserId && account.nickname
       ? {
           userId: account.neteaseUserId,
@@ -284,9 +317,11 @@ export async function saveStoredNeteaseAccount(input: {
   });
 }
 
-export async function markStoredNeteaseAccountExpired(userId: string) {
+export async function markStoredNeteaseAccountExpired(userId: string, cookie?: string | null) {
+  const account = await prisma.neteaseAccount.findUnique({ where: { userId } });
+  if (!account || (cookie && decryptCookie(account) !== cookie)) return;
   await prisma.neteaseAccount.updateMany({
-    where: { userId },
+    where: { userId, updatedAt: account.updatedAt },
     data: {
       loginStatus: "expired",
       lastValidatedAt: new Date()
@@ -300,7 +335,7 @@ export async function deleteStoredNeteaseAccount(userId: string) {
   });
 }
 
-export async function getAnonymousNeteaseCookie() {
+async function loadAnonymousNeteaseCookie() {
   if (anonymousCookieCache && anonymousCookieCache.expiresAt > Date.now()) {
     return anonymousCookieCache.cookie;
   }
@@ -322,13 +357,24 @@ export async function getAnonymousNeteaseCookie() {
   }
 }
 
-export function isLoginExpiredPayload(payload: unknown) {
-  const data = asRecord(payload);
-  const code = data?.code;
-
-  return code === 301
-    || code === 401
-    || code === -462
-    || readString(data?.message)?.includes("登录") === true
-    || readString(data?.msg)?.includes("登录") === true;
+// The browser receives an authenticated, encrypted ticket; upstream cookies remain opaque.
+// Binding it to both the site user and site session prevents cross-account QR completion.
+export function createQrTicket(input: { userId: string; sessionId: string; key: string; cookie: string | null }) {
+  const encrypted = encryptCookie(JSON.stringify({ ...input, expiresAt: Date.now() + 5 * 60 * 1000 }));
+  return Buffer.from(JSON.stringify(encrypted)).toString("base64url");
 }
+export function readQrTicket(ticket: string, userId: string, sessionId: string, key: string) {
+  try {
+    const data = JSON.parse(decryptCookie(JSON.parse(Buffer.from(ticket, "base64url").toString("utf8"))));
+    if (data.userId !== userId || data.sessionId !== sessionId || data.key !== key || data.expiresAt < Date.now()) return null;
+    return data as { cookie: string | null };
+  } catch { return null; }
+}
+
+export async function getAnonymousNeteaseCookie() {
+  if (anonymousCookieCache && anonymousCookieCache.expiresAt > Date.now()) return anonymousCookieCache.cookie;
+  if (!anonymousCookieRequest) anonymousCookieRequest = loadAnonymousNeteaseCookie().finally(() => { anonymousCookieRequest = null; });
+  return anonymousCookieRequest;
+}
+
+export function resetAnonymousNeteaseCookie() { anonymousCookieCache = null; }

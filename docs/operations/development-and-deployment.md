@@ -91,3 +91,21 @@ ZJU 工具直接在 Next.js Node runtime 内调用 `login-zju` 的 `COURSES`/`CL
 - 两项 service 均使用现有 `/etc/hakureinoyume-site.env`，无需新建全局钉钉配置。钉钉设置由用户在网页保存并加密入库。
 - 部署脚本在构建成功后安装并启用两个 timer。排障：`systemctl status zju-artifact-cleanup.timer zju-grade-monitor.timer`；清理失败查看对应 service 日志。成绩检查错误也在用户页面显示。
 - 验证：`node --import tsx --test tests/zju-tools.test.ts`（打包、过期、SaveDoc、富文本、成绩计算）。
+
+## 网易云播放器验证
+
+播放器的状态边界、已确认根因和验证方法见 [播放器排查记录](netease-player-audit.md)。单元测试：
+
+```bash
+npx tsx --test tests/music-playback.test.ts tests/netease-protocol.test.ts tests/netease-service.test.ts
+```
+
+服务层测试加载 `.env` 以初始化 Prisma，但网络响应使用替身，不读写真实网易云账号。浏览器验证使用 `tests/browser/music-player.mjs`；先启动预览站点，再提供可用的 Playwright 安装位置与 Chromium 路径：
+
+```bash
+PLAYWRIGHT_MODULE=/path/to/playwright CHROMIUM_PATH=/path/to/chrome MUSIC_TEST_URL=http://127.0.0.1:3102 node tests/browser/music-player.mjs
+```
+
+`tests/browser/music-live.mjs` 提供真实音源/封面/暂停继续与登录后歌单读取的只读回归；可用 `MUSIC_SESSION_FILE` 指向隔离站内会话文件（`{ cookie }`），不得提交该文件。
+
+内存较小的共享服务器，构建与浏览器应共用 `/tmp/hakurei-heavy-work.lock` 串行执行。`CIRCLE_NODE_TOTAL=2 NODE_OPTIONS=--max-old-space-size=640 npm run build -- --webpack` 使用一个静态生成 worker；启动预览前确认端口未占用。真实扫码验证使用独立测试数据库与测试站内会话，用户亲自扫码确认后再验证账号读取，测试产物不得包含明文凭据。无需新增数据库迁移或生产环境变量。

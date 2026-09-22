@@ -731,8 +731,9 @@ ul {
   align-items: center;
   justify-content: center;
   background: var(--glass-border);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .music-btn:hover {
@@ -4637,29 +4638,51 @@ a.glass-panel:hover {
   }
 }
 
-/* Keep intrinsic song widths within the player, including long result titles. */
-.netease-player .netease-list {
-  grid-template-columns: minmax(0, 1fr);
-}
-.netease-player .netease-track {
-  min-width: 0;
-}
-.netease-player .netease-track-main {
+/* Player layout: artwork and metadata stay together at every card width. */
+.netease-player .netease-now {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 3px 8px;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 4px 16px;
+  align-items: center;
 }
-.netease-player .netease-track-name {
-  grid-column: 1;
-}
-.netease-player .netease-track-artist {
-  grid-column: 1;
-}
-.netease-player .netease-track-time {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: center;
-}
+.netease-player .netease-cover { grid-column: 1; grid-row: 1 / span 3; }
+.netease-player .netease-current { display: contents; }
+.netease-player .netease-song-title { grid-column: 2; grid-row: 1; align-self: end; }
+.netease-player .netease-song-artist { grid-column: 2; grid-row: 2; margin: 0; }
+.netease-playback-label { grid-column: 2; grid-row: 3; align-self: start; font-size: 11px; color: var(--text-secondary); }
+.netease-player .netease-controls { grid-column: 1 / -1; justify-content: center; gap: 10px; margin: 12px 0 6px; }
+.netease-player .music-progress { grid-column: 1 / -1; }
+.netease-player .music-volume { min-width: 0; margin-left: auto; }
+.netease-player .music-volume-range { width: 62px; }
+.netease-player button:disabled { cursor: not-allowed; opacity: 0.45; }
+.netease-player button:focus-visible,
+.netease-player input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.netease-player .netease-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; padding: 4px; }
+.netease-player .netease-tabs button { justify-content: center; white-space: nowrap; gap: 4px; padding: 8px 2px; font-size: 11px; }
+.netease-qr-panel { position: relative; min-height: 224px; justify-content: center; }
+.netease-qr-close { position: absolute; top: 8px; right: 8px; }
+.netease-qr-panel small { font-size: 11px; color: var(--text-secondary); }
+.netease-account-status { margin: -4px 0 12px; font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+.netease-artwork-fallback { display: grid; place-items: center; width: 100%; height: 100%; min-height: 32px; border-radius: 8px; background: var(--progress-bg); color: var(--text-tertiary); }
+.netease-cover:has(.netease-artwork-fallback) .netease-vinyl { display: none; }
+.netease-cover > .netease-artwork-fallback { position: relative; z-index: 2; }
+.netease-album-artwork { width: 46px; height: 46px; flex: 0 0 46px; }
+.netease-player .netease-album-current { flex-wrap: wrap; }
+.netease-album-current > div:not(.netease-album-actions) { display: grid; gap: 3px; flex: 1; min-width: 0; }
+.netease-list-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 10px 0; font-size: 11px; color: var(--text-secondary); }
+.netease-list-heading > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.netease-list-heading button { min-height: 28px; font-size: 11px; }
+.netease-player .netease-list { grid-template-columns: minmax(0, 1fr); }
+.netease-player .netease-track { min-width: 0; padding: 8px 6px; }
+.netease-player .netease-track-main { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 3px 8px; }
+.netease-track-artwork { grid-column: 1; grid-row: 1 / span 2; width: 36px; height: 36px; }
+.netease-track-artwork img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+.netease-player .netease-track-name { grid-column: 2; grid-row: 1; width: auto; max-width: none; }
+.netease-player .netease-track-artist { grid-column: 2; grid-row: 2; width: auto; max-width: none; }
+.netease-player .netease-track-time { grid-column: 3; grid-row: 1 / span 2; align-self: center; }
+.netease-player .netease-track:has(.netease-drag-handle) { display: grid; grid-template-columns: 15px minmax(0, 1fr); }
+.netease-player .netease-track:has(.netease-drag-handle) .netease-track-actions { grid-column: 2; justify-content: flex-end; }
+.netease-status.is-error { color: var(--text-primary); border-left: 2px solid var(--accent); padding-left: 10px; }
 .time-content {
   z-index: 1;
 }

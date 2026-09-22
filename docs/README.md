@@ -8,6 +8,7 @@
 - 修改页面、组件或主题：读 [功能总览](features/feature-overview.md)、[前端规范](frontend-guidelines.md) 和 [当前架构](architecture/current-architecture.md)。
 - 修改 API、认证或背景图存储：读 [当前架构](architecture/current-architecture.md)、[认证架构](architecture/authentication.md)、[开发与部署](operations/development-and-deployment.md) 和 [架构决策](decisions/README.md)。
 - 修改部署、环境变量或生产服务：读 [开发与部署](operations/development-and-deployment.md) 和 [架构决策](decisions/README.md)。
+- 排查网易云播放器：读 [播放器排查记录](operations/netease-player-audit.md)，包含状态边界、真实接口与浏览器回归方法。
 - 准备 Git 远端同步：必须读 [知识维护规则](knowledge-maintenance.md)，按规则更新文档或说明无需更新。
 
 ## 文档地图

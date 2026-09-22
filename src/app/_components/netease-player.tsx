@@ -2,9 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { FormEvent, useSyncExternalStore } from "react";
 import {
   Album,
+  ArrowLeft,
+  ArrowUp,
+  ArrowDown,
+  X,
   Heart,
   HeartPlus,
   GripVertical,
@@ -27,69 +31,11 @@ import {
 } from "lucide-react";
 import { CardHeader, DashboardCard } from "./ui";
 
-type NeteaseProfile = {
-  userId: string;
-  nickname: string;
-  avatarUrl: string | null;
-};
-
-type AccountState = {
-  siteAuthenticated: boolean;
-  neteaseAuthenticated: boolean;
-  profile: NeteaseProfile | null;
-  expired?: boolean;
-};
-
-type MusicSong = {
-  rowId?: string;
-  id: string;
-  name: string;
-  artists: string;
-  album: string;
-  coverUrl: string | null;
-  duration: number | null;
-  addedAt?: string;
-};
-
-type MusicPlaylist = {
-  id: string;
-  name: string;
-  coverUrl: string | null;
-  trackCount: number;
-  playCount: number;
-};
-
-type MusicAlbum = {
-  id: string;
-  name: string;
-  artists: string;
-  coverUrl: string | null;
-  trackCount: number;
-  publishTime: number | null;
-  company: string | null;
-};
-
-type QrState = {
-  key: string;
-  qrimg: string;
-  status: "waiting" | "scanned" | "expired" | "error";
-  message: string;
-};
-
-type WebPlaylistState = {
-  playlist: {
-    id: string;
-    name: string;
-    trackCount: number;
-  };
-  songs: MusicSong[];
-};
-
-const defaultAccount: AccountState = {
-  siteAuthenticated: false,
-  neteaseAuthenticated: false,
-  profile: null
-};
+import { useMusicAccount } from "./music/use-account";
+import { useMusicLibrary } from "./music/use-library";
+import { usePlayback } from "./music/use-playback";
+import { Artwork } from "./music/artwork";
+import type { MusicSong } from "../../lib/music-types";
 
 function formatDuration(value: number | null) {
   if (!value) return "--:--";
@@ -102,37 +48,6 @@ function formatClock(value: number) {
   if (!Number.isFinite(value)) return "00:00";
   const minutes = Math.floor(value / 60);
   return `${minutes}:${String(Math.floor(value % 60)).padStart(2, "0")}`;
-}
-
-class ApiError extends Error {
-  code?: string;
-  status: number;
-
-  constructor(message: string, status: number, code?: string) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-    this.code = code;
-  }
-}
-
-async function fetchJson<T>(url: string, init?: RequestInit) {
-  const response = await fetch(url, {
-    cache: "no-store",
-    credentials: "same-origin",
-    ...init,
-    headers: {
-      ...(init?.headers ?? {}),
-      ...(init?.body ? { "content-type": "application/json" } : {})
-    }
-  });
-  const data = await response.json() as T & { message?: string; error?: string };
-
-  if (!response.ok) {
-    throw new ApiError(data.message || data.error || "请求失败", response.status, data.error);
-  }
-
-  return data;
 }
 
 function subscribeDisplay(callback: () => void) {
@@ -150,705 +65,39 @@ export function NeteasePlayer() {
     try { localStorage.setItem("hakurei-music-display", next ? "compact" : "detailed"); } catch {}
     window.dispatchEvent(new Event("music-display-change"));
   }
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const qrRef = useRef<QrState | null>(null);
-  const qrCheckInFlightRef = useRef(false);
-  const qrResolvedRef = useRef(false);
-  const playRequestIdRef = useRef(0);
-  const playAbortControllerRef = useRef<AbortController | null>(null);
-  const autoplayRequestIdRef = useRef<number | null>(null);
-  const neteasePlaylistsRequestIdRef = useRef(0);
-  const playlistTracksRequestIdRef = useRef(0);
-  const webPlaylistRequestIdRef = useRef(0);
-  const refreshRequestIdRef = useRef(0);
-  const albumRequestIdRef = useRef(0);
-  const [account, setAccount] = useState<AccountState>(defaultAccount);
-  const [query, setQuery] = useState("东方Project");
-  const [mode, setMode] = useState<"search" | "web" | "netease">("search");
-  const [searchType, setSearchType] = useState<"songs" | "albums">("songs");
-  const [searchResults, setSearchResults] = useState<MusicSong[]>([]);
-  const [albumResults, setAlbumResults] = useState<MusicAlbum[]>([]);
-  const [selectedAlbum, setSelectedAlbum] = useState<MusicAlbum | null>(null);
-  const [albumTracks, setAlbumTracks] = useState<MusicSong[]>([]);
-  const [playlists, setPlaylists] = useState<MusicPlaylist[]>([]);
-  const [selectedPlaylist, setSelectedPlaylist] = useState<MusicPlaylist | null>(null);
-  const [playlistTracks, setPlaylistTracks] = useState<MusicSong[]>([]);
-  const [webPlaylist, setWebPlaylist] = useState<WebPlaylistState["playlist"] | null>(null);
-  const [webPlaylistSongs, setWebPlaylistSongs] = useState<MusicSong[]>([]);
-  const [queue, setQueue] = useState<MusicSong[]>([]);
-  const [currentSong, setCurrentSong] = useState<MusicSong | null>(null);
-  const [currentUrl, setCurrentUrl] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(0.82);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isNeteasePlaylistsLoading, setIsNeteasePlaylistsLoading] = useState(false);
-  const [isPlaylistTracksLoading, setIsPlaylistTracksLoading] = useState(false);
-  const [isWebPlaylistLoading, setIsWebPlaylistLoading] = useState(false);
-  const [isAlbumLoading, setIsAlbumLoading] = useState(false);
-  const [pendingSongIds, setPendingSongIds] = useState<string[]>([]);
-  const [neteaseLikedSongIds, setNeteaseLikedSongIds] = useState<string[]>([]);
-  const [draggingSongId, setDraggingSongId] = useState<string | null>(null);
-  const [message, setMessage] = useState("未登录网易云时，将使用公开/游客访问能力。");
-  const [qr, setQr] = useState<QrState | null>(null);
-
-  const visibleSongs = useMemo(
-    () => {
-      if (mode === "web") return webPlaylistSongs;
-      if (mode === "netease") return playlistTracks;
-      if (searchType === "albums") return albumTracks;
-      return searchResults;
-    },
-    [albumTracks, mode, playlistTracks, searchResults, searchType, webPlaylistSongs]
-  );
-  const webSongIds = useMemo(() => new Set(webPlaylistSongs.map((song) => song.id)), [webPlaylistSongs]);
-  const neteaseLikedIds = useMemo(() => new Set(neteaseLikedSongIds), [neteaseLikedSongIds]);
-  const pendingIds = useMemo(() => new Set(pendingSongIds), [pendingSongIds]);
-  const playerBusy = isLoading || isNeteasePlaylistsLoading || isPlaylistTracksLoading || isWebPlaylistLoading || isAlbumLoading;
-
-  const markSongPending = useCallback((songId: string, pending: boolean) => {
-    setPendingSongIds((current) => {
-      if (pending) {
-        return current.includes(songId) ? current : [...current, songId];
-      }
-
-      return current.filter((id) => id !== songId);
-    });
-  }, []);
-
-  // When any NetEase call comes back with an expired login (the server has
-  // already marked the stored cookie expired), flip the UI back to the
-  // disconnected state so the 连接 button reappears instead of leaving a stale
-  // "connected" account chip that silently fails every request.
-  const handleNeteaseExpiry = useCallback((error: unknown) => {
-    if (!(error instanceof ApiError) || error.code !== "netease_login_required") {
-      return false;
-    }
-
-    setAccount((current) => ({ ...current, neteaseAuthenticated: false, profile: null, expired: true }));
-    setPlaylists([]);
-    setSelectedPlaylist(null);
-    setPlaylistTracks([]);
-    setNeteaseLikedSongIds([]);
-    setMessage("网易云登录态已失效，请重新扫码登录。");
-    return true;
-  }, []);
-
-  const loadAccount = useCallback(async () => {
-    const data = await fetchJson<AccountState>(`/api/music/me?t=${Date.now()}`);
-    setAccount(data);
-    if (data.expired) {
-      setMessage("网易云登录态已失效，请重新扫码登录。");
-    }
-    return data;
-  }, []);
-
-  const loadPlaylistsForAccount = useCallback(async (
-    nextAccount: AccountState,
-    options: { announce?: boolean } = {}
-  ) => {
-    const requestId = neteasePlaylistsRequestIdRef.current + 1;
-    neteasePlaylistsRequestIdRef.current = requestId;
-
-    if (!nextAccount.neteaseAuthenticated) {
-      setPlaylists([]);
-      setSelectedPlaylist(null);
-      setPlaylistTracks([]);
-      return [];
-    }
-
-    setIsNeteasePlaylistsLoading(true);
-    try {
-      const data = await fetchJson<{ playlists: MusicPlaylist[] }>(`/api/music/playlists?t=${Date.now()}`);
-
-      if (requestId !== neteasePlaylistsRequestIdRef.current) return [];
-
-      setPlaylists(data.playlists);
-
-      if (options.announce) {
-        setMessage(data.playlists.length > 0 ? "已读取网易云收藏歌单。" : "没有读取到收藏歌单。");
-      }
-
-      return data.playlists;
-    } catch (error) {
-      if (requestId === neteasePlaylistsRequestIdRef.current) {
-        handleNeteaseExpiry(error);
-      }
-      throw error;
-    } finally {
-      if (requestId === neteasePlaylistsRequestIdRef.current) {
-        setIsNeteasePlaylistsLoading(false);
-      }
-    }
-  }, [handleNeteaseExpiry]);
-
-  const loadWebPlaylist = useCallback(async (options: { announce?: boolean } = {}) => {
-    const requestId = webPlaylistRequestIdRef.current + 1;
-    webPlaylistRequestIdRef.current = requestId;
-    setIsWebPlaylistLoading(true);
-
-    try {
-      const data = await fetchJson<WebPlaylistState>(`/api/music/web-playlist?t=${Date.now()}`);
-
-      if (requestId !== webPlaylistRequestIdRef.current) return data;
-
-      setWebPlaylist(data.playlist);
-      setWebPlaylistSongs(data.songs);
-
-      if (options.announce) {
-        setMessage(data.songs.length > 0 ? "网页歌单已刷新。" : "网页歌单还是空的。");
-      }
-
-      return data;
-    } catch (error) {
-      if (requestId === webPlaylistRequestIdRef.current) {
-        setMessage(error instanceof Error ? error.message : "网页歌单读取失败。");
-        setWebPlaylist(null);
-        setWebPlaylistSongs([]);
-      }
-      throw error;
-    } finally {
-      if (requestId === webPlaylistRequestIdRef.current) {
-        setIsWebPlaylistLoading(false);
-      }
-    }
-  }, []);
-
-  const refreshMusicState = useCallback(async (
-    options: { announce?: boolean; reloadPlaylists?: boolean } = {}
-  ) => {
-    const requestId = refreshRequestIdRef.current + 1;
-    refreshRequestIdRef.current = requestId;
-    setIsRefreshing(true);
-    try {
-      const nextAccount = await loadAccount();
-
-      if (requestId !== refreshRequestIdRef.current) {
-        return nextAccount;
-      }
-
-      if (nextAccount.siteAuthenticated) {
-        await loadWebPlaylist();
-      }
-
-      if (options.reloadPlaylists !== false) {
-        await loadPlaylistsForAccount(nextAccount);
-      }
-
-      if (options.announce) {
-        setMessage(nextAccount.neteaseAuthenticated ? "网易云状态已刷新。" : "当前未连接网易云账户。");
-      }
-
-      return nextAccount;
-    } catch (error) {
-      if (options.announce) {
-        setMessage(error instanceof Error ? error.message : "状态刷新失败。");
-      }
-      throw error;
-    } finally {
-      if (requestId === refreshRequestIdRef.current) {
-        setIsRefreshing(false);
-      }
-    }
-  }, [loadAccount, loadPlaylistsForAccount, loadWebPlaylist]);
-
-  const runSearch = useCallback(async (nextQuery: string, nextType = searchType) => {
-    const keyword = nextQuery.trim();
-    if (!keyword) return;
-
-    setIsLoading(true);
-    try {
-      if (nextType === "albums") {
-        const data = await fetchJson<{ albums: MusicAlbum[] }>(`/api/music/search?keywords=${encodeURIComponent(keyword)}&type=album&limit=16&t=${Date.now()}`);
-        setAlbumResults(data.albums);
-        setSelectedAlbum(null);
-        setAlbumTracks([]);
-        setMode("search");
-        setMessage(data.albums.length > 0 ? "专辑搜索结果已更新。" : "没有找到可展示的专辑。");
-        return;
-      }
-
-      const data = await fetchJson<{ songs: MusicSong[] }>(`/api/music/search?keywords=${encodeURIComponent(keyword)}&type=song&limit=24&t=${Date.now()}`);
-      setSearchResults(data.songs);
-      setMode("search");
-      setMessage(data.songs.length > 0 ? "搜索结果已更新。" : "没有找到可展示的歌曲。");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "搜索失败。");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [searchType]);
-
-  useEffect(() => {
-    loadAccount().then((nextAccount) => {
-      if (nextAccount.siteAuthenticated) {
-        loadWebPlaylist().catch(() => undefined);
-      }
-
-      if (nextAccount.neteaseAuthenticated) {
-        loadPlaylistsForAccount(nextAccount).catch(() => undefined);
-      }
-    }).catch(() => setMessage("账号状态读取失败。"));
-    runSearch("东方Project", "songs").catch(() => setMessage("默认搜索失败。"));
-  }, [loadAccount, loadPlaylistsForAccount, loadWebPlaylist, runSearch]);
-
-  useEffect(() => {
-    qrRef.current = qr;
-  }, [qr]);
-
-  useEffect(() => {
-    if (!qr?.key) return;
-
-    const key = qr.key;
-    let isStopped = false;
-    qrResolvedRef.current = false;
-
-    const checkQrStatus = async () => {
-      const currentQr = qrRef.current;
-
-      if (
-        isStopped
-        || qrCheckInFlightRef.current
-        || qrResolvedRef.current
-        || !currentQr
-        || currentQr.key !== key
-        || currentQr.status === "expired"
-        || currentQr.status === "error"
-      ) {
-        return;
-      }
-
-      qrCheckInFlightRef.current = true;
-      try {
-        const data = await fetchJson<{ code: number; message?: string; profile?: NeteaseProfile }>("/api/music/login/qr/check", {
-          method: "POST",
-          body: JSON.stringify({ key })
-        });
-
-        if (data.code === 803) {
-          qrResolvedRef.current = true;
-          setQr(null);
-          setMessage(`网易云已连接${data.profile?.nickname ? `：${data.profile.nickname}` : ""}。`);
-          await refreshMusicState({ reloadPlaylists: true });
-          return;
-        }
-
-        if (data.code === 802) {
-          setQr((current) => current ? { ...current, status: "scanned", message: "已扫码，请在网易云确认登录。" } : current);
-        } else if (data.code === 800) {
-          setQr((current) => current ? { ...current, status: "expired", message: "二维码已过期，请重新生成。" } : current);
-        }
-      } catch (error) {
-        setQr((current) => current ? {
-          ...current,
-          status: "error",
-          message: error instanceof Error ? error.message : "登录状态检查失败。"
-        } : current);
-      } finally {
-        qrCheckInFlightRef.current = false;
-      }
-    };
-
-    checkQrStatus();
-    const timer = window.setInterval(checkQrStatus, 1400);
-
-    return () => {
-      isStopped = true;
-      window.clearInterval(timer);
-    };
-  }, [qr?.key, refreshMusicState]);
-
-  const resetAudioElement = useCallback(() => {
-    const audio = audioRef.current;
-
-    audio?.pause();
-    audio?.removeAttribute("src");
-    audio?.load();
-    setProgress(0);
-    setDuration(0);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      playAbortControllerRef.current?.abort();
-    };
-  }, []);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    const requestId = playRequestIdRef.current;
-
-    if (!audio) return;
-
-    audio.pause();
-
-    if (!currentUrl) {
-      audio.removeAttribute("src");
-      audio.load();
-      return;
-    }
-
-    audio.src = currentUrl;
-    audio.currentTime = 0;
-    audio.load();
-
-    if (autoplayRequestIdRef.current !== requestId) return;
-
-    audio.play().then(() => {
-      if (playRequestIdRef.current === requestId) {
-        setIsPlaying(true);
-      }
-    }).catch((error) => {
-      if (playRequestIdRef.current !== requestId) return;
-
-      setIsPlaying(false);
-      if (error instanceof DOMException && error.name === "AbortError") {
-        return;
-      }
-      setMessage("浏览器阻止了自动播放，请手动点击播放。");
-    });
-  }, [currentUrl]);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    audio.volume = Math.min(Math.max(volume, 0), 1);
-    audio.muted = isMuted || volume === 0;
-  }, [isMuted, volume]);
-
-  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    runSearch(query).catch(() => setMessage("搜索失败。"));
+  const auth = useMusicAccount();
+  const { account, qr, isRefreshing, isConnecting, isDisconnecting } = auth;
+  const library = useMusicLibrary(account, auth.handleExpiry);
+  const { query, setQuery, mode, setMode, searchType, setSearchType, albumResults, selectedAlbum, albumTracks,
+    playlists, selectedPlaylist, webPlaylist, webPlaylistSongs, webSongIds, neteaseLikedIds, pendingIds,
+    isLoading, isNeteasePlaylistsLoading, isPlaylistTracksLoading, isWebPlaylistLoading, isAlbumLoading, isSaving,
+    draggingSongId, setDraggingSongId, message, runSearch, loadPlaylistsForAccount, loadWebPlaylist, loadPlaylistTracks,
+    loadAlbumTracks, addSongToWebPlaylist, removeSongFromWebPlaylist, addSongsToWebPlaylist, reorderWebPlaylist, likeSongOnNetease } = library;
+  const playback = usePlayback(account.siteUserId, auth.handleExpiry);
+  const { player, song: currentSong, progress, duration, volume, muted: isMuted, wantsPlayback: isPlaying } = playback;
+  const visibleSongs = mode === 'queue' ? playback.queue : library.visibleSongs;
+  const playerBusy = library.playerBusy || playback.status === 'loading' || playback.status === 'buffering';
+  const startQrLogin = auth.startQr;
+  const disconnect = auth.disconnect;
+  const refreshAll = async () => {
+    const next = await auth.refresh();
+    if (!next) return;
+    await Promise.allSettled([
+      next.siteAuthenticated ? loadWebPlaylist({ announce: true }) : Promise.resolve(),
+      loadPlaylistsForAccount(next)
+    ]);
   };
-
-  const startQrLogin = async () => {
-    if (!account.siteAuthenticated) {
-      setMessage("请先登录本站账号，再绑定你的网易云账户。");
-      return;
-    }
-
-    setIsLoading(true);
-    setQr(null);
-    setMessage("正在生成新的网易云登录二维码。");
-    try {
-      const data = await fetchJson<{ key: string; qrimg: string }>("/api/music/login/qr/start", {
-        method: "POST",
-        body: JSON.stringify({})
-      });
-      qrResolvedRef.current = false;
-      setQr({
-        key: data.key,
-        qrimg: data.qrimg,
-        status: "waiting",
-        message: "请使用网易云音乐扫码登录。"
-      });
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "二维码生成失败。");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const disconnect = async () => {
-    setIsLoading(true);
-    try {
-      await fetchJson("/api/music/logout", {
-        method: "POST",
-        body: JSON.stringify({})
-      });
-      setQr(null);
-      setAccount((current) => ({ ...current, neteaseAuthenticated: false, profile: null }));
-      setPlaylists([]);
-      setSelectedPlaylist(null);
-      setPlaylistTracks([]);
-      await refreshMusicState({ reloadPlaylists: false });
-      setMessage("已断开网易云账户。");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "断开失败。");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadPlaylistTracks = async (playlist: MusicPlaylist) => {
-    const requestId = playlistTracksRequestIdRef.current + 1;
-    playlistTracksRequestIdRef.current = requestId;
-    setSelectedPlaylist(playlist);
-    setMode("netease");
-    setPlaylistTracks([]);
-    setIsPlaylistTracksLoading(true);
-    setMessage(`正在载入 ${playlist.name}。`);
-
-    try {
-      const data = await fetchJson<{ songs: MusicSong[] }>(`/api/music/playlist?id=${encodeURIComponent(playlist.id)}&t=${Date.now()}`);
-
-      if (requestId !== playlistTracksRequestIdRef.current) return;
-
-      setPlaylistTracks(data.songs);
-      setQueue(data.songs);
-      setMessage(`已载入 ${playlist.name}。`);
-    } catch (error) {
-      if (requestId === playlistTracksRequestIdRef.current && !handleNeteaseExpiry(error)) {
-        setMessage(error instanceof Error ? error.message : "歌单歌曲读取失败。");
-      }
-    } finally {
-      if (requestId === playlistTracksRequestIdRef.current) {
-        setIsPlaylistTracksLoading(false);
-      }
-    }
-  };
-
-  const loadAlbumTracks = async (album: MusicAlbum) => {
-    const requestId = albumRequestIdRef.current + 1;
-    albumRequestIdRef.current = requestId;
-    setSelectedAlbum(album);
-    setAlbumTracks([]);
-    setMode("search");
-    setSearchType("albums");
-    setIsAlbumLoading(true);
-    setMessage(`正在载入专辑：${album.name}`);
-
-    try {
-      const data = await fetchJson<{ album: MusicAlbum | null; songs: MusicSong[] }>(`/api/music/album?id=${encodeURIComponent(album.id)}&t=${Date.now()}`);
-
-      if (requestId !== albumRequestIdRef.current) return;
-
-      setSelectedAlbum(data.album ?? album);
-      setAlbumTracks(data.songs);
-      setQueue(data.songs);
-      setMessage(data.songs.length > 0 ? `已载入专辑：${album.name}` : "这张专辑没有可展示的曲目。");
-    } catch (error) {
-      if (requestId === albumRequestIdRef.current) {
-        setMessage(error instanceof Error ? error.message : "专辑曲目读取失败。");
-      }
-    } finally {
-      if (requestId === albumRequestIdRef.current) {
-        setIsAlbumLoading(false);
-      }
-    }
-  };
-
-  const addSongToWebPlaylist = async (song: MusicSong) => {
-    if (!account.siteAuthenticated) {
-      setMessage("请先登录本站账号，再添加到网页歌单。");
-      return;
-    }
-
-    markSongPending(song.id, true);
-    try {
-      const data = await fetchJson<WebPlaylistState>("/api/music/web-playlist/tracks", {
-        method: "POST",
-        body: JSON.stringify({ song })
-      });
-      setWebPlaylist(data.playlist);
-      setWebPlaylistSongs(data.songs);
-      setMessage(`已加入网页歌单：${song.name}`);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "加入网页歌单失败。");
-    } finally {
-      markSongPending(song.id, false);
-    }
-  };
-
-  const removeSongFromWebPlaylist = async (song: MusicSong) => {
-    if (!account.siteAuthenticated) {
-      setMessage("请先登录本站账号。");
-      return;
-    }
-
-    markSongPending(song.id, true);
-    try {
-      const data = await fetchJson<WebPlaylistState>(`/api/music/web-playlist/tracks?id=${encodeURIComponent(song.id)}`, {
-        method: "DELETE"
-      });
-      setWebPlaylist(data.playlist);
-      setWebPlaylistSongs(data.songs);
-      setMessage(`已从网页歌单移除：${song.name}`);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "移除网页歌单歌曲失败。");
-    } finally {
-      markSongPending(song.id, false);
-    }
-  };
-
-  const addSongsToWebPlaylist = async (songs: MusicSong[], label: string) => {
-    if (!account.siteAuthenticated) {
-      setMessage("请先登录本站账号，再添加到网页歌单。");
-      return;
-    }
-
-    const songsToAdd = songs.filter((song) => !webSongIds.has(song.id));
-    if (songsToAdd.length === 0) {
-      setMessage("这些歌曲已经在网页歌单中。");
-      return;
-    }
-
-    setPendingSongIds((current) => Array.from(new Set([...current, ...songsToAdd.map((song) => song.id)])));
-    try {
-      const data = await fetchJson<WebPlaylistState>("/api/music/web-playlist/tracks", {
-        method: "POST",
-        body: JSON.stringify({ songs: songsToAdd })
-      });
-      setWebPlaylist(data.playlist);
-      setWebPlaylistSongs(data.songs);
-      setMessage(`已加入网页歌单：${label}`);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "批量加入网页歌单失败。");
-    } finally {
-      setPendingSongIds((current) => current.filter((id) => !songsToAdd.some((song) => song.id === id)));
-    }
-  };
-
-  const reorderWebPlaylist = async (fromId: string, toId: string) => {
-    if (fromId === toId) return;
-
-    const fromIndex = webPlaylistSongs.findIndex((song) => song.id === fromId);
-    const toIndex = webPlaylistSongs.findIndex((song) => song.id === toId);
-    if (fromIndex < 0 || toIndex < 0) return;
-
-    const nextSongs = [...webPlaylistSongs];
-    const [moved] = nextSongs.splice(fromIndex, 1);
-    nextSongs.splice(toIndex, 0, moved);
-    setWebPlaylistSongs(nextSongs);
-    setDraggingSongId(null);
-
-    try {
-      const data = await fetchJson<WebPlaylistState>("/api/music/web-playlist/reorder", {
-        method: "POST",
-        body: JSON.stringify({ ids: nextSongs.map((song) => song.id) })
-      });
-      setWebPlaylist(data.playlist);
-      setWebPlaylistSongs(data.songs);
-      setMessage("网页歌单顺序已更新。");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "网页歌单排序保存失败。");
-      loadWebPlaylist().catch(() => undefined);
-    }
-  };
-
-  const likeSongOnNetease = async (song: MusicSong) => {
-    if (!account.neteaseAuthenticated) {
-      setMessage("请先连接网易云账户，再收藏到网易云。");
-      return;
-    }
-
-    markSongPending(song.id, true);
-    try {
-      await fetchJson<{ ok: boolean }>("/api/music/like", {
-        method: "POST",
-        body: JSON.stringify({ id: song.id, like: true })
-      });
-      setNeteaseLikedSongIds((current) => current.includes(song.id) ? current : [...current, song.id]);
-      setMessage(`已收藏到网易云：${song.name}`);
-    } catch (error) {
-      if (!handleNeteaseExpiry(error)) {
-        setMessage(error instanceof Error ? error.message : "网易云收藏失败。");
-      }
-    } finally {
-      markSongPending(song.id, false);
-    }
-  };
-
-  const playSong = async (song: MusicSong, nextQueue = visibleSongs) => {
-    const requestId = playRequestIdRef.current + 1;
-    playRequestIdRef.current = requestId;
-    playAbortControllerRef.current?.abort();
-
-    const controller = new AbortController();
-    playAbortControllerRef.current = controller;
-    autoplayRequestIdRef.current = requestId;
-
-    resetAudioElement();
-    setCurrentSong(song);
-    setCurrentUrl(null);
-    setIsPlaying(false);
-    setQueue(nextQueue.length > 0 ? nextQueue : [song]);
-    setIsLoading(true);
-
-    try {
-      const data = await fetchJson<{ url: string | null }>(
-        `/api/music/song-url?id=${encodeURIComponent(song.id)}&level=higher&t=${Date.now()}`,
-        { signal: controller.signal }
-      );
-
-      if (requestId !== playRequestIdRef.current || controller.signal.aborted) {
-        return;
-      }
-
-      if (!data.url) {
-        autoplayRequestIdRef.current = null;
-        setMessage("这首歌当前没有可用播放链接，可能受版权、VIP 或地区限制。");
-        return;
-      }
-
-      setCurrentUrl(data.url);
-      setMessage(`正在播放：${song.name}`);
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") {
-        return;
-      }
-
-      if (requestId === playRequestIdRef.current && !handleNeteaseExpiry(error)) {
-        setMessage(error instanceof Error ? error.message : "播放链接获取失败。");
-      }
-    } finally {
-      if (playAbortControllerRef.current === controller) {
-        playAbortControllerRef.current = null;
-      }
-
-      if (requestId === playRequestIdRef.current) {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const playByOffset = (offset: number) => {
-    if (!currentSong || queue.length === 0) return;
-    const index = queue.findIndex((song) => song.id === currentSong.id);
-    const next = queue[(index + offset + queue.length) % queue.length];
-    if (next) playSong(next, queue).catch(() => setMessage("切歌失败。"));
-  };
-
+  const playSong = (song: MusicSong, queue = visibleSongs) => player.play(song, queue);
+  const playByOffset = player.skip;
   const togglePlayback = () => {
-    if (!currentSong && visibleSongs[0]) {
-      playSong(visibleSongs[0], visibleSongs).catch(() => setMessage("播放失败。"));
-      return;
-    }
-
-    if (!audioRef.current) return;
-
-    if (audioRef.current.paused) {
-      if (!audioRef.current.currentSrc && currentUrl) {
-        audioRef.current.src = currentUrl;
-        audioRef.current.load();
-      }
-
-      audioRef.current.play().then(() => setIsPlaying(true)).catch(() => setMessage("播放失败。"));
-    } else {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    }
+    if (!currentSong && visibleSongs[0]) void playSong(visibleSongs[0]);
+    else player.toggle();
   };
-
-  const seekTo = (value: number) => {
-    const audio = audioRef.current;
-    const nextTime = Math.min(Math.max(value, 0), Number.isFinite(duration) ? duration : 0);
-
-    setProgress(nextTime);
-
-    if (audio && Number.isFinite(nextTime)) {
-      audio.currentTime = nextTime;
-    }
-  };
-
-  const progressPercent = duration > 0 ? Math.min((progress / duration) * 100, 100) : 0;
+  const submitSearch = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); void runSearch(query, searchType); };
+  const progressPercent = duration > 0 ? Math.min(progress / duration * 100, 100) : 0;
   const canSeek = duration > 0 && Number.isFinite(duration);
-  const coverUrl = currentSong?.coverUrl || account.profile?.avatarUrl || "/backgrounds/bg-dark.png";
-
+  const playbackLabel = playback.status === 'loading' ? '正在获取音源' : playback.status === 'buffering' ? '正在缓冲'
+    : playback.status === 'playing' ? '正在播放' : playback.status === 'paused' ? '已暂停' : playback.status === 'error' ? '播放遇到问题' : '从曲库选择一首歌';
   return (
     <DashboardCard className={`netease-player ${compact ? "is-compact" : ""}`}>
       <CardHeader
@@ -863,44 +112,28 @@ export function NeteasePlayer() {
         title="网易云音乐"
       />
 
-      <audio
-        ref={audioRef}
-        onTimeUpdate={(event) => setProgress(event.currentTarget.currentTime)}
-        onLoadedMetadata={(event) => {
-          const nextDuration = event.currentTarget.duration;
-          setDuration(Number.isFinite(nextDuration) ? nextDuration : 0);
-        }}
-        onDurationChange={(event) => {
-          const nextDuration = event.currentTarget.duration;
-          setDuration(Number.isFinite(nextDuration) ? nextDuration : 0);
-        }}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onEnded={() => playByOffset(1)}
-      />
-
       <div className="netease-account">
         <div className="netease-account-main">
           {account.neteaseAuthenticated && account.profile ? (
             <>
               <div className="netease-avatar">
                 {account.profile.avatarUrl ? (
-                  <Image src={account.profile.avatarUrl} alt={account.profile.nickname} width={34} height={34} />
+                  <Artwork src={account.profile.avatarUrl} alt={account.profile.nickname} size={34} />
                 ) : (
                   <UserRound size={18} />
                 )}
               </div>
               <div>
                 <div className="netease-account-name">{account.profile.nickname}</div>
-                <div className="netease-account-note">收藏歌单已启用</div>
+                <div className="netease-account-note">已连接网易云</div>
               </div>
             </>
           ) : (
             <>
               <div className="netease-avatar"><UserRound size={18} /></div>
               <div>
-                <div className="netease-account-name">公开访问</div>
-                <div className="netease-account-note">可搜索，收藏需连接网易云</div>
+                <div className="netease-account-name">{isRefreshing ? "正在同步账号" : account.expired ? "连接已过期" : "游客模式"}</div>
+                <div className="netease-account-note">可搜索和播放</div>
               </div>
             </>
           )}
@@ -909,7 +142,7 @@ export function NeteasePlayer() {
           <button
             className="netease-icon-btn"
             type="button"
-            onClick={() => refreshMusicState({ announce: true }).catch(() => undefined)}
+            onClick={() => void refreshAll()}
             disabled={isRefreshing}
             aria-label="刷新网易云状态"
             title="刷新网易云状态"
@@ -917,11 +150,11 @@ export function NeteasePlayer() {
             <RefreshCw className={isRefreshing ? "netease-spin" : undefined} size={16} />
           </button>
           {account.neteaseAuthenticated ? (
-            <button className="netease-icon-btn" type="button" onClick={disconnect} disabled={isLoading} aria-label="断开网易云">
+            <button className="netease-icon-btn" type="button" onClick={disconnect} disabled={isDisconnecting} aria-label="断开网易云">
               <LogOut size={16} />
             </button>
           ) : account.siteAuthenticated ? (
-            <button className="netease-connect-btn" type="button" onClick={startQrLogin} disabled={isLoading}>
+            <button className="netease-connect-btn" type="button" onClick={startQrLogin} disabled={isConnecting}>
               <LogIn size={14} /> 连接
             </button>
           ) : (
@@ -932,39 +165,43 @@ export function NeteasePlayer() {
         </div>
       </div>
 
-      {qr ? (
-        <div className="netease-qr-panel">
-          {qr.qrimg ? <Image key={qr.key} src={qr.qrimg} alt="网易云二维码" width={160} height={160} /> : null}
-          <div className="netease-qr-message">{qr.message}</div>
-          <button className="netease-connect-btn" type="button" onClick={startQrLogin}>
-            <RefreshCw size={14} /> 重新生成
+      {auth.message && <div className="netease-account-status" role="status">{auth.message}</div>}
+      {qr || isConnecting ? (
+        <div className="netease-qr-panel" aria-label="连接网易云账号">
+          <button type="button" className="netease-icon-btn netease-qr-close" onClick={auth.closeQr} aria-label="关闭二维码"><X size={16} /></button>
+          {qr ? <Image src={qr.qrimg} alt="网易云登录二维码" width={160} height={160} /> : <LoaderCircle size={32} className="netease-spin" />}
+          <div className="netease-qr-message" role="status">{qr?.message ?? "正在生成二维码…"}</div>
+          <button className="netease-connect-btn" type="button" onClick={startQrLogin} disabled={isConnecting}>
+            <RefreshCw size={14} /> 刷新二维码
           </button>
+          <small>过期后会自动更新，关闭后停止检查。</small>
         </div>
       ) : null}
 
       <div className="netease-now">
         <div className="netease-cover">
           <div className="netease-vinyl" />
-          <Image src={coverUrl} alt={currentSong?.name ?? "网易云音乐"} width={116} height={116} />
+          <Artwork src={currentSong?.coverUrl} alt={currentSong?.album || currentSong?.name || "专辑"} size={72} />
         </div>
         <div className="netease-current">
           <div className="netease-song-title">{currentSong?.name ?? "选择一首歌"}</div>
           <div className="netease-song-artist">{currentSong?.artists ?? "搜索或打开收藏歌单后播放"}</div>
+          <div className="netease-playback-label" role="status">{playbackLabel}{playback.trial ? " · 试听片段" : ""}</div>
           <div className="netease-controls">
-            <button className="music-btn" type="button" onClick={() => playByOffset(-1)} aria-label="上一首">
+            <button className="music-btn" type="button" onClick={() => playByOffset(-1)} disabled={!currentSong} aria-label="上一首">
               <SkipBack size={16} />
             </button>
-            <button className="music-btn play" type="button" onClick={togglePlayback} aria-label={isPlaying ? "暂停" : "播放"}>
-              {isPlaying ? <Pause size={20} /> : <Play size={20} fill="currentColor" />}
+            <button className="music-btn play" type="button" onClick={togglePlayback} disabled={!currentSong && visibleSongs.length === 0} aria-label={isPlaying ? "暂停" : playback.status === "error" ? "重试播放" : "播放"}>
+              {isPlaying ? <Pause size={20} /> : playback.status === "error" ? <RefreshCw size={20} /> : <Play size={20} fill="currentColor" />}
             </button>
-            <button className="music-btn" type="button" onClick={() => playByOffset(1)} aria-label="下一首">
+            <button className="music-btn" type="button" onClick={() => playByOffset(1)} disabled={!currentSong} aria-label="下一首">
               <SkipForward size={16} />
             </button>
             <div className="music-volume">
               <button
                 className="music-btn"
                 type="button"
-                onClick={() => setIsMuted((current) => !current)}
+                onClick={player.toggleMute}
                 aria-label={isMuted || volume === 0 ? "取消静音" : "静音"}
                 title={isMuted || volume === 0 ? "取消静音" : "静音"}
               >
@@ -977,8 +214,7 @@ export function NeteasePlayer() {
                 min={0}
                 onChange={(event) => {
                   const nextVolume = Number(event.currentTarget.value);
-                  setVolume(nextVolume);
-                  setIsMuted(nextVolume === 0);
+                  player.setVolume(nextVolume);
                 }}
                 step={0.01}
                 type="range"
@@ -998,7 +234,7 @@ export function NeteasePlayer() {
                 disabled={!canSeek}
                 max={canSeek ? duration : 0}
                 min={0}
-                onChange={(event) => seekTo(Number(event.currentTarget.value))}
+                onChange={(event) => player.seek(Number(event.currentTarget.value))}
                 step={0.1}
                 type="range"
                 value={canSeek ? Math.min(progress, duration) : 0}
@@ -1010,49 +246,12 @@ export function NeteasePlayer() {
       </div>
 
       <div className="player-library" inert={compact} aria-hidden={compact}><div className="player-library-inner">
-      <form className="netease-search" onSubmit={submitSearch}>
-        <Search size={15} />
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={searchType === "albums" ? "搜索专辑、艺人" : "搜索歌曲、歌手"}
-        />
-        <button type="submit">搜索</button>
-      </form>
-
-      {mode === "search" ? (
-        <div className="netease-search-types" aria-label="搜索类型">
-          <button
-            className={searchType === "songs" ? "active" : ""}
-            type="button"
-            onClick={() => {
-              setSearchType("songs");
-              setMode("search");
-              runSearch(query, "songs").catch(() => setMessage("搜索失败。"));
-            }}
-          >
-            <Music size={14} /> 单曲
-          </button>
-          <button
-            className={searchType === "albums" ? "active" : ""}
-            type="button"
-            onClick={() => {
-              setSearchType("albums");
-              setMode("search");
-              runSearch(query, "albums").catch(() => setMessage("专辑搜索失败。"));
-            }}
-          >
-            <Album size={14} /> 专辑
-          </button>
-        </div>
-      ) : null}
-
       <div className="netease-tabs">
-        <button className={mode === "search" ? "active" : ""} type="button" onClick={() => setMode("search")}>
+        <button aria-pressed={mode === "search"} className={mode === "search" ? "active" : ""} type="button" onClick={() => setMode("search")}>
           <Search size={14} /> 搜索
         </button>
         <button
-          className={mode === "web" ? "active" : ""}
+          aria-pressed={mode === "web"} className={mode === "web" ? "active" : ""}
           type="button"
           onClick={() => {
             setMode("web");
@@ -1064,7 +263,7 @@ export function NeteasePlayer() {
           <ListPlus size={14} /> 网页歌单
         </button>
         <button
-          className={mode === "netease" ? "active" : ""}
+          aria-pressed={mode === "netease"} className={mode === "netease" ? "active" : ""}
           type="button"
           onClick={() => {
             setMode("netease");
@@ -1075,7 +274,47 @@ export function NeteasePlayer() {
         >
           <Heart size={14} /> 网易云
         </button>
+        <button aria-pressed={mode === "queue"} className={mode === "queue" ? "active" : ""} type="button" onClick={() => setMode("queue")}><ListMusic size={14} /> 队列 {playback.queue.length || ""}</button>
       </div>
+
+
+      {mode === "search" && <form className="netease-search" onSubmit={submitSearch}>
+        <Search size={15} />
+        <input
+          aria-label="搜索歌曲或专辑"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={searchType === "albums" ? "搜索专辑、艺人" : "搜索歌曲、歌手"}
+        />
+        <button type="submit">搜索</button>
+      </form>}
+
+      {mode === "search" ? (
+        <div className="netease-search-types" aria-label="搜索类型">
+          <button
+            className={searchType === "songs" ? "active" : ""}
+            type="button"
+            onClick={() => {
+              setSearchType("songs");
+              setMode("search");
+              runSearch(query, "songs").catch(() => undefined);
+            }}
+          >
+            <Music size={14} /> 单曲
+          </button>
+          <button
+            className={searchType === "albums" ? "active" : ""}
+            type="button"
+            onClick={() => {
+              setSearchType("albums");
+              setMode("search");
+              runSearch(query, "albums").catch(() => undefined);
+            }}
+          >
+            <Album size={14} /> 专辑
+          </button>
+        </div>
+      ) : null}
 
       {mode === "web" ? (
         <div className="netease-playlists">
@@ -1116,16 +355,15 @@ export function NeteasePlayer() {
 
       {mode === "search" && searchType === "albums" ? (
         <>
-          <div className="netease-albums" aria-label="专辑搜索结果">
+          {!selectedAlbum && <div className="netease-albums" aria-label="专辑搜索结果">
             {albumResults.map((album) => (
               <button
-                className={`netease-album ${selectedAlbum?.id === album.id ? "active" : ""}`}
+                className="netease-album"
                 key={album.id}
                 type="button"
                 onClick={() => loadAlbumTracks(album)}
-                disabled={isAlbumLoading && selectedAlbum?.id === album.id}
               >
-                <Image src={album.coverUrl || "https://placeholder.co/96x96"} alt={album.name} width={46} height={46} />
+                <div className="netease-album-artwork"><Artwork src={album.coverUrl} alt={album.name} size={46} /></div>
                 <span>
                   <strong>{album.name}</strong>
                   <small>{album.artists} · {album.trackCount} 首</small>
@@ -1133,10 +371,11 @@ export function NeteasePlayer() {
               </button>
             ))}
             {albumResults.length === 0 && !isLoading ? <div className="netease-empty">没有找到可展示的专辑。</div> : null}
-          </div>
+          </div>}
 
           {selectedAlbum ? (
             <div className="netease-album-current">
+              <button className="netease-icon-btn" type="button" onClick={library.closeAlbum} aria-label="返回专辑搜索"><ArrowLeft size={16} /></button>
               <div>
                 <strong>{selectedAlbum.name}</strong>
                 <span>{selectedAlbum.artists} · {albumTracks.length || selectedAlbum.trackCount} 首</span>
@@ -1145,7 +384,7 @@ export function NeteasePlayer() {
                 <button
                   className="netease-connect-btn"
                   type="button"
-                  onClick={() => albumTracks[0] ? playSong(albumTracks[0], albumTracks).catch(() => setMessage("专辑播放失败。")) : undefined}
+                  onClick={() => albumTracks[0] ? playSong(albumTracks[0], albumTracks).catch(() => undefined) : undefined}
                   disabled={albumTracks.length === 0}
                 >
                   <Play size={14} fill="currentColor" /> 播放
@@ -1154,7 +393,7 @@ export function NeteasePlayer() {
                   className="netease-connect-btn"
                   type="button"
                   onClick={() => addSongsToWebPlaylist(albumTracks, selectedAlbum.name)}
-                  disabled={albumTracks.length === 0}
+                  disabled={albumTracks.length === 0 || isSaving || !account.siteAuthenticated}
                 >
                   <ListPlus size={14} /> 加入
                 </button>
@@ -1164,12 +403,16 @@ export function NeteasePlayer() {
         </>
       ) : null}
 
-      <div className="netease-list" aria-label="歌曲列表">
+      {visibleSongs.length > 0 && <div className="netease-list-heading">
+        <span>{mode === 'queue' ? '当前播放队列' : mode === 'netease' ? selectedPlaylist?.name : mode === 'web' ? '网页歌单' : '曲目'} · {visibleSongs.length} 首</span>
+        {mode !== 'queue' && <button type="button" className="netease-connect-btn" onClick={() => void playSong(visibleSongs[0], visibleSongs)}><Play size={12} /> 播放全部</button>}
+      </div>}
+      <div className="netease-list" aria-label="歌曲列表" aria-busy={isLoading || isPlaylistTracksLoading || isAlbumLoading || isWebPlaylistLoading}>
         {visibleSongs.map((song) => (
           <div
             className={`netease-track ${currentSong?.id === song.id ? "active" : ""} ${draggingSongId === song.id ? "dragging" : ""}`}
             key={song.id}
-            draggable={mode === "web"}
+            draggable={mode === "web" && !isSaving}
             onDragStart={(event) => {
               if (mode !== "web") return;
               setDraggingSongId(song.id);
@@ -1196,19 +439,25 @@ export function NeteasePlayer() {
             <button
               className="netease-track-main"
               type="button"
-              onClick={() => playSong(song, visibleSongs)}
+              aria-label={`${currentSong?.id === song.id && isPlaying ? "暂停" : "播放"} ${song.name}`}
+              onClick={() => currentSong?.id === song.id ? player.toggle() : void playSong(song, visibleSongs)}
             >
+              <span className="netease-track-artwork"><Artwork src={song.coverUrl} alt={song.album || song.name} size={36} /></span>
               <span className="netease-track-name">{song.name}</span>
               <span className="netease-track-artist">{song.artists}</span>
               <span className="netease-track-time">{formatDuration(song.duration)}</span>
             </button>
             <div className="netease-track-actions">
+              {mode === "web" && <>
+                <button className="netease-track-action" type="button" aria-label={`上移 ${song.name}`} disabled={isSaving || visibleSongs[0]?.id === song.id} onClick={() => void reorderWebPlaylist(song.id, visibleSongs[visibleSongs.findIndex(item => item.id === song.id) - 1].id)}><ArrowUp size={13} /></button>
+                <button className="netease-track-action" type="button" aria-label={`下移 ${song.name}`} disabled={isSaving || visibleSongs.at(-1)?.id === song.id} onClick={() => void reorderWebPlaylist(song.id, visibleSongs[visibleSongs.findIndex(item => item.id === song.id) + 1].id)}><ArrowDown size={13} /></button>
+              </>}
               {mode === "web" ? (
                 <button
                   className="netease-track-action"
                   type="button"
                   onClick={() => removeSongFromWebPlaylist(song)}
-                  disabled={pendingIds.has(song.id)}
+                  disabled={isSaving || pendingIds.has(song.id)}
                   aria-label={`从网页歌单移除 ${song.name}`}
                   title="从网页歌单移除"
                 >
@@ -1219,7 +468,7 @@ export function NeteasePlayer() {
                   className="netease-track-action"
                   type="button"
                   onClick={() => addSongToWebPlaylist(song)}
-                  disabled={pendingIds.has(song.id) || webSongIds.has(song.id)}
+                  disabled={isSaving || !account.siteAuthenticated || pendingIds.has(song.id) || webSongIds.has(song.id)}
                   aria-label={`加入网页歌单 ${song.name}`}
                   title={webSongIds.has(song.id) ? "已在网页歌单" : "加入网页歌单"}
                 >
@@ -1230,7 +479,7 @@ export function NeteasePlayer() {
                 className="netease-track-action"
                 type="button"
                 onClick={() => likeSongOnNetease(song)}
-                disabled={pendingIds.has(song.id) || !account.neteaseAuthenticated || neteaseLikedIds.has(song.id)}
+                disabled={isSaving || pendingIds.has(song.id) || !account.neteaseAuthenticated || neteaseLikedIds.has(song.id)}
                 aria-label={`收藏到网易云 ${song.name}`}
                 title={!account.neteaseAuthenticated ? "连接网易云后可收藏" : neteaseLikedIds.has(song.id) ? "已收藏到网易云" : "收藏到网易云"}
               >
@@ -1249,13 +498,16 @@ export function NeteasePlayer() {
                   ? "正在读取专辑曲目。"
                   : mode === "search" && searchType === "albums" && albumResults.length > 0 && !selectedAlbum
                     ? "选择一张专辑查看曲目。"
-                    : message}
+                    : mode === "queue" ? "播放歌曲后，会在这里显示队列。"
+                    : mode === "web" ? (account.siteAuthenticated ? "网页歌单为空，可从搜索结果添加歌曲。" : "登录本站后可保存网页歌单。")
+                    : mode === "netease" ? (account.neteaseAuthenticated ? "选择一个歌单查看歌曲。" : "连接网易云后可查看歌单。")
+                    : isLoading ? "正在搜索…" : "暂无搜索结果。"}
           </div>
         ) : null}
       </div>
 
       </div></div>
-      <div className="netease-status" role="status">{message}</div>
+      <div className={`netease-status ${playback.error ? "is-error" : ""}`} role="status">{playback.error || message || (compact ? "切换详细模式可搜索歌曲、浏览歌单与队列。" : "浏览曲库不会改变当前播放队列。")}</div>
     </DashboardCard>
   );
 }

@@ -3,6 +3,8 @@ import type { Prisma } from "../../../../generated/prisma/client";
 import { getCurrentSession } from "../../../../lib/admin";
 import prisma from "../../../../lib/prisma";
 import {
+  createQrTicket,
+  readQrTicket,
   deleteStoredNeteaseAccount,
   extractProfile,
   getAnonymousNeteaseCookie,
@@ -11,8 +13,11 @@ import {
   markStoredNeteaseAccountExpired,
   NeteaseServiceError,
   requestNetease,
+  resetAnonymousNeteaseCookie,
   saveStoredNeteaseAccount
 } from "../../../../lib/netease";
+
+import { isAnonymousStatus, isAuthenticatedStatus, safeMusicUrl } from "../../../../lib/netease-protocol";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -76,10 +81,9 @@ function normalizeSong(song: SongRecord) {
     name: readString(song.name).trim() || "未知歌曲",
     artists: getArtists(song) || "未知艺人",
     album: readString(album?.name).trim() || "",
-    coverUrl: readString(album?.picUrl).trim() || readString(album?.coverImgUrl).trim() || null,
+    coverUrl: safeMusicUrl(album?.picUrl ?? album?.coverImgUrl ?? song.picUrl),
     duration: readNumber(song.dt ?? song.duration) ?? null,
-    fee: readNumber(song.fee),
-    playable: true
+    fee: readNumber(song.fee)
   };
 }
 
@@ -87,7 +91,7 @@ function normalizePlaylist(playlist: Record<string, unknown>) {
   return {
     id: readId(playlist.id) ?? "",
     name: readString(playlist.name).trim() || "未命名歌单",
-    coverUrl: readString(playlist.coverImgUrl).trim() || null,
+    coverUrl: safeMusicUrl(playlist.coverImgUrl),
     trackCount: readNumber(playlist.trackCount) ?? 0,
     playCount: readNumber(playlist.playCount) ?? 0
   };
@@ -111,7 +115,7 @@ function normalizeAlbum(album: AlbumRecord) {
     id: readId(album.id) ?? "",
     name: readString(album.name).trim() || "未知专辑",
     artists: getAlbumArtists(album) || "未知艺人",
-    coverUrl: readString(album.picUrl).trim() || readString(album.blurPicUrl).trim() || null,
+    coverUrl: safeMusicUrl(album.picUrl ?? album.blurPicUrl),
     trackCount: readNumber(album.size ?? album.trackCount) ?? 0,
     publishTime: readNumber(album.publishTime),
     company: readString(album.company).trim() || null
@@ -170,16 +174,33 @@ async function callWithUserCookie(
   path: string,
   userId: string | null | undefined,
   params: Record<string, string | number | boolean | null | undefined> = {},
-  options: { method?: "GET" | "POST" } = {}
+  options: { method?: "GET" | "POST"; timeoutMs?: number } = {}
 ) {
   const access = await getNeteaseCookie(userId);
-  const response = await requestNetease(path, params, {
-    cookie: access.cookie,
-    method: options.method
-  });
+  let response;
+  try {
+    response = await requestNetease(path, params, {
+      cookie: access.cookie,
+      method: options.method,
+      timeoutMs: options.timeoutMs
+    });
+  } catch (error) {
+    if (error instanceof NeteaseServiceError && error.code === "netease_login_required" && access.source === "account" && userId) {
+      await markStoredNeteaseAccountExpired(userId, access.cookie);
+      return { expired: true as const, payload: {} };
+    }
+    if (error instanceof NeteaseServiceError && error.code === "netease_login_required" && access.source === "anonymous") {
+      resetAnonymousNeteaseCookie();
+      try {
+        response = await requestNetease(path, params, { cookie: await getAnonymousNeteaseCookie(), method: options.method, timeoutMs: options.timeoutMs });
+      } catch {
+        throw new NeteaseServiceError("网易云游客访问暂时不可用，请稍后重试。", 503, "netease_guest_unavailable");
+      }
+    } else throw error;
+  }
 
   if (isLoginExpiredPayload(response.payload) && access.source === "account" && userId) {
-    await markStoredNeteaseAccountExpired(userId);
+    await markStoredNeteaseAccountExpired(userId, access.cookie);
 
     return {
       expired: true as const,
@@ -245,7 +266,7 @@ function normalizeWebPlaylistSong(song: {
     name: song.name,
     artists: song.artists,
     album: song.album ?? "",
-    coverUrl: song.coverUrl,
+    coverUrl: safeMusicUrl(song.coverUrl),
     duration: song.duration,
     position: song.position,
     addedAt: song.addedAt.toISOString()
@@ -296,8 +317,11 @@ async function handleMe() {
   const account = await getStoredNeteaseAccount(session.user.id);
 
   if (!account) {
+    const stored = await prisma.neteaseAccount.findUnique({ where: { userId: session.user.id }, select: { loginStatus: true } });
     return json({
+      expired: stored?.loginStatus === "expired",
       siteAuthenticated: true,
+      siteUserId: session.user.id,
       neteaseAuthenticated: false,
       profile: null
     });
@@ -306,30 +330,39 @@ async function handleMe() {
   let status;
   try {
     status = await requestNetease("/login/status", {}, { cookie: account.cookie });
-  } catch {
+  } catch (error) {
+    if (error instanceof NeteaseServiceError && error.code === "netease_login_required") {
+      await markStoredNeteaseAccountExpired(session.user.id, account.cookie);
+      return json({ siteAuthenticated: true, siteUserId: session.user.id, neteaseAuthenticated: false, profile: null, expired: true });
+    }
     // The upstream NetEase API is briefly unreachable. Don't mark the account
     // expired or drop the session — keep the last known good profile so a
     // transient outage doesn't log the user out of the panel.
     return json({
       siteAuthenticated: true,
+      siteUserId: session.user.id,
       neteaseAuthenticated: true,
+      degraded: true,
       profile: account.profile
     });
   }
 
-  if (isLoginExpiredPayload(status.payload)) {
-    await markStoredNeteaseAccountExpired(session.user.id);
+  if (isLoginExpiredPayload(status.payload) || isAnonymousStatus(status.payload)) {
+    await markStoredNeteaseAccountExpired(session.user.id, account.cookie);
     return json({
       siteAuthenticated: true,
+      siteUserId: session.user.id,
       neteaseAuthenticated: false,
       profile: account.profile,
       expired: true
     });
   }
 
+  if (!isAuthenticatedStatus(status.payload)) return json({ siteAuthenticated: true, siteUserId: session.user.id, neteaseAuthenticated: true, degraded: true, profile: account.profile });
   const profile = extractProfile(status.payload) ?? account.profile;
   return json({
     siteAuthenticated: true,
+    siteUserId: session.user.id,
     neteaseAuthenticated: true,
     profile
   });
@@ -352,11 +385,12 @@ async function handleQrStart() {
   const qrResponse = await requestNetease("/login/qr/create", {
     key,
     qrimg: true
-  });
+  }, { cookie: keyResponse.cookie });
   const qrData = asRecord(asRecord(qrResponse.payload)?.data);
 
   return json({
     key,
+    ticket: createQrTicket({ userId: session.user.id, sessionId: session.session.id, key, cookie: keyResponse.cookie }),
     qrimg: readString(qrData?.qrimg),
     qrurl: readString(qrData?.qrurl)
   });
@@ -375,7 +409,9 @@ async function handleQrCheck(request: Request) {
     return json({ error: "missing_key" }, { status: 400 });
   }
 
-  const checkResponse = await requestNetease("/login/qr/check", { key, noCookie: true });
+  const ticket = readQrTicket(readString(body.ticket), session.user.id, session.session.id, key);
+  if (!ticket) return json({ code: 800, message: "二维码已过期，请重新生成。" });
+  const checkResponse = await requestNetease("/login/qr/check", { key, noCookie: true }, { cookie: ticket.cookie });
   const code = getCode(checkResponse.payload);
 
   if (code !== 803) {
@@ -393,6 +429,9 @@ async function handleQrCheck(request: Request) {
   const accountResponse = await requestNetease("/user/account", {}, { cookie });
   const profile = extractProfile(accountResponse.payload);
 
+  if (!profile || !/(?:^|;\s*)MUSIC_U=([^;]+)/.test(cookie)) {
+    throw new NeteaseServiceError("扫码已确认，但网易云尚未返回有效账号，请在 App 完成验证后重试。", 502, "netease_login_incomplete");
+  }
   await saveStoredNeteaseAccount({
     userId: session.user.id,
     cookie,
@@ -428,8 +467,8 @@ async function handleSearch(request: Request) {
 
   const result = await callWithUserCookie("/cloudsearch", session?.user.id, {
     keywords,
-    limit: Math.min(Number(searchParams.get("limit") ?? 20), 50),
-    offset: Math.max(Number(searchParams.get("offset") ?? 0), 0),
+    limit: Math.min(Math.max(readNumber(searchParams.get("limit")) ?? 20, 1), 50),
+    offset: Math.max(readNumber(searchParams.get("offset")) ?? 0, 0),
     type: type === "album" ? 10 : 1
   }, {
     method: type === "album" ? "GET" : "POST"
@@ -469,13 +508,14 @@ async function handleAlbumTracks(request: Request) {
   if (result.expired) return loginRequired();
 
   const album = asRecord(asRecord(result.payload)?.album);
+  if (album && readId(album.id) !== id) throw new NeteaseServiceError("网易云返回的专辑与请求不一致，请重试。", 502, "netease_mismatched_response");
   const songs = Array.isArray(asRecord(result.payload)?.songs)
     ? asRecord(result.payload)?.songs as SongRecord[]
     : [];
 
   return json({
     album: album ? normalizeAlbum(album) : null,
-    songs: songs.map(normalizeSong)
+    songs: songs.map(song => normalizeSong({ ...song, al: { ...album, ...asRecord(song.al ?? song.album), picUrl: asRecord(song.al ?? song.album)?.picUrl ?? album?.picUrl } }))
   });
 }
 
@@ -563,7 +603,7 @@ async function handleAddWebPlaylistTrack(request: Request) {
           name,
           artists: readString(song.artists).trim() || "未知艺人",
           album: readString(song.album).trim() || null,
-          coverUrl: readString(song.coverUrl).trim() || null,
+          coverUrl: safeMusicUrl(song.coverUrl),
           duration: readNumber(song.duration),
           position: nextPosition
         },
@@ -571,7 +611,7 @@ async function handleAddWebPlaylistTrack(request: Request) {
           name,
           artists: readString(song.artists).trim() || "未知艺人",
           album: readString(song.album).trim() || null,
-          coverUrl: readString(song.coverUrl).trim() || null,
+          coverUrl: safeMusicUrl(song.coverUrl),
           duration: readNumber(song.duration)
         }
       });
@@ -626,10 +666,10 @@ async function handleReorderWebPlaylistTracks(request: Request) {
     select: { songId: true }
   });
   const existingIds = new Set(existing.map((song) => song.songId));
-  const orderedIds = [
+  const orderedIds = [...new Set([
     ...ids.filter((id) => existingIds.has(id)),
     ...existing.map((song) => song.songId).filter((id) => !ids.includes(id))
-  ];
+  ])];
 
   await prisma.$transaction(
     orderedIds.map((songId, position) => prisma.webMusicPlaylistSong.update({
@@ -659,6 +699,7 @@ async function handlePlaylistTracks(request: Request) {
   if (detail.expired) return loginRequired();
 
   const playlist = asRecord(asRecord(detail.payload)?.playlist);
+  if (playlist && readId(playlist.id) !== id) throw new NeteaseServiceError("网易云返回的歌单与请求不一致，请重试。", 502, "netease_mismatched_response");
   let tracks = Array.isArray(playlist?.tracks) ? playlist?.tracks as SongRecord[] : [];
   const trackCount = readNumber(playlist?.trackCount) ?? tracks.length;
 
@@ -690,6 +731,7 @@ async function handleSongUrl(request: Request) {
     return json({ error: "missing_song_id" }, { status: 400 });
   }
 
+  const metadata = callWithUserCookie("/song/detail", session?.user.id, { ids: id }, { timeoutMs: 5000 }).catch(() => null);
   const result = await callWithUserCookie("/song/url/v1", session?.user.id, {
     id,
     level: searchParams.get("level") ?? "higher"
@@ -702,16 +744,37 @@ async function handleSongUrl(request: Request) {
   const data = Array.isArray(asRecord(result.payload)?.data)
     ? asRecord(result.payload)?.data as Record<string, unknown>[]
     : [];
-  const songUrl = data[0] ?? {};
+  const songUrl = data.find(item => readId(item.id) === id) ?? {};
+  let song = null;
+  try {
+    const detail = await metadata;
+    const songs = asRecord(detail?.payload)?.songs;
+    const match = Array.isArray(songs) ? songs.find(item => readId(asRecord(item)?.id) === id) : null;
+    if (match) song = normalizeSong(match);
+  } catch { /* Missing metadata must not block a playable source. */ }
 
   return json({
     id,
-    url: readString(songUrl.url).trim() || null,
+    url: safeMusicUrl(songUrl.url),
+    song,
+    trial: Boolean(songUrl.freeTrialInfo),
+    expiresIn: readNumber(songUrl.expi),
     level: readString(songUrl.level).trim() || null,
     type: readString(songUrl.type).trim() || null,
     size: readNumber(songUrl.size),
     code: readNumber(songUrl.code)
   });
+}
+
+async function handleLikedSongs() {
+  const session = await getCurrentSession();
+  if (!session?.user) return siteLoginRequired();
+  const account = await getStoredNeteaseAccount(session.user.id);
+  if (!account?.profile) return loginRequired();
+  const result = await callWithUserCookie("/likelist", session.user.id, { uid: account.profile.userId });
+  if (result.expired) return loginRequired();
+  const ids = asRecord(result.payload)?.ids;
+  return json({ ids: Array.isArray(ids) ? ids.map(readId).filter(Boolean) : [] });
 }
 
 async function handleLikeSong(request: Request) {
@@ -788,6 +851,7 @@ async function handleRequest(request: Request, context: MusicRouteContext) {
     if (request.method === "DELETE" && route === "web-playlist/tracks") return await handleRemoveWebPlaylistTrack(request);
     if (request.method === "POST" && route === "web-playlist/reorder") return await handleReorderWebPlaylistTracks(request);
     if (request.method === "GET" && route === "song-url") return await handleSongUrl(request);
+    if (request.method === "GET" && route === "likes") return await handleLikedSongs();
     if (request.method === "POST" && route === "like") return await handleLikeSong(request);
     if (request.method === "GET" && route === "lyric") return await handleLyric(request);
 
@@ -802,7 +866,7 @@ async function handleRequest(request: Request, context: MusicRouteContext) {
 
     return json({
       error: "music_api_error",
-      message: error instanceof Error ? error.message : "Unexpected music API error."
+      message: "音乐服务暂时不可用，请稍后重试。"
     }, { status: 500 });
   }
 }

@@ -37,7 +37,7 @@ test('failed concurrent login is shared, then a later attempt can retry', async 
 });
 test('separate clients do not share account authentication', async () => {
   const calls: string[] = [];
-  const create = (name: string) => serializeClientLogin({ name, async login() { calls.push(this.name); await tick(); return this.name; } });
+  const create = (name: string) => serializeClientLogin({ name, async login(this: { name: string }) { calls.push(this.name); await tick(); return this.name; } });
   const a = create('a'); const b = create('b');
   assert.deepEqual(await Promise.all([a.login(), b.login(), a.login()]), ['a', 'b', 'a']);
   assert.deepEqual(calls.sort(), ['a', 'b']);

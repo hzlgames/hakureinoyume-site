@@ -35,13 +35,13 @@
 - `src/app/_components/ui.tsx`：轻量 UI primitives，包括 `GlassPanel`、`DashboardCard`、`CardHeader`、`ProgressBar`。
 - `src/app/_components/auth/auth-shell.tsx`：账号页面共享布局。
 - `src/app/_components/interactive-mascot.tsx`：客户端小宠物组件，管理动画帧、拖动、悬停、点击、降级动效和视口约束。
-- `src/app/_components/netease-player.tsx`：网易云播放器，处理公开搜索/播放、二维码绑定、用户歌单、网页歌单和播放状态。
+- `src/app/_components/netease-player.tsx`：网易云播放器视图；`music/use-account.ts` 管理站内会话与二维码生命周期，`music/use-library.ts` 管理曲库请求与写入，`music/use-playback.ts` 连接独立的 `src/lib/music-playback.ts` 音频控制器。浏览列表与播放队列互不改写。
 - `src/app/site-theme.ts`：站点名、背景选项、CSS 变量集合和自定义背景封装，当前主要供后台背景管理页使用；全站明暗主题由共享 `SiteHeader` 管理，写入根节点 `data-theme` 并持久化。
 - `src/lib/auth.ts`：Better Auth 配置，接入 Prisma adapter、邮箱密码登录、邮箱验证、密码重置和 admin 插件。
 - `src/lib/auth-client.ts`：浏览器端 Better Auth client。
 - `src/lib/admin.ts`：读取当前 session，提供 `requireAdmin()` 和 `auditAdminAction()`。
 - `src/lib/email.ts`：通过 SMTP 发送验证和密码重置邮件。
-- `src/lib/netease.ts`：网易云 API 调用、匿名 cookie 获取、用户级 cookie AES-256-GCM 加密存储和登录态过期标记。
+- `src/lib/netease.ts`：网易云 API 调用、匿名 cookie 获取、用户级 cookie AES-256-GCM 加密存储、绑定站内用户/会话的二维码加密票据和登录态过期标记；`netease-protocol.ts` 集中处理上游状态、Cookie 与媒体 URL。
 - `src/lib/zju/`：ZJU 服务层目录，`index.ts` 统一导出账号加密保存、`login-zju` 的 `COURSES`/`CLASSROOM`/`APILIB`/`ALT`/`ZDBK` 客户端封装，以及学在浙大、智云课堂、图书馆、WebPlus 和互动测验的数据读取与后端任务执行（资料下载、自动刷课、测验答案、课堂转录、通知存档）。
 - `src/app/api/auth/[...all]/route.ts`：Better Auth 的 Next.js API handler。
 - `src/app/api/admin/users/**`：管理员用户查询、角色切换、停用/恢复、会话撤销和密码重置。
@@ -86,7 +86,7 @@
 - `DELETE /api/background`：管理员删除自定义背景图。
 - `GET /api/weather`：返回指定经纬度或默认上海位置的当前天气。
 - `GET /api/calendar`：返回指定年份的节假日和纪念日数据。
-- `/api/music/*`：网易云音乐代理，支持账号状态、二维码登录/登出、搜索、专辑歌曲、用户歌单、网页歌单增删排序、歌单歌曲、播放地址、收藏和歌词；公开访问使用匿名网易云 cookie，用户绑定网易云后使用加密保存的用户级 cookie。
+- `/api/music/*`：网易云音乐代理，支持账号状态、二维码登录/登出、搜索、专辑歌曲、用户歌单、网页歌单增删排序、歌单歌曲、播放地址、收藏和歌词；公开访问使用匿名网易云 cookie，用户绑定网易云后使用加密保存的用户级 cookie。`GET /api/music/likes` 返回当前网易云账号已收藏的歌曲 ID；`song-url` 同时返回匹配歌曲的元数据、试听标记与地址有效期；二维码开始接口返回 `ticket`，检查接口必须同时提交 `key` 和 `ticket`。
 - `GET|PUT|DELETE /api/zju/account`：读取、验证保存、删除当前登录用户的 ZJU 凭据。密码和 Pintia Cookie 只加密入库，不回传明文；更新已有账号时可不重传密码，也可清除已保存的 Pintia Cookie。
 - `GET /api/zju/courses`：读取当前用户的学在浙大课程列表，要求已验证 ZJU 账号。
 - `GET /api/zju/courses/todos`：读取可靠待办，合并学在浙大和可选 Pintia 待办，要求已验证 ZJU 账号。
