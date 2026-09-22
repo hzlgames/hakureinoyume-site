@@ -91,3 +91,13 @@ ZJU 工具直接在 Next.js Node runtime 内调用 `login-zju` 的 `COURSES`/`CL
 - 两项 service 均使用现有 `/etc/hakureinoyume-site.env`，无需新建全局钉钉配置。钉钉设置由用户在网页保存并加密入库。
 - 部署脚本在构建成功后安装并启用两个 timer。排障：`systemctl status zju-artifact-cleanup.timer zju-grade-monitor.timer`；清理失败查看对应 service 日志。成绩检查错误也在用户页面显示。
 - 验证：`node --import tsx --test tests/zju-tools.test.ts`（打包、过期、SaveDoc、富文本、成绩计算）。
+
+
+## 2FA 验证器
+
+- 部署前执行 `npx prisma generate`、`npx prisma migrate deploy`，确认 `0007_two_factor_accounts` 已应用。
+- 可设置独立的 `TWO_FACTOR_ENCRYPTION_KEY`（至少 32 字符的随机字符串），为空时使用 `BETTER_AUTH_SECRET`；通过 HKDF 派生专用加密密钥。应在首次保存前决定配置，之后保持稳定。
+- 数据库备份和所选密钥应分开保管。直接更换密钥（包括从回退密钥切换到独立密钥）会导致已有数据无法解密；当前没有在线轮换工具，需要使用原密钥解密并重新加密，不能直接覆盖环境变量。
+- `BETTER_AUTH_URL` 必须匹配对外访问的 origin，写接口会检查请求来源。摄像头要求 HTTPS 或 localhost。
+- 保持服务器时间准确；页面用接口返回的服务器时间校准本地 TOTP。API 响应禁止缓存；不要在代理、APM 或调试日志中采集此接口的请求/响应正文。
+- 验证命令：`npx tsx --test tests/two-factor.test.ts`、`npm run lint`、`npm run build`。实际保存、跨用户隔离及二维码浏览器行为应在隔离数据库与测试账号上验证。

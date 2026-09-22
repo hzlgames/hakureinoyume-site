@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Boxes, GraduationCap } from "lucide-react";
+import { ArrowRight, Boxes, GraduationCap, ShieldCheck } from "lucide-react";
 import { DashboardCard } from "../_components/ui";
 
 export default function ToolsPage() {
@@ -21,6 +21,18 @@ export default function ToolsPage() {
               <p className="eyebrow">ZJU</p>
               <h2>ZJU 工具合集</h2>
               <p>学在浙大待办、成绩、课程资料等网页化工具。</p>
+            </div>
+            <ArrowRight className="tool-hub-arrow" size={20} />
+          </DashboardCard>
+        </Link>
+
+        <Link className="tool-hub-link" href="/tools/2fa">
+          <DashboardCard className="tool-hub-card">
+            <div className="tool-hub-icon"><ShieldCheck size={26} /></div>
+            <div>
+              <p className="eyebrow">Authenticator</p>
+              <h2>2FA 验证器</h2>
+              <p>加密保存密钥，实时查看验证码，支持 Google Authenticator 扫码导入。</p>
             </div>
             <ArrowRight className="tool-hub-arrow" size={20} />
           </DashboardCard>

@@ -394,7 +394,8 @@ export const ModelName = {
   ZjuToolJob: 'ZjuToolJob',
   WebMusicPlaylist: 'WebMusicPlaylist',
   WebMusicPlaylistSong: 'WebMusicPlaylistSong',
-  ZjuToolState: 'ZjuToolState'
+  ZjuToolState: 'ZjuToolState',
+  TwoFactorAccount: 'TwoFactorAccount'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -410,7 +411,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "adminAuditLog" | "neteaseAccount" | "zjuAccount" | "zjuToolJob" | "webMusicPlaylist" | "webMusicPlaylistSong" | "zjuToolState"
+    modelProps: "user" | "session" | "account" | "verification" | "adminAuditLog" | "neteaseAccount" | "zjuAccount" | "zjuToolJob" | "webMusicPlaylist" | "webMusicPlaylistSong" | "zjuToolState" | "twoFactorAccount"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1228,6 +1229,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    TwoFactorAccount: {
+      payload: Prisma.$TwoFactorAccountPayload<ExtArgs>
+      fields: Prisma.TwoFactorAccountFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TwoFactorAccountFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorAccountPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TwoFactorAccountFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorAccountPayload>
+        }
+        findFirst: {
+          args: Prisma.TwoFactorAccountFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorAccountPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TwoFactorAccountFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorAccountPayload>
+        }
+        findMany: {
+          args: Prisma.TwoFactorAccountFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorAccountPayload>[]
+        }
+        create: {
+          args: Prisma.TwoFactorAccountCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorAccountPayload>
+        }
+        createMany: {
+          args: Prisma.TwoFactorAccountCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TwoFactorAccountCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorAccountPayload>[]
+        }
+        delete: {
+          args: Prisma.TwoFactorAccountDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorAccountPayload>
+        }
+        update: {
+          args: Prisma.TwoFactorAccountUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorAccountPayload>
+        }
+        deleteMany: {
+          args: Prisma.TwoFactorAccountDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TwoFactorAccountUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TwoFactorAccountUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorAccountPayload>[]
+        }
+        upsert: {
+          args: Prisma.TwoFactorAccountUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorAccountPayload>
+        }
+        aggregate: {
+          args: Prisma.TwoFactorAccountAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTwoFactorAccount>
+        }
+        groupBy: {
+          args: Prisma.TwoFactorAccountGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TwoFactorAccountGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TwoFactorAccountCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TwoFactorAccountCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1436,6 +1511,19 @@ export const ZjuToolStateScalarFieldEnum = {
 } as const
 
 export type ZjuToolStateScalarFieldEnum = (typeof ZjuToolStateScalarFieldEnum)[keyof typeof ZjuToolStateScalarFieldEnum]
+
+
+export const TwoFactorAccountScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  fingerprint: 'fingerprint',
+  ciphertext: 'ciphertext',
+  iv: 'iv',
+  tag: 'tag',
+  createdAt: 'createdAt'
+} as const
+
+export type TwoFactorAccountScalarFieldEnum = (typeof TwoFactorAccountScalarFieldEnum)[keyof typeof TwoFactorAccountScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1689,6 +1777,7 @@ export type GlobalOmitConfig = {
   webMusicPlaylist?: Prisma.WebMusicPlaylistOmit
   webMusicPlaylistSong?: Prisma.WebMusicPlaylistSongOmit
   zjuToolState?: Prisma.ZjuToolStateOmit
+  twoFactorAccount?: Prisma.TwoFactorAccountOmit
 }
 
 /* Types for Logging */

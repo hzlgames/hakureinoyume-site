@@ -11,6 +11,8 @@ ADR 用于记录长期技术选择及其原因。不要为每个小改动写 ADR
 - [0005 使用内置服务层承载并扩展 ZJU 工具](0005-zju-tools-service-layer.md)
 - [0006 使用服务端代理承载网易云播放器](0006-netease-music-proxy.md)
 
+- [0007 使用加密存储和浏览器内存实现 2FA 验证器](0007-two-factor-vault.md)
+
 ## 模板
 
 新 ADR 使用递增编号，文件名格式为 `NNNN-short-title.md`。
