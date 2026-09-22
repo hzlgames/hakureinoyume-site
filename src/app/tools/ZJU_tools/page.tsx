@@ -260,7 +260,8 @@ export default function ZjuToolsPage() {
       ) : null}
       {notice && !showAccountCard ? <p className="auth-message success" role="status">{notice}</p> : null}
       <div className={`zju-home-grid ${gridStateClass}`}>
-        <div id="zju-account-settings" className="zju-account-settings" hidden={!showAccountCard}>
+        <div id="zju-account-settings" className="zju-account-settings" aria-hidden={!showAccountCard} inert={!showAccountCard}>
+        <div className="zju-account-reveal">
         <DashboardCard className="tool-detail-card zju-account-card">
           <div className="card-header">
             <div className="card-title">
@@ -352,6 +353,7 @@ export default function ZjuToolsPage() {
             {error ? <p className="auth-message error">{error}</p> : null}
           </form>
         </DashboardCard>
+        </div>
         </div>
 
         {showToolsCard ? (

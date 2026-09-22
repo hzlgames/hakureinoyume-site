@@ -2431,24 +2431,65 @@ ul {
   gap: 18px;
 }
 
-.tool-hub-grid,
-.zju-home-grid-ready {
+.tool-hub-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .zju-home-grid {
   align-items: start;
+  width: 100%;
+  margin-inline: auto;
+  max-width: 1192px;
+  transition: grid-template-columns 480ms cubic-bezier(0.22, 1, 0.36, 1),
+    column-gap 480ms cubic-bezier(0.22, 1, 0.36, 1),
+    max-width 480ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.zju-home-grid-auth-only,
+.zju-home-grid-ready {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.zju-home-grid-auth-only {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 760px;
+}
+
 .zju-home-grid-tools-only {
-  grid-template-columns: minmax(0, min(760px, 100%));
-  justify-content: center;
+  grid-template-columns: minmax(0, 0fr) minmax(0, 1fr);
+  column-gap: 0;
+  max-width: 760px;
+}
+
+@media (min-width: 1200px) {
+  .zju-home-grid-tools-only {
+    max-width: 1080px;
+  }
 }
 
 .zju-account-settings {
+  display: grid;
+  grid-template-rows: 1fr;
   min-width: 0;
   scroll-margin-top: 100px;
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+  transition: grid-template-rows 480ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 320ms ease, transform 480ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s;
+}
+
+.zju-account-reveal {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.zju-home-grid-tools-only .zju-account-settings {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-16px);
+  transition-delay: 0s, 0s, 0s, 480ms;
 }
 
 .zju-account-toggle {
@@ -2507,62 +2548,13 @@ ul {
   }
 }
 
-.zju-account-card {
-  will-change: transform;
-}
-
-.zju-home-grid-auth-only .zju-account-card {
-  animation: zjuAccountCenter 420ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.zju-home-grid-ready .zju-account-card {
-  animation: zjuAccountSettle 520ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.zju-tools-card {
-  animation: zjuToolsReveal 560ms 90ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  will-change: opacity, transform;
+.zju-account-settings .zju-account-card {
+  min-width: 280px;
 }
 
 .zju-tools-card.is-removing {
   animation: zjuToolsRemove 320ms cubic-bezier(0.7, 0, 0.84, 0) both;
   pointer-events: none;
-}
-
-@keyframes zjuAccountCenter {
-  from {
-    opacity: 0.96;
-    transform: translateX(-44px) scale(0.992);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-@keyframes zjuAccountSettle {
-  from {
-    opacity: 0.92;
-    transform: translateX(48px) scale(0.985);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-@keyframes zjuToolsReveal {
-  from {
-    opacity: 0;
-    transform: translateX(28px) scale(0.985);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
 }
 
 @keyframes zjuToolsRemove {
@@ -3926,10 +3918,11 @@ ul {
     transition: none;
   }
 
-  .zju-home-grid-auth-only .zju-account-card,
-  .zju-home-grid-ready .zju-account-card,
+  .zju-home-grid,
+  .zju-account-settings,
   .zju-tools-card {
     animation: none;
+    transition: none;
   }
 }
 
@@ -4098,6 +4091,20 @@ ul {
   .zju-detail-layout,
   .zju-filter-grid {
     grid-template-columns: 1fr;
+  }
+
+  .zju-home-grid {
+    row-gap: 0;
+  }
+
+  .zju-account-reveal {
+    padding-bottom: 18px;
+    transition: padding-bottom 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .zju-home-grid-tools-only .zju-account-reveal,
+  .zju-home-grid-auth-only .zju-account-reveal {
+    padding-bottom: 0;
   }
 
   .zju-tool-heading,

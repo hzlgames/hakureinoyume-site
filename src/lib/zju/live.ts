@@ -3,7 +3,7 @@ import prisma from "../prisma";
 import { getZjuSecret } from "./account";
 import { buildClassroomClient, toJsonValue } from "./shared";
 import { activeJobs, createJobLogger } from "./jobs";
-import { createLiveApi, scanLive } from "./live-core";
+import { createAuthenticatedLiveApi, createLiveApi, scanLive } from "./live-core";
 
 // Bounded, account-isolated directory caches; every request rechecks saved credentials.
 const sessions = new Map<string, { key: string; expires: number; api: Promise<ReturnType<typeof createLiveApi>> }>();
@@ -12,18 +12,7 @@ export async function getLiveApi(userId: string) {
   const key = createHash("sha256").update(JSON.stringify([secret.username, secret.password])).digest("hex");
   const hit = sessions.get(userId);
   if (hit?.key === key && hit.expires > Date.now()) return hit.api;
-  const api = buildClassroomClient(secret).then(client => {
-    let initialized = false;
-    let initializing: Promise<void> | undefined;
-    return createLiveApi({ async fetch(url, init) {
-      if (initializing) await initializing;
-      init?.signal?.throwIfAborted();
-      if (initialized) return client.fetch(url, init);
-      const pending = client.fetch(url, init);
-      initializing = pending.then(() => { initialized = true; }, () => undefined);
-      try { return await pending; } finally { initializing = undefined; }
-    } });
-  });
+  const api = buildClassroomClient(secret).then(createAuthenticatedLiveApi);
   if (sessions.size >= 50) sessions.delete(sessions.keys().next().value!);
   sessions.set(userId, { key, expires: Date.now() + 300000, api });
   try { return await api; } catch (error) { sessions.delete(userId); throw error; }

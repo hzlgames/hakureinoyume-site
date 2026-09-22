@@ -57,7 +57,8 @@ export async function getQuizClassrooms(userId: string, courseId: string): Promi
   const classrooms = Array.isArray(payload.classrooms) ? payload.classrooms as Array<Record<string, unknown>> : [];
 
   return classrooms
-    .filter((classroom) => readString(classroom.status) === "start")
+    // Feedback activities also appear here but do not have a subject endpoint.
+    .filter((classroom) => classroom.type === "classroom" && classroom.status === "start")
     .map((classroom) => ({
       id: String(readNumber(classroom.id) ?? readString(classroom.id)),
       title: readString(classroom.title) || "未命名互动"

@@ -86,12 +86,19 @@ async function fetchCompletedActivityIds(client: CoursesClient, courseId: string
   return ids;
 }
 
+// login-zju lazily logs in on the first fetch and does not serialize concurrent logins.
+// Finish the first API request before starting parallel reads on the same cookie jar.
+export async function loadAutoplayCourseState(client: CoursesClient, courseId: string) {
+  const payload = await requestJson<{ activities?: Array<Record<string, unknown>> }>(
+    client, `${COURSES_BASE}/api/courses/${courseId}/activities?sub_course_id=0`
+  );
+  const completedIds = await fetchCompletedActivityIds(client, courseId);
+  return { payload, completedIds };
+}
+
 export async function getCourseActivities(userId: string, courseId: string): Promise<ZjuActivity[]> {
   const client = await buildCoursesClient(await getZjuSecret(userId));
-  const [payload, completedIds] = await Promise.all([
-    requestJson<{ activities?: Array<Record<string, unknown>> }>(client, `${COURSES_BASE}/api/courses/${courseId}/activities?sub_course_id=0`),
-    fetchCompletedActivityIds(client, courseId)
-  ]);
+  const { payload, completedIds } = await loadAutoplayCourseState(client, courseId);
 
   const result: ZjuActivity[] = [];
   for (const activity of payload.activities ?? []) {
@@ -226,15 +233,10 @@ async function runAutoplayJob(
     });
 
     const client = await buildCoursesClient(await getZjuSecret(userId));
-    // 串行预热登录，避免并发请求破坏 SSO 会话。
-    await client.fetch(`${COURSES_BASE}/user/index`).catch(() => undefined);
 
     logger.log(`课程 ${options.courseId} · ${options.speed}x · ${options.concurrency === 1 ? "串行拟真" : "并行加速"}${options.force ? " · 强制重刷" : ""}`);
 
-    const [payload, completedIds] = await Promise.all([
-      requestJson<{ activities?: Array<Record<string, unknown>> }>(client, `${COURSES_BASE}/api/courses/${options.courseId}/activities?sub_course_id=0`),
-      fetchCompletedActivityIds(client, options.courseId)
-    ]);
+    const { payload, completedIds } = await loadAutoplayCourseState(client, options.courseId);
     const activities = payload.activities ?? [];
     const selected = new Set(options.selectedIds.map(String));
 

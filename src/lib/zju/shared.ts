@@ -1,5 +1,6 @@
 // ZJU 工具通用底座：加密、凭据类型、login-zju 客户端构建、解析与文件名/路径辅助。
 import crypto from "crypto";
+import { serializeClientLogin } from "./client-login";
 import type { Prisma } from "../../generated/prisma/client";
 
 type CoursesClient = import("login-zju").COURSES;
@@ -82,7 +83,7 @@ function byteToSize(bytes: number) {
 
 function buildCoursesClient(secret: StoredZjuSecret) {
   return import("login-zju").then(({ COURSES, ZJUAM }) => {
-    return new COURSES(new ZJUAM(secret.username, secret.password));
+    return serializeClientLogin(new COURSES(new ZJUAM(secret.username, secret.password)));
   });
 }
 

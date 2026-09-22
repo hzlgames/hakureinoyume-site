@@ -19,6 +19,7 @@ declare module "login-zju" {
 
   export class CLASSROOM {
     constructor(auth: ZJUAM);
+    login(): Promise<void>;
     fetch(input: string | URL, init?: RequestInit): Promise<Response>;
   }
 

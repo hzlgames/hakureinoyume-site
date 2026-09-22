@@ -3,6 +3,7 @@ import { packageArtifacts } from "./artifacts";
 import prisma from "../prisma";
 import { getZjuSecret } from "./account";
 import { activeJobs, createJobLogger } from "./jobs";
+import { getReplayUrl } from "./live-core";
 import {
   asRecord, buildClassroomClient, getZjuDataRoot, materialFileName,
   pathSegment, readNumber, readString, toJsonValue
@@ -36,13 +37,7 @@ export async function getClassroomVideos(userId: string, courseId: string): Prom
     .filter((video) => String(video.status) === "6")
     .sort((left, right) => Number(right.start_at) - Number(left.start_at))
     .map((video) => {
-      let playbackUrl: string | null = null;
-      try {
-        const content = JSON.parse(readString(video.content));
-        playbackUrl = typeof content?.playback?.url === "string" ? content.playback.url : null;
-      } catch {
-        playbackUrl = null;
-      }
+      const playbackUrl = getReplayUrl(video.content);
       return {
         subId: String(readNumber(video.sub_id) ?? readString(video.sub_id)),
         courseId: String(readNumber(video.course_id) ?? readString(video.course_id) ?? courseId),

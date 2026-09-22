@@ -6,6 +6,12 @@ export type LiveLesson = { subId: string; courseId: string; title: string; statu
 export type LiveStream = { name: string; url: string };
 export type LiveScan = { live: LiveLesson[]; failed: LiveCourse[]; checked: number };
 type Client = { fetch(url: string, init?: RequestInit): Promise<Response> };
+// Complete authentication before starting the per-API timeout. CLASSROOM's first
+// fetch otherwise spends that timeout following the ZJU login redirects.
+export async function createAuthenticatedLiveApi(client: Client & { login(): Promise<void> }) {
+  await client.login();
+  return createLiveApi(client);
+}
 const BASE = "https://yjapi.cmc.zju.edu.cn/courseapi/";
 const COURSES = "https://education.cmc.zju.edu.cn/personal/courseapi/vlabpassportapi/v1/account-profile/course?nowpage=1&per-page=100&force_mycourse=1";
 const TODAY = "https://classroom.zju.edu.cn/courseapi/v2/course-live/search-live-course-list?need_time_quantum=1&unique_course=1&with_sub_duration=1&with_sub_data=1&tenant=112";
@@ -44,7 +50,10 @@ export function createLiveApi(client: Client, now = Date.now) {
     const json = asRecord(await response.json());
     const result = asRecord(asRecord(json.params).result ?? json.result);
     const data = options.info ? json.data : json.list ?? result.data;
-    if (json.success === false || result.success === false || (json.code != null && ![0, 200].includes(Number(json.code))) ||
+    // The education passport endpoint uses code=1000/status=200 for success.
+    // Other course APIs use 0/200; do not accept 1000 globally or skip shape checks.
+    const passportSuccess = url === COURSES && Number(json.code) === 1000 && Number(json.status) === 200;
+    if (json.success === false || result.success === false || (json.code != null && ![0, 200].includes(Number(json.code)) && !passportSuccess) ||
       (options.info ? !data || typeof data !== "object" || Array.isArray(data) : !Array.isArray(data))) {
       throw new Error("智云接口返回失败或数据格式异常，请检查登录状态。");
     }

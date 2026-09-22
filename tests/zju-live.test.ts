@@ -58,3 +58,32 @@ test("scan warms login, bounds concurrency, reports partial failures and cancels
   const middle = new AbortController();
   await assert.rejects(scanLive(api, { signal: middle.signal, progress: () => middle.abort() }), { name: "AbortError" });
 });
+
+test("passport course success uses code 1000 and status 200 with nested result data", async () => {
+  const api = createLiveApi({ fetch: async () => response({ code: 1000, status: 200, params: { result: { data: [{ Id: 123, Title: "测试课程", Teacher: "教师" }], page: 1, total: 1 } } }) });
+  assert.deepEqual(await api.courses(), [{ id: "123", title: "测试课程", teacher: "教师" }]);
+  // The same code does not imply success for the unrelated live-list endpoint.
+  await assert.rejects(api.today());
+  for (const payload of [
+    { code: 1000, status: 401, params: { result: { data: [] } } },
+    { code: 1000, status: 200, params: { result: { data: null } } },
+    { code: 1000, status: 200, params: { result: { data: [], success: false } } },
+    { code: 1001, status: 200, params: { result: { data: [] } } }
+  ]) await assert.rejects(createLiveApi({ fetch: async () => response(payload) }).courses());
+});
+
+test("authentication finishes once before API request timeout signals are created", async () => {
+  const { createAuthenticatedLiveApi } = await import("../src/lib/zju/live-core");
+  let release!: () => void;
+  let logins = 0, requests = 0;
+  const pending = createAuthenticatedLiveApi({
+    async login() { logins++; await new Promise<void>(resolve => { release = resolve; }); },
+    async fetch(_url, init) { requests++; assert.equal(init?.signal?.aborted, false); return response({ list: [] }); }
+  });
+  assert.equal(logins, 1); assert.equal(requests, 0);
+  release();
+  const api = await pending;
+  await Promise.all([api.today(), api.courses()]);
+  assert.equal(logins, 1); assert.equal(requests, 2);
+  await assert.rejects(createAuthenticatedLiveApi({ async login() { throw new Error("login failed"); }, async fetch() { throw new Error("must not fetch"); } }), /login failed/);
+});

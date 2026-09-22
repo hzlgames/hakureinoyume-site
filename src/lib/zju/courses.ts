@@ -1,3 +1,4 @@
+import { getCoursesActivityTodos } from "./courses-todos";
 import { packageArtifacts } from "./artifacts";
 import { readToolState, writeToolState, withToolLock } from "./state";
 // 学在浙大（courses.zju）：课程、待办、成绩、资料读取与资料下载任务。
@@ -9,19 +10,6 @@ import {
   readNumber, readString, requestJson, toJsonValue, uniqueMaterialFileName
 } from "./shared";
 import type { ZjuCourse, ZjuMaterial, ZjuTodo } from "./types";
-
-function expandActiveSemesterIds(semesters: Array<Record<string, unknown>>) {
-  return [
-    ...new Set(
-      semesters
-        .filter((semester) => Boolean(semester.is_active))
-        .flatMap((semester) => {
-          const id = readNumber(semester.id);
-          return id === null ? [] : [id, id + 1, id + 2];
-        })
-    )
-  ];
-}
 
 export async function getMyCourses(userId: string): Promise<ZjuCourse[]> {
   const client = await buildCoursesClient(await getZjuSecret(userId));
@@ -60,118 +48,7 @@ export async function getMyCourses(userId: string): Promise<ZjuCourse[]> {
 export async function getReliableTodos(userId: string): Promise<ZjuTodo[]> {
   const secret = await getZjuSecret(userId);
   const client = await buildCoursesClient(secret);
-  const semestersPayload = await requestJson<{ semesters?: Array<Record<string, unknown>> }>(
-    client,
-    "https://courses.zju.edu.cn/api/my-semesters?fields=id,name,sort,is_active,code"
-  );
-  const activeSemesterIds = expandActiveSemesterIds(semestersPayload.semesters ?? []);
-  const params = new URLSearchParams();
-  params.set("page", "1");
-  params.set("page_size", "1000");
-  params.set("sort", "all");
-  params.set("normal", "{\"version\":7,\"apiVersion\":\"1.1.0\"}");
-  params.set("conditions", JSON.stringify({
-    role: [],
-    semester_id: activeSemesterIds,
-    academic_year_id: [],
-    status: ["ongoing", "notStarted"],
-    course_type: [],
-    effectiveness: [],
-    published: [],
-    display_studio_list: false
-  }));
-  params.set("fields", "id,name,course_code");
-
-  const coursesPayload = await requestJson<{ courses?: Array<Record<string, unknown>> }>(
-    client,
-    `https://courses.zju.edu.cn/api/my-courses?${params.toString()}`
-  );
-  const uniqueCourses = [
-    ...new Map((coursesPayload.courses ?? []).map((course) => [readNumber(course.id), course])).values()
-  ].filter((course) => readNumber(course.id) !== null);
-
-  const now = new Date();
-  const todos: ZjuTodo[] = [];
-
-  await Promise.all(uniqueCourses.map(async (course) => {
-    const courseId = readNumber(course.id);
-    if (courseId === null) return;
-    const courseName = readString(course.name) || "未命名课程";
-    const fallback = <T extends Record<string, unknown>>(value: T) => value;
-    const [activitiesData, examsData, submissionsData, submittedExamsData, classroomsData] = await Promise.all([
-      requestJson<{ activities?: Array<Record<string, unknown>> }>(client, `https://courses.zju.edu.cn/api/courses/${courseId}/activities`).catch(() => fallback({ activities: [] })),
-      requestJson<{ exams?: Array<Record<string, unknown>> }>(client, `https://courses.zju.edu.cn/api/courses/${courseId}/exams`).catch(() => fallback({ exams: [] })),
-      requestJson<{ homework_activities?: Array<Record<string, unknown>> }>(client, `https://courses.zju.edu.cn/api/course/${courseId}/homework/submission-status?no-intercept=true`).catch(() => fallback({ homework_activities: [] })),
-      requestJson<{ exam_ids?: Array<number | string> }>(client, `https://courses.zju.edu.cn/api/courses/${courseId}/submitted-exams?no-intercept=true`).catch(() => fallback({ exam_ids: [] })),
-      requestJson<{ classrooms?: Array<Record<string, unknown>> }>(client, `https://courses.zju.edu.cn/api/courses/${courseId}/classroom-list`).catch(() => fallback({ classrooms: [] }))
-    ]);
-
-    const submittedHomeworkIds = new Set(
-      (submissionsData.homework_activities ?? [])
-        .filter((item) => item.status_code === "submitted")
-        .map((item) => readNumber(item.id) ?? readString(item.id))
-    );
-    const submittedExamIds = new Set(submittedExamsData.exam_ids ?? []);
-    const isActive = (item: Record<string, unknown>) => {
-      const endTime = readString(item.end_time);
-      const startTime = readString(item.start_time);
-      if (item.published === false) return false;
-      if (!endTime || new Date(endTime) <= now) return false;
-      if (startTime && new Date(startTime) > now) return false;
-      return true;
-    };
-
-    for (const activity of activitiesData.activities ?? []) {
-      const id = readNumber(activity.id) ?? readString(activity.id);
-      if (!id || !isActive(activity)) continue;
-      if (activity.type === "homework" && submittedHomeworkIds.has(id)) continue;
-      if (activity.completion_criterion_key === "score" && Number(activity.score_percentage) >= 1) continue;
-      todos.push({
-        courseId,
-        courseName,
-        dueAt: readString(activity.end_time) || null,
-        id,
-        source: "courses.zju",
-        title: readString(activity.title) || "未命名事项",
-        type: readString(activity.type) || "activity",
-        url: `https://courses.zju.edu.cn/course/${courseId}/learning-activity#/${id}`
-      });
-    }
-
-    for (const exam of examsData.exams ?? []) {
-      const id = readNumber(exam.id) ?? readString(exam.id);
-      if (!id || !isActive(exam) || submittedExamIds.has(id)) continue;
-      todos.push({
-        courseId,
-        courseName,
-        dueAt: readString(exam.end_time) || null,
-        id,
-        source: "courses.zju",
-        title: readString(exam.title) || "未命名测验",
-        type: "quiz",
-        url: `https://courses.zju.edu.cn/course/${courseId}/learning-activity#/${id}`
-      });
-    }
-
-    for (const classroom of classroomsData.classrooms ?? []) {
-      const id = readNumber(classroom.id) ?? readString(classroom.id);
-      const endAt = readString(classroom.end_at);
-      const startAt = readString(classroom.start_at);
-      if (!id || classroom.status !== "start") continue;
-      if (startAt && new Date(startAt) > now) continue;
-      if (endAt && new Date(endAt) <= now) continue;
-      todos.push({
-        courseId,
-        courseName,
-        dueAt: endAt || null,
-        id,
-        source: "courses.zju",
-        title: readString(classroom.title) || "课堂互动",
-        type: "interaction",
-        url: `https://courses.zju.edu.cn/course/${courseId}/content#/`
-      });
-    }
-  }));
+  const todos = await getCoursesActivityTodos(client);
 
   const pintiaTodos = await getPintiaTodos(secret.pintiaCookie).catch(() => []);
   return [...todos, ...pintiaTodos].sort((left, right) => {
