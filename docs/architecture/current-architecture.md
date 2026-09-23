@@ -90,6 +90,7 @@
 - `/api/music/*`：网易云音乐代理，支持账号状态、二维码登录/登出、搜索、专辑歌曲、用户歌单、网页歌单增删排序、歌单歌曲、播放地址、收藏和歌词；公开访问使用匿名网易云 cookie，用户绑定网易云后使用加密保存的用户级 cookie。`GET /api/music/likes` 返回当前网易云账号已收藏的歌曲 ID；`song-url` 同时返回匹配歌曲的元数据、试听标记与地址有效期；二维码开始接口返回 `ticket`，检查接口必须同时提交 `key` 和 `ticket`。
 - `GET /api/two-factor`：返回当前用户解密后的账号列表和服务器时间，供登录浏览器内存中的 OTPAuth 生成验证码；响应为 `private, no-store`。
 - `POST /api/two-factor`：验证、加密并原子批量保存账号；HMAC 去重，按用户行锁限制最多 500 条。
+- `PATCH /api/two-factor/[id]`：仅修改当前用户账号的名称和服务商（可清空），重新加密保存，保留密钥、算法、周期、位数与去重指纹。
 - `DELETE /api/two-factor/[id]`：仅删除当前用户所属的账号，写请求校验 Origin。错误不回显密钥或底层存储详情。
 - `GET|PUT|DELETE /api/zju/account`：读取、验证保存、删除当前登录用户的 ZJU 凭据。密码和 Pintia Cookie 只加密入库，不回传明文；更新已有账号时可不重传密码，也可清除已保存的 Pintia Cookie。
 - `GET /api/zju/courses`：读取当前用户的学在浙大课程列表，要求已验证 ZJU 账号。

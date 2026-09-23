@@ -40,3 +40,6 @@
   .search { min-width: 100%; max-width: none; }
   .cardHeading { align-items: flex-start; }
 }
+
+.cardActions { display: flex; flex-shrink: 0; gap: 6px; }
+.editForm { margin-top: 16px; }

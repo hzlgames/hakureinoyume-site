@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { ArrowLeft, Camera, Copy, Eye, EyeOff, KeyRound, Plus, RefreshCw, ShieldCheck, Trash2, Upload, X } from "lucide-react";
+import { ArrowLeft, Camera, Copy, Eye, EyeOff, KeyRound, Pencil, Plus, RefreshCw, ShieldCheck, Trash2, Upload, X } from "lucide-react";
 import { TOTP } from "otpauth";
 import { DashboardCard, ProgressBar } from "../../_components/ui";
 import { useSession } from "../../../lib/auth-client";
@@ -45,8 +45,16 @@ function CameraScanner({ onResult, onError }: { onResult: (value: string) => voi
   return <video ref={video} className={styles.camera} muted playsInline aria-label="二维码扫描画面" />;
 }
 
-function OtpCard({ entry, now, onDelete, busy, onNotice }: { entry: SavedOtpEntry; now: number; onDelete: (entry: SavedOtpEntry) => void; busy: boolean; onNotice: (message: string) => void }) {
+function OtpCard({ entry, now, onDelete, onUpdate, busy, onNotice }: { entry: SavedOtpEntry; now: number; onUpdate: (id: string, label: string, issuer: string) => Promise<boolean>; onDelete: (entry: SavedOtpEntry) => void; busy: boolean; onNotice: (message: string) => void }) {
   const [revealed, setRevealed] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editLabel, setEditLabel] = useState(entry.label);
+  const [editIssuer, setEditIssuer] = useState(entry.issuer);
+  async function submitEdit(event: FormEvent) {
+    event.preventDefault();
+    if (busy || !editLabel.trim()) return;
+    if (await onUpdate(entry.id, editLabel, editIssuer)) setEditing(false);
+  }
   const otp = useMemo(() => new TOTP(entry), [entry]);
   const code = otp.generate({ timestamp: now });
   const remaining = entry.period - Math.floor(now / 1000) % entry.period;
@@ -57,8 +65,16 @@ function OtpCard({ entry, now, onDelete, busy, onNotice }: { entry: SavedOtpEntr
   return <DashboardCard className={styles.account}>
     <div className={styles.cardHeading}>
       <div className={styles.accountName}><p className="eyebrow">{entry.issuer || "Authenticator"}</p><h2>{entry.label}</h2></div>
+      <div className={styles.cardActions}>
+      <button type="button" className={styles.iconButton} title="编辑账号" aria-label={`编辑 ${entry.label}`} disabled={busy} aria-expanded={editing} onClick={() => { setEditLabel(entry.label); setEditIssuer(entry.issuer); setEditing(v => !v); }}><Pencil size={18} /></button>
       <button type="button" className={styles.iconButton} title="删除账号" aria-label={`删除 ${entry.label}`} disabled={busy} onClick={() => onDelete(entry)}><Trash2 size={18} /></button>
+      </div>
     </div>
+    {editing ? <form className={`tool-form ${styles.editForm}`} onSubmit={submitEdit} aria-label={`编辑 ${entry.label}`}>
+      <label><span>账号名称</span><input autoFocus required maxLength={160} autoComplete="off" value={editLabel} disabled={busy} onChange={e => setEditLabel(e.target.value)} /></label>
+      <label><span>服务商</span><input maxLength={160} autoComplete="off" placeholder="可留空" value={editIssuer} disabled={busy} onChange={e => setEditIssuer(e.target.value)} /></label>
+      <div className="tool-action-row"><button className="button primary-button" type="submit" disabled={busy || !editLabel.trim()}>{busy ? "保存中…" : "保存修改"}</button><button className="button secondary-button" type="button" disabled={busy} onClick={() => setEditing(false)}>取消</button></div>
+    </form> : null}
     <button type="button" className={styles.code} title="复制验证码" aria-label={`复制 ${entry.label} 的验证码 ${code}`} onClick={() => void copy(otp.generate({ timestamp: now }), "验证码")}>
       <span>{code.slice(0, code.length / 2)} {code.slice(code.length / 2)}</span><Copy size={19} />
     </button>
@@ -164,6 +180,23 @@ function Vault() {
     } catch (e) { setError(e instanceof Error ? e.message : "保存失败，请重试。"); }
     finally { setBusy(false); }
   }
+  async function updateEntry(id: string, label: string, issuer: string) {
+    if (busy) return false;
+    setBusy(true); setError(""); setNotice("");
+    try {
+      const updated = await api<{ id: string; label: string; issuer: string }>(`/api/two-factor/${encodeURIComponent(id)}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ label, issuer })
+      });
+      if (!mounted.current) return false;
+      requestVersion.current++;
+      setEntries(current => current.map(entry => entry.id === id ? { ...entry, ...updated } : entry));
+      setNotice("账号名称和服务商已更新。");
+      return true;
+    } catch (e) {
+      if (mounted.current) setError(e instanceof Error ? e.message : "更新失败，请重试。");
+      return false;
+    } finally { if (mounted.current) setBusy(false); }
+  }
   async function remove() {
     if (!deleting || busy) return;
     setBusy(true); setError("");
@@ -206,7 +239,7 @@ function Vault() {
     {deleting ? <DashboardCard className={styles.deletePanel}><h2>删除「{deleting.issuer ? `${deleting.issuer} · ` : ""}{deleting.label}」？</h2><p>本站保存的密钥会被删除。请确认其他验证器或恢复码仍可用；此操作不会关闭原网站的两步验证。</p><div className="tool-action-row"><button className="button secondary-button" disabled={busy} onClick={() => setDeleting(null)}>取消</button><button className="button primary-button" disabled={busy} onClick={() => void remove()}>{busy ? "删除中…" : "确认删除"}</button></div></DashboardCard> : null}
     {loading ? <DashboardCard>正在读取验证器…</DashboardCard> : available ? <>
       <p className={styles.summary}>共 {entries.length} 个账号 · 验证码自动更新，点击即可复制</p>
-      {entries.length ? filtered.length ? <div className={styles.accounts}>{filtered.map(entry => <OtpCard key={entry.id} entry={entry} now={now} busy={busy} onDelete={setDeleting} onNotice={setNotice} />)}</div> : <DashboardCard>没有匹配的账号，试试其他关键词。</DashboardCard> : <DashboardCard className={styles.empty}><ShieldCheck size={36} /><h2>把常用验证码放在一起</h2><p>导入第一个账号，随时查看验证码和剩余时间。</p><button className="button primary-button" onClick={() => setImporting(true)}><Plus size={18} />导入第一个账号</button></DashboardCard>}
+      {entries.length ? filtered.length ? <div className={styles.accounts}>{filtered.map(entry => <OtpCard key={entry.id} entry={entry} now={now} busy={busy} onUpdate={updateEntry} onDelete={setDeleting} onNotice={setNotice} />)}</div> : <DashboardCard>没有匹配的账号，试试其他关键词。</DashboardCard> : <DashboardCard className={styles.empty}><ShieldCheck size={36} /><h2>把常用验证码放在一起</h2><p>导入第一个账号，随时查看验证码和剩余时间。</p><button className="button primary-button" onClick={() => setImporting(true)}><Plus size={18} />导入第一个账号</button></DashboardCard>}
     </> : null}
   </>;
 }
