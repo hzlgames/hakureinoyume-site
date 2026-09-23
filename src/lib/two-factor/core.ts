@@ -68,7 +68,8 @@ export function parseImport(text: string, label = "", issuer = ""): ImportPart {
     if (!data || !/^[A-Za-z0-9+/]+={0,2}$/.test(data)) throw new OtpInputError("迁移二维码数据无效。");
     const bytes = Uint8Array.from(atob(data), c => c.charCodeAt(0));
     const payload = payloadType.decode(bytes) as unknown as Migration;
-    if ((payload.version ?? 0) > 1 || (payload.version ?? 0) < 0) throw new OtpInputError("暂不支持此版本的 Google Authenticator 导出格式。");
+    // Version 2 exports retain the same TOTP fields; keep rejecting unknown future versions.
+    if ((payload.version ?? 0) > 2 || (payload.version ?? 0) < 0) throw new OtpInputError("暂不支持此版本的 Google Authenticator 导出格式。");
     const size = payload.batchSize || 1;
     const index = payload.batchIndex ?? 0;
     if (size < 1 || size > 100 || index < 0 || index >= size) throw new OtpInputError("迁移二维码的批次信息无效。");

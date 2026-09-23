@@ -7,10 +7,14 @@ import { decryptEntry, encryptEntry, entryFingerprint } from "../src/lib/two-fac
 
 const secret = "JBSWY3DPEHPK3PXP";
 const entry = normalizeEntry({ label: "alice@example.test", issuer: "Example", secret });
-function migration(options: { size?: number; index?: number; algorithm?: number; digits?: number; type?: number; version?: number; id?: number } = {}) {
-  const param = Writer.create().uint32(10).bytes(Buffer.from("Hello!\xde\xad\xbe\xef", "latin1")).uint32(18).string("Example:alice@example.test").uint32(26).string("Example")
-    .uint32(32).int32(options.algorithm ?? 1).uint32(40).int32(options.digits ?? 1).uint32(48).int32(options.type ?? 2).finish();
-  const data = Writer.create().uint32(10).bytes(param).uint32(16).int32(options.version ?? 1).uint32(24).int32(options.size ?? 1).uint32(32).int32(options.index ?? 0).uint32(40).int32(options.id ?? 42).finish();
+function migration(options: { size?: number; index?: number; algorithm?: number; digits?: number; type?: number; version?: number; id?: number; count?: number; uniqueId?: boolean } = {}) {
+  const paramWriter = Writer.create().uint32(10).bytes(Buffer.from("Hello!\xde\xad\xbe\xef", "latin1")).uint32(18).string("Example:alice@example.test").uint32(26).string("Example")
+    .uint32(32).int32(options.algorithm ?? 1).uint32(40).int32(options.digits ?? 1).uint32(48).int32(options.type ?? 2);
+  if (options.uniqueId) paramWriter.uint32(66).string("fixture-unique-id");
+  const param = paramWriter.finish();
+  const writer = Writer.create();
+  for (let i = 0; i < (options.count ?? 1); i++) writer.uint32(10).bytes(param);
+  const data = writer.uint32(16).int32(options.version ?? 1).uint32(24).int32(options.size ?? 1).uint32(32).int32(options.index ?? 0).uint32(40).int32(options.id ?? 42).finish();
   return `otpauth-migration://offline?data=${encodeURIComponent(Buffer.from(data).toString("base64"))}`;
 }
 
@@ -45,7 +49,18 @@ test("Google migration public fixture, defaults and explicit algorithms", () => 
   assert.equal(parseImport(fixture).entries[0].label, "alice@google.com");
   const parsed = parseImport(migration({ algorithm: 3, digits: 2 })).entries[0];
   assert.equal(parsed.algorithm, "SHA512"); assert.equal(parsed.digits, 8);
-  for (const options of [{ algorithm: 4 }, { type: 1 }, { type: 0 }, { digits: 3 }, { version: 2 }, { size: 2, index: 2 }]) assert.throws(() => parseImport(migration(options)));
+  for (const options of [{ algorithm: 4 }, { type: 1 }, { type: 0 }, { digits: 3 }, { version: 3 }, { version: -1 }, { size: 2, index: 2 }]) assert.throws(() => parseImport(migration(options)));
+});
+test("Google migration version 2 preserves six records and optional unique IDs", () => {
+  const legacy = parseImport(migration({ version: 1 })).entries[0];
+  const result = parseImport(migration({ version: 2, count: 6, uniqueId: true }));
+  assert.equal(result.entries.length, 6);
+  assert(result.entries.every(account => JSON.stringify(account) === JSON.stringify(legacy)));
+  assert.equal(result.batch?.size, 1);
+  assert.equal(result.batch?.index, 0);
+  assert.equal(assembleParts([parseImport(migration({ version: 2, size: 2, index: 0 }))]).missing, 1);
+  assert.throws(() => parseImport(migration({ version: 2, type: 1 })));
+  assert.throws(() => parseImport(migration({ version: 2, algorithm: 4 })));
 });
 test("multi-QR completeness, duplicate scans and batch conflict", () => {
   const first = parseImport(migration({ size: 2, index: 0 }));
