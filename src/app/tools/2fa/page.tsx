@@ -7,6 +7,7 @@ import { TOTP } from "otpauth";
 import { DashboardCard, ProgressBar } from "../../_components/ui";
 import { useSession } from "../../../lib/auth-client";
 import { assembleParts, parseImport, type ImportPart, type SavedOtpEntry } from "../../../lib/two-factor/core";
+import { TemporaryOtp } from "./temporary-otp";
 import styles from "./two-factor.module.css";
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
@@ -249,6 +250,7 @@ export default function TwoFactorPage() {
   return <section className={`page-shell tools-page ${styles.page}`}>
     <Link className={styles.back} href="/tools"><ArrowLeft size={16} />返回工具箱</Link>
     <div className="intro tools-intro"><p className="eyebrow">Authenticator</p><h1>2FA 验证器</h1><p className="lead">所有账号的动态验证码，一处查看。兼容 Google Authenticator，密钥按本站账号隔离并加密保存。</p></div>
+    <TemporaryOtp />
     {isPending ? <DashboardCard>加载中…</DashboardCard> : session?.user ? <Vault key={session.user.id} /> : <DashboardCard className="tool-detail-card"><h2>请先登录</h2><p className="lead">登录本站账号后，即可保存和管理你的 2FA 账号。</p><Link className="button primary-button tool-inline-button" href="/login?callback=/tools/2fa"><KeyRound size={18} />登录</Link></DashboardCard>}
   </section>;
 }

@@ -43,3 +43,9 @@
 
 .cardActions { display: flex; flex-shrink: 0; gap: 6px; }
 .editForm { margin-top: 16px; }
+
+.temporaryPanel { display: grid; gap: 16px; min-width: 0; }
+.temporaryPanel h2 { font-size: 20px; }
+.temporaryPanel .cardHeading { flex-wrap: wrap; }
+.temporaryResult { min-width: 0; display: grid; align-content: start; gap: 12px; }
+.temporaryResult .code { margin: 0; }
