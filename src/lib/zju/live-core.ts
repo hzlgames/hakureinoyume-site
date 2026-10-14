@@ -3,7 +3,7 @@ import { asRecord, readNumber, readString } from "./shared";
 
 export type LiveCourse = { id: string; title: string; teacher: string };
 export type LiveLesson = { subId: string; courseId: string; title: string; status: string; type: string; startAt: number; room: string; playbackUrl: string | null };
-export type LiveStream = { name: string; url: string };
+export type LiveStream = { name: string; url: string; audioSource?: "classroom" | "none" };
 export type LiveScan = { live: LiveLesson[]; failed: LiveCourse[]; checked: number };
 type Client = { fetch(url: string, init?: RequestInit): Promise<Response> };
 // Complete authentication before starting the per-API timeout. CLASSROOM's first
@@ -85,14 +85,15 @@ export function createLiveApi(client: Client, now = Date.now) {
         const names: Record<string, string> = { output: "教师画面", output_tts: "课件画面", output_student: "学生画面" };
         return Object.entries(asRecord(data.live_url)).flatMap(([key, value]) => {
           const url = safePlaybackUrl(asRecord(value).m3u8);
-          return url ? [{ name: names[key] || key, url }] : [];
+          return url ? [{ name: names[key] || key, url, audioSource: key === "output" ? "classroom" as const : "none" as const }] : [];
         });
       };
       if (type === "course_live" && courseId) return portal();
       const rows = await list(`${BASE}index.php/v2/meta/getscreenstream?sub_id=${encodeURIComponent(subId)}&clear_cache=1`, { headers: STREAM_HEADERS });
       const streams = rows.flatMap(s => {
         const url = safePlaybackUrl(s.stream_m3u8);
-        return url ? [{ name: readString(s.stream_name) || `画面 ${idString(s.type)}`, url }] : [];
+        const name = readString(s.stream_name) || `画面 ${idString(s.type)}`;
+        return url ? [{ name, url, audioSource: /^(教室|教师)(画面)?$/.test(name) ? "classroom" as const : "none" as const }] : [];
       });
       return streams.length || type === "ilive" || !courseId ? streams : portal();
     }

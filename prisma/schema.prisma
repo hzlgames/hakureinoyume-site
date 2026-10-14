@@ -8,6 +8,8 @@ datasource db {
 }
 
 model User {
+  liveSubtitleViewers ZjuLiveSubtitleViewer[]
+  liveSubtitleGrants ZjuLiveSubtitleGrant[]
   twoFactorAccounts TwoFactorAccount[]
   zjuToolStates ZjuToolState[]
   id                String             @id
@@ -212,4 +214,92 @@ model TwoFactorAccount {
 
   @@unique([userId, fingerprint])
   @@index([userId, createdAt])
+}
+
+// One shared classroom audio transcription per actual ZJU lesson.
+model ZjuLiveSubtitle {
+  id             String   @id @default(cuid())
+  lessonKey      String   @unique
+  courseId       String
+  subId          String
+  type           String
+  title          String
+  audioSource    String   @default("classroom")
+  status         String   @default("queued")
+  provider       String   @default("volcengine")
+  leaseOwner     String?
+  leaseUntil     DateTime?
+  generation     Int      @default(0)
+  attempts       Int      @default(0)
+  revision       Int      @default(0)
+  partial        String   @default("")
+  partialStartMs Int?
+  partialEndMs   Int?
+  error          String?
+  startedAt      DateTime?
+  finishedAt     DateTime?
+  expiresAt      DateTime
+  audioMs        Int      @default(0)
+  billedAudioMs  Int      @default(0)
+  lastSequence   Int?
+  timelineMs     Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  cues           ZjuLiveSubtitleCue[]
+  segments       ZjuLiveSubtitleSegment[]
+  viewers        ZjuLiveSubtitleViewer[]
+  grants         ZjuLiveSubtitleGrant[]
+
+  @@index([status, leaseUntil])
+  @@index([expiresAt])
+}
+
+model ZjuLiveSubtitleCue {
+  id         String @id @default(cuid())
+  subtitleId String
+  key        String
+  startMs    Int
+  endMs      Int
+  text       String
+  revision   Int
+  subtitle   ZjuLiveSubtitle @relation(fields: [subtitleId], references: [id], onDelete: Cascade)
+  @@unique([subtitleId, key])
+  @@index([subtitleId, revision])
+  @@index([subtitleId, startMs])
+}
+
+model ZjuLiveSubtitleSegment {
+  id         String @id @default(cuid())
+  subtitleId String
+  sequence   Int
+  startMs    Int
+  durationMs Int
+  observedAt DateTime
+  subtitle   ZjuLiveSubtitle @relation(fields: [subtitleId], references: [id], onDelete: Cascade)
+  @@unique([subtitleId, sequence])
+}
+
+model ZjuLiveSubtitleViewer {
+  subtitleId String
+  userId     String
+  clientId   String
+  lastSeenAt DateTime @default(now())
+  subtitle   ZjuLiveSubtitle @relation(fields: [subtitleId], references: [id], onDelete: Cascade)
+  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([subtitleId, userId, clientId])
+  @@index([subtitleId, lastSeenAt])
+}
+
+model ZjuLiveSubtitleDailyUsage {
+  day     String @id
+  audioMs Int @default(0)
+}
+
+model ZjuLiveSubtitleGrant {
+  subtitleId String
+  userId String
+  authorizedAt DateTime @default(now())
+  subtitle ZjuLiveSubtitle @relation(fields: [subtitleId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([subtitleId, userId])
 }

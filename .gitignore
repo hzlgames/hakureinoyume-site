@@ -15,3 +15,7 @@ pnpm-debug.log*
 
 !deploy/zju-artifact-cleanup.service
 !deploy/zju-grade-monitor.service
+
+!deploy/zju-live-subtitles.service
+
+!deploy/zju-live-subtitle-cleanup.service

@@ -7,7 +7,9 @@
     "lint": "eslint . --max-warnings=0",
     "build": "next build",
     "deploy": "bash scripts/deploy.sh",
-    "start": "next start"
+    "start": "next start",
+    "subtitles:worker": "node --import tsx scripts/zju-subtitle-worker.ts",
+    "subtitles:cleanup": "node --import tsx scripts/zju-subtitle-worker.ts --cleanup-only"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.6.15",
@@ -27,6 +29,7 @@
     "react": "latest",
     "react-dom": "latest",
     "sanitize-html": "^2.17.7",
+    "ws": "^8.22.0",
     "yazl": "^3.3.1"
   },
   "devDependencies": {
@@ -36,6 +39,7 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@types/sanitize-html": "^2.16.1",
+    "@types/ws": "^8.18.2",
     "@types/yazl": "^3.3.1",
     "dotenv": "^17.4.2",
     "eslint": "^9.39.4",

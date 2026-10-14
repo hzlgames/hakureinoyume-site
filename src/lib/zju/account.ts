@@ -109,7 +109,11 @@ export async function saveStoredZjuAccount(input: {
   const lastValidatedAt = new Date();
 
   if (existing) {
-    if (existing.username !== input.username) await prisma.zjuToolState.deleteMany({ where: { userId: input.userId } });
+    if (existing.username !== input.username) {
+      await prisma.zjuToolState.deleteMany({ where: { userId: input.userId } });
+      await prisma.zjuLiveSubtitleGrant.deleteMany({ where: { userId: input.userId } });
+      await prisma.zjuLiveSubtitleViewer.deleteMany({ where: { userId: input.userId } });
+    }
     await prisma.zjuAccount.update({
       where: { userId: input.userId },
       data: {
@@ -150,6 +154,8 @@ export async function saveStoredZjuAccount(input: {
 }
 
 export async function deleteStoredZjuAccount(userId: string) {
+  await prisma.zjuLiveSubtitleGrant.deleteMany({ where: { userId } });
+  await prisma.zjuLiveSubtitleViewer.deleteMany({ where: { userId } });
   await prisma.zjuToolState.deleteMany({ where: { userId } });
   await prisma.zjuAccount.deleteMany({
     where: { userId }

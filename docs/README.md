@@ -11,6 +11,8 @@
 - 排查网易云播放器：读 [播放器排查记录](operations/netease-player-audit.md)，包含状态边界、真实接口与浏览器回归方法。
 - 准备 Git 远端同步：必须读 [知识维护规则](knowledge-maintenance.md)，按规则更新文档或说明无需更新。
 
+- 智云直播字幕：读 [共享字幕运维说明](operations/zju-live-subtitles.md) 和 [验证记录](operations/zju-live-subtitles-validation.md)。
+
 ## 文档地图
 
 - `architecture/`：系统结构、运行时边界、C4 视图、关键数据流。

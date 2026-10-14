@@ -230,6 +230,8 @@ export type UserWhereInput = {
   banned?: Prisma.BoolNullableFilter<"User"> | boolean | null
   banReason?: Prisma.StringNullableFilter<"User"> | string | null
   banExpires?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerListRelationFilter
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantListRelationFilter
   twoFactorAccounts?: Prisma.TwoFactorAccountListRelationFilter
   zjuToolStates?: Prisma.ZjuToolStateListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
@@ -253,6 +255,8 @@ export type UserOrderByWithRelationInput = {
   banned?: Prisma.SortOrderInput | Prisma.SortOrder
   banReason?: Prisma.SortOrderInput | Prisma.SortOrder
   banExpires?: Prisma.SortOrderInput | Prisma.SortOrder
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerOrderByRelationAggregateInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantOrderByRelationAggregateInput
   twoFactorAccounts?: Prisma.TwoFactorAccountOrderByRelationAggregateInput
   zjuToolStates?: Prisma.ZjuToolStateOrderByRelationAggregateInput
   sessions?: Prisma.SessionOrderByRelationAggregateInput
@@ -279,6 +283,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   banned?: Prisma.BoolNullableFilter<"User"> | boolean | null
   banReason?: Prisma.StringNullableFilter<"User"> | string | null
   banExpires?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerListRelationFilter
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantListRelationFilter
   twoFactorAccounts?: Prisma.TwoFactorAccountListRelationFilter
   zjuToolStates?: Prisma.ZjuToolStateListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
@@ -336,6 +342,8 @@ export type UserCreateInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -359,6 +367,8 @@ export type UserUncheckedCreateInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -382,6 +392,8 @@ export type UserUpdateInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -405,6 +417,8 @@ export type UserUncheckedUpdateInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -662,6 +676,34 @@ export type UserUpdateOneRequiredWithoutTwoFactorAccountsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutTwoFactorAccountsInput, Prisma.UserUpdateWithoutTwoFactorAccountsInput>, Prisma.UserUncheckedUpdateWithoutTwoFactorAccountsInput>
 }
 
+export type UserCreateNestedOneWithoutLiveSubtitleViewersInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutLiveSubtitleViewersInput, Prisma.UserUncheckedCreateWithoutLiveSubtitleViewersInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLiveSubtitleViewersInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutLiveSubtitleViewersNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutLiveSubtitleViewersInput, Prisma.UserUncheckedCreateWithoutLiveSubtitleViewersInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLiveSubtitleViewersInput
+  upsert?: Prisma.UserUpsertWithoutLiveSubtitleViewersInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutLiveSubtitleViewersInput, Prisma.UserUpdateWithoutLiveSubtitleViewersInput>, Prisma.UserUncheckedUpdateWithoutLiveSubtitleViewersInput>
+}
+
+export type UserCreateNestedOneWithoutLiveSubtitleGrantsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutLiveSubtitleGrantsInput, Prisma.UserUncheckedCreateWithoutLiveSubtitleGrantsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLiveSubtitleGrantsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutLiveSubtitleGrantsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutLiveSubtitleGrantsInput, Prisma.UserUncheckedCreateWithoutLiveSubtitleGrantsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLiveSubtitleGrantsInput
+  upsert?: Prisma.UserUpsertWithoutLiveSubtitleGrantsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutLiveSubtitleGrantsInput, Prisma.UserUpdateWithoutLiveSubtitleGrantsInput>, Prisma.UserUncheckedUpdateWithoutLiveSubtitleGrantsInput>
+}
+
 export type UserCreateWithoutSessionsInput = {
   id: string
   name: string
@@ -674,6 +716,8 @@ export type UserCreateWithoutSessionsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -696,6 +740,8 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -734,6 +780,8 @@ export type UserUpdateWithoutSessionsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -756,6 +804,8 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -778,6 +828,8 @@ export type UserCreateWithoutAccountsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -800,6 +852,8 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -838,6 +892,8 @@ export type UserUpdateWithoutAccountsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -860,6 +916,8 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -882,6 +940,8 @@ export type UserCreateWithoutAuditLogsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -904,6 +964,8 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -942,6 +1004,8 @@ export type UserUpdateWithoutAuditLogsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -964,6 +1028,8 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -986,6 +1052,8 @@ export type UserCreateWithoutNeteaseAccountInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -1008,6 +1076,8 @@ export type UserUncheckedCreateWithoutNeteaseAccountInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -1046,6 +1116,8 @@ export type UserUpdateWithoutNeteaseAccountInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -1068,6 +1140,8 @@ export type UserUncheckedUpdateWithoutNeteaseAccountInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -1090,6 +1164,8 @@ export type UserCreateWithoutZjuAccountInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -1112,6 +1188,8 @@ export type UserUncheckedCreateWithoutZjuAccountInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -1150,6 +1228,8 @@ export type UserUpdateWithoutZjuAccountInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -1172,6 +1252,8 @@ export type UserUncheckedUpdateWithoutZjuAccountInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -1194,6 +1276,8 @@ export type UserCreateWithoutZjuToolJobsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -1216,6 +1300,8 @@ export type UserUncheckedCreateWithoutZjuToolJobsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -1254,6 +1340,8 @@ export type UserUpdateWithoutZjuToolJobsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -1276,6 +1364,8 @@ export type UserUncheckedUpdateWithoutZjuToolJobsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -1298,6 +1388,8 @@ export type UserCreateWithoutWebMusicPlaylistsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -1320,6 +1412,8 @@ export type UserUncheckedCreateWithoutWebMusicPlaylistsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -1358,6 +1452,8 @@ export type UserUpdateWithoutWebMusicPlaylistsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -1380,6 +1476,8 @@ export type UserUncheckedUpdateWithoutWebMusicPlaylistsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -1402,6 +1500,8 @@ export type UserCreateWithoutZjuToolStatesInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -1424,6 +1524,8 @@ export type UserUncheckedCreateWithoutZjuToolStatesInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedCreateNestedManyWithoutUserInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -1462,6 +1564,8 @@ export type UserUpdateWithoutZjuToolStatesInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -1484,6 +1588,8 @@ export type UserUncheckedUpdateWithoutZjuToolStatesInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedUpdateManyWithoutUserNestedInput
   twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -1506,6 +1612,8 @@ export type UserCreateWithoutTwoFactorAccountsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -1528,6 +1636,8 @@ export type UserUncheckedCreateWithoutTwoFactorAccountsInput = {
   banned?: boolean | null
   banReason?: string | null
   banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedCreateNestedManyWithoutUserInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedCreateNestedManyWithoutUserInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -1566,6 +1676,8 @@ export type UserUpdateWithoutTwoFactorAccountsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -1588,6 +1700,232 @@ export type UserUncheckedUpdateWithoutTwoFactorAccountsInput = {
   banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedUpdateManyWithoutUserNestedInput
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedUpdateManyWithoutUserNestedInput
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
+  neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedUpdateManyWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutLiveSubtitleViewersInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantCreateNestedManyWithoutUserInput
+  twoFactorAccounts?: Prisma.TwoFactorAccountCreateNestedManyWithoutUserInput
+  zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
+  neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobCreateNestedManyWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutLiveSubtitleViewersInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedCreateNestedManyWithoutUserInput
+  twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedCreateNestedManyWithoutUserInput
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
+  neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedCreateNestedManyWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutLiveSubtitleViewersInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutLiveSubtitleViewersInput, Prisma.UserUncheckedCreateWithoutLiveSubtitleViewersInput>
+}
+
+export type UserUpsertWithoutLiveSubtitleViewersInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutLiveSubtitleViewersInput, Prisma.UserUncheckedUpdateWithoutLiveSubtitleViewersInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutLiveSubtitleViewersInput, Prisma.UserUncheckedCreateWithoutLiveSubtitleViewersInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutLiveSubtitleViewersInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutLiveSubtitleViewersInput, Prisma.UserUncheckedUpdateWithoutLiveSubtitleViewersInput>
+}
+
+export type UserUpdateWithoutLiveSubtitleViewersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUpdateManyWithoutUserNestedInput
+  twoFactorAccounts?: Prisma.TwoFactorAccountUpdateManyWithoutUserNestedInput
+  zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
+  neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUpdateManyWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutLiveSubtitleViewersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleGrants?: Prisma.ZjuLiveSubtitleGrantUncheckedUpdateManyWithoutUserNestedInput
+  twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedUpdateManyWithoutUserNestedInput
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
+  neteaseAccount?: Prisma.NeteaseAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedUpdateManyWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutLiveSubtitleGrantsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerCreateNestedManyWithoutUserInput
+  twoFactorAccounts?: Prisma.TwoFactorAccountCreateNestedManyWithoutUserInput
+  zjuToolStates?: Prisma.ZjuToolStateCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AdminAuditLogCreateNestedManyWithoutActorInput
+  neteaseAccount?: Prisma.NeteaseAccountCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobCreateNestedManyWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutLiveSubtitleGrantsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedCreateNestedManyWithoutUserInput
+  twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedCreateNestedManyWithoutUserInput
+  zjuToolStates?: Prisma.ZjuToolStateUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
+  neteaseAccount?: Prisma.NeteaseAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuAccount?: Prisma.ZjuAccountUncheckedCreateNestedOneWithoutUserInput
+  zjuToolJobs?: Prisma.ZjuToolJobUncheckedCreateNestedManyWithoutUserInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutLiveSubtitleGrantsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutLiveSubtitleGrantsInput, Prisma.UserUncheckedCreateWithoutLiveSubtitleGrantsInput>
+}
+
+export type UserUpsertWithoutLiveSubtitleGrantsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutLiveSubtitleGrantsInput, Prisma.UserUncheckedUpdateWithoutLiveSubtitleGrantsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutLiveSubtitleGrantsInput, Prisma.UserUncheckedCreateWithoutLiveSubtitleGrantsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutLiveSubtitleGrantsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutLiveSubtitleGrantsInput, Prisma.UserUncheckedUpdateWithoutLiveSubtitleGrantsInput>
+}
+
+export type UserUpdateWithoutLiveSubtitleGrantsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUpdateManyWithoutUserNestedInput
+  twoFactorAccounts?: Prisma.TwoFactorAccountUpdateManyWithoutUserNestedInput
+  zjuToolStates?: Prisma.ZjuToolStateUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AdminAuditLogUpdateManyWithoutActorNestedInput
+  neteaseAccount?: Prisma.NeteaseAccountUpdateOneWithoutUserNestedInput
+  zjuAccount?: Prisma.ZjuAccountUpdateOneWithoutUserNestedInput
+  zjuToolJobs?: Prisma.ZjuToolJobUpdateManyWithoutUserNestedInput
+  webMusicPlaylists?: Prisma.WebMusicPlaylistUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutLiveSubtitleGrantsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  liveSubtitleViewers?: Prisma.ZjuLiveSubtitleViewerUncheckedUpdateManyWithoutUserNestedInput
+  twoFactorAccounts?: Prisma.TwoFactorAccountUncheckedUpdateManyWithoutUserNestedInput
   zjuToolStates?: Prisma.ZjuToolStateUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -1604,6 +1942,8 @@ export type UserUncheckedUpdateWithoutTwoFactorAccountsInput = {
  */
 
 export type UserCountOutputType = {
+  liveSubtitleViewers: number
+  liveSubtitleGrants: number
   twoFactorAccounts: number
   zjuToolStates: number
   sessions: number
@@ -1614,6 +1954,8 @@ export type UserCountOutputType = {
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  liveSubtitleViewers?: boolean | UserCountOutputTypeCountLiveSubtitleViewersArgs
+  liveSubtitleGrants?: boolean | UserCountOutputTypeCountLiveSubtitleGrantsArgs
   twoFactorAccounts?: boolean | UserCountOutputTypeCountTwoFactorAccountsArgs
   zjuToolStates?: boolean | UserCountOutputTypeCountZjuToolStatesArgs
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
@@ -1631,6 +1973,20 @@ export type UserCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensi
    * Select specific fields to fetch from the UserCountOutputType
    */
   select?: Prisma.UserCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountLiveSubtitleViewersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ZjuLiveSubtitleViewerWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountLiveSubtitleGrantsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ZjuLiveSubtitleGrantWhereInput
 }
 
 /**
@@ -1695,6 +2051,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   banned?: boolean
   banReason?: boolean
   banExpires?: boolean
+  liveSubtitleViewers?: boolean | Prisma.User$liveSubtitleViewersArgs<ExtArgs>
+  liveSubtitleGrants?: boolean | Prisma.User$liveSubtitleGrantsArgs<ExtArgs>
   twoFactorAccounts?: boolean | Prisma.User$twoFactorAccountsArgs<ExtArgs>
   zjuToolStates?: boolean | Prisma.User$zjuToolStatesArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
@@ -1751,6 +2109,8 @@ export type UserSelectScalar = {
 
 export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "createdAt" | "updatedAt" | "role" | "banned" | "banReason" | "banExpires", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  liveSubtitleViewers?: boolean | Prisma.User$liveSubtitleViewersArgs<ExtArgs>
+  liveSubtitleGrants?: boolean | Prisma.User$liveSubtitleGrantsArgs<ExtArgs>
   twoFactorAccounts?: boolean | Prisma.User$twoFactorAccountsArgs<ExtArgs>
   zjuToolStates?: boolean | Prisma.User$zjuToolStatesArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
@@ -1768,6 +2128,8 @@ export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
 export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "User"
   objects: {
+    liveSubtitleViewers: Prisma.$ZjuLiveSubtitleViewerPayload<ExtArgs>[]
+    liveSubtitleGrants: Prisma.$ZjuLiveSubtitleGrantPayload<ExtArgs>[]
     twoFactorAccounts: Prisma.$TwoFactorAccountPayload<ExtArgs>[]
     zjuToolStates: Prisma.$ZjuToolStatePayload<ExtArgs>[]
     sessions: Prisma.$SessionPayload<ExtArgs>[]
@@ -2184,6 +2546,8 @@ readonly fields: UserFieldRefs;
  */
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  liveSubtitleViewers<T extends Prisma.User$liveSubtitleViewersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$liveSubtitleViewersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ZjuLiveSubtitleViewerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  liveSubtitleGrants<T extends Prisma.User$liveSubtitleGrantsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$liveSubtitleGrantsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ZjuLiveSubtitleGrantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   twoFactorAccounts<T extends Prisma.User$twoFactorAccountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$twoFactorAccountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TwoFactorAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   zjuToolStates<T extends Prisma.User$zjuToolStatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$zjuToolStatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ZjuToolStatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2623,6 +2987,54 @@ export type UserDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Limit how many Users to delete.
    */
   limit?: number
+}
+
+/**
+ * User.liveSubtitleViewers
+ */
+export type User$liveSubtitleViewersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ZjuLiveSubtitleViewer
+   */
+  select?: Prisma.ZjuLiveSubtitleViewerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ZjuLiveSubtitleViewer
+   */
+  omit?: Prisma.ZjuLiveSubtitleViewerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ZjuLiveSubtitleViewerInclude<ExtArgs> | null
+  where?: Prisma.ZjuLiveSubtitleViewerWhereInput
+  orderBy?: Prisma.ZjuLiveSubtitleViewerOrderByWithRelationInput | Prisma.ZjuLiveSubtitleViewerOrderByWithRelationInput[]
+  cursor?: Prisma.ZjuLiveSubtitleViewerWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ZjuLiveSubtitleViewerScalarFieldEnum | Prisma.ZjuLiveSubtitleViewerScalarFieldEnum[]
+}
+
+/**
+ * User.liveSubtitleGrants
+ */
+export type User$liveSubtitleGrantsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ZjuLiveSubtitleGrant
+   */
+  select?: Prisma.ZjuLiveSubtitleGrantSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ZjuLiveSubtitleGrant
+   */
+  omit?: Prisma.ZjuLiveSubtitleGrantOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ZjuLiveSubtitleGrantInclude<ExtArgs> | null
+  where?: Prisma.ZjuLiveSubtitleGrantWhereInput
+  orderBy?: Prisma.ZjuLiveSubtitleGrantOrderByWithRelationInput | Prisma.ZjuLiveSubtitleGrantOrderByWithRelationInput[]
+  cursor?: Prisma.ZjuLiveSubtitleGrantWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ZjuLiveSubtitleGrantScalarFieldEnum | Prisma.ZjuLiveSubtitleGrantScalarFieldEnum[]
 }
 
 /**

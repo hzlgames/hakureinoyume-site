@@ -4731,3 +4731,14 @@ a.glass-panel:hover {
 .zju-tool-page .tool-form .tool-checkbox-label { display: flex; align-items: center; gap: 10px; }
 .zju-grade-table th { white-space: nowrap; }
 .zju-grade-table td:first-child { min-width: 120px; }
+
+/* Shared live subtitles use native TextTrack cues, including video fullscreen. */
+.zju-live-video::cue { font-size: clamp(16px, 2vw, 26px); }
+.zju-live-subtitles { display: grid; gap: 0.65rem; margin-top: 0.75rem; }
+.zju-subtitle-offset { display: flex; align-items: center; gap: 0.75rem; color: var(--text-secondary); font-size: 0.85rem; }
+.zju-subtitle-offset input { width: 5rem; padding: 0.35rem; border: 1px solid var(--glass-border); border-radius: 0.5rem; color: var(--text-primary); background: var(--glass-bg); }
+.zju-subtitle-history { border-top: 1px solid var(--glass-border); padding-top: 0.65rem; }
+.zju-subtitle-history summary { cursor: pointer; color: var(--text-primary); }
+.zju-subtitle-transcript { max-height: 18rem; overflow-y: auto; margin-top: 0.75rem; overflow-wrap: anywhere; }
+.zju-subtitle-transcript p { display: flex; align-items: baseline; gap: 0.75rem; margin: 0.5rem 0; line-height: 1.7; color: var(--text-primary); }
+.zju-subtitle-transcript time { flex: 0 0 3.5rem; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }

@@ -395,7 +395,13 @@ export const ModelName = {
   WebMusicPlaylist: 'WebMusicPlaylist',
   WebMusicPlaylistSong: 'WebMusicPlaylistSong',
   ZjuToolState: 'ZjuToolState',
-  TwoFactorAccount: 'TwoFactorAccount'
+  TwoFactorAccount: 'TwoFactorAccount',
+  ZjuLiveSubtitle: 'ZjuLiveSubtitle',
+  ZjuLiveSubtitleCue: 'ZjuLiveSubtitleCue',
+  ZjuLiveSubtitleSegment: 'ZjuLiveSubtitleSegment',
+  ZjuLiveSubtitleViewer: 'ZjuLiveSubtitleViewer',
+  ZjuLiveSubtitleDailyUsage: 'ZjuLiveSubtitleDailyUsage',
+  ZjuLiveSubtitleGrant: 'ZjuLiveSubtitleGrant'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -411,7 +417,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "adminAuditLog" | "neteaseAccount" | "zjuAccount" | "zjuToolJob" | "webMusicPlaylist" | "webMusicPlaylistSong" | "zjuToolState" | "twoFactorAccount"
+    modelProps: "user" | "session" | "account" | "verification" | "adminAuditLog" | "neteaseAccount" | "zjuAccount" | "zjuToolJob" | "webMusicPlaylist" | "webMusicPlaylistSong" | "zjuToolState" | "twoFactorAccount" | "zjuLiveSubtitle" | "zjuLiveSubtitleCue" | "zjuLiveSubtitleSegment" | "zjuLiveSubtitleViewer" | "zjuLiveSubtitleDailyUsage" | "zjuLiveSubtitleGrant"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1303,6 +1309,450 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ZjuLiveSubtitle: {
+      payload: Prisma.$ZjuLiveSubtitlePayload<ExtArgs>
+      fields: Prisma.ZjuLiveSubtitleFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ZjuLiveSubtitleFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitlePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ZjuLiveSubtitleFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitlePayload>
+        }
+        findFirst: {
+          args: Prisma.ZjuLiveSubtitleFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitlePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ZjuLiveSubtitleFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitlePayload>
+        }
+        findMany: {
+          args: Prisma.ZjuLiveSubtitleFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitlePayload>[]
+        }
+        create: {
+          args: Prisma.ZjuLiveSubtitleCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitlePayload>
+        }
+        createMany: {
+          args: Prisma.ZjuLiveSubtitleCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ZjuLiveSubtitleCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitlePayload>[]
+        }
+        delete: {
+          args: Prisma.ZjuLiveSubtitleDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitlePayload>
+        }
+        update: {
+          args: Prisma.ZjuLiveSubtitleUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitlePayload>
+        }
+        deleteMany: {
+          args: Prisma.ZjuLiveSubtitleDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ZjuLiveSubtitleUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ZjuLiveSubtitleUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitlePayload>[]
+        }
+        upsert: {
+          args: Prisma.ZjuLiveSubtitleUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitlePayload>
+        }
+        aggregate: {
+          args: Prisma.ZjuLiveSubtitleAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateZjuLiveSubtitle>
+        }
+        groupBy: {
+          args: Prisma.ZjuLiveSubtitleGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuLiveSubtitleGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ZjuLiveSubtitleCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuLiveSubtitleCountAggregateOutputType> | number
+        }
+      }
+    }
+    ZjuLiveSubtitleCue: {
+      payload: Prisma.$ZjuLiveSubtitleCuePayload<ExtArgs>
+      fields: Prisma.ZjuLiveSubtitleCueFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ZjuLiveSubtitleCueFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleCuePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ZjuLiveSubtitleCueFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleCuePayload>
+        }
+        findFirst: {
+          args: Prisma.ZjuLiveSubtitleCueFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleCuePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ZjuLiveSubtitleCueFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleCuePayload>
+        }
+        findMany: {
+          args: Prisma.ZjuLiveSubtitleCueFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleCuePayload>[]
+        }
+        create: {
+          args: Prisma.ZjuLiveSubtitleCueCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleCuePayload>
+        }
+        createMany: {
+          args: Prisma.ZjuLiveSubtitleCueCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ZjuLiveSubtitleCueCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleCuePayload>[]
+        }
+        delete: {
+          args: Prisma.ZjuLiveSubtitleCueDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleCuePayload>
+        }
+        update: {
+          args: Prisma.ZjuLiveSubtitleCueUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleCuePayload>
+        }
+        deleteMany: {
+          args: Prisma.ZjuLiveSubtitleCueDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ZjuLiveSubtitleCueUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ZjuLiveSubtitleCueUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleCuePayload>[]
+        }
+        upsert: {
+          args: Prisma.ZjuLiveSubtitleCueUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleCuePayload>
+        }
+        aggregate: {
+          args: Prisma.ZjuLiveSubtitleCueAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateZjuLiveSubtitleCue>
+        }
+        groupBy: {
+          args: Prisma.ZjuLiveSubtitleCueGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuLiveSubtitleCueGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ZjuLiveSubtitleCueCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuLiveSubtitleCueCountAggregateOutputType> | number
+        }
+      }
+    }
+    ZjuLiveSubtitleSegment: {
+      payload: Prisma.$ZjuLiveSubtitleSegmentPayload<ExtArgs>
+      fields: Prisma.ZjuLiveSubtitleSegmentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ZjuLiveSubtitleSegmentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleSegmentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ZjuLiveSubtitleSegmentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleSegmentPayload>
+        }
+        findFirst: {
+          args: Prisma.ZjuLiveSubtitleSegmentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleSegmentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ZjuLiveSubtitleSegmentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleSegmentPayload>
+        }
+        findMany: {
+          args: Prisma.ZjuLiveSubtitleSegmentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleSegmentPayload>[]
+        }
+        create: {
+          args: Prisma.ZjuLiveSubtitleSegmentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleSegmentPayload>
+        }
+        createMany: {
+          args: Prisma.ZjuLiveSubtitleSegmentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ZjuLiveSubtitleSegmentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleSegmentPayload>[]
+        }
+        delete: {
+          args: Prisma.ZjuLiveSubtitleSegmentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleSegmentPayload>
+        }
+        update: {
+          args: Prisma.ZjuLiveSubtitleSegmentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleSegmentPayload>
+        }
+        deleteMany: {
+          args: Prisma.ZjuLiveSubtitleSegmentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ZjuLiveSubtitleSegmentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ZjuLiveSubtitleSegmentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleSegmentPayload>[]
+        }
+        upsert: {
+          args: Prisma.ZjuLiveSubtitleSegmentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleSegmentPayload>
+        }
+        aggregate: {
+          args: Prisma.ZjuLiveSubtitleSegmentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateZjuLiveSubtitleSegment>
+        }
+        groupBy: {
+          args: Prisma.ZjuLiveSubtitleSegmentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuLiveSubtitleSegmentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ZjuLiveSubtitleSegmentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuLiveSubtitleSegmentCountAggregateOutputType> | number
+        }
+      }
+    }
+    ZjuLiveSubtitleViewer: {
+      payload: Prisma.$ZjuLiveSubtitleViewerPayload<ExtArgs>
+      fields: Prisma.ZjuLiveSubtitleViewerFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ZjuLiveSubtitleViewerFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleViewerPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ZjuLiveSubtitleViewerFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleViewerPayload>
+        }
+        findFirst: {
+          args: Prisma.ZjuLiveSubtitleViewerFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleViewerPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ZjuLiveSubtitleViewerFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleViewerPayload>
+        }
+        findMany: {
+          args: Prisma.ZjuLiveSubtitleViewerFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleViewerPayload>[]
+        }
+        create: {
+          args: Prisma.ZjuLiveSubtitleViewerCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleViewerPayload>
+        }
+        createMany: {
+          args: Prisma.ZjuLiveSubtitleViewerCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ZjuLiveSubtitleViewerCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleViewerPayload>[]
+        }
+        delete: {
+          args: Prisma.ZjuLiveSubtitleViewerDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleViewerPayload>
+        }
+        update: {
+          args: Prisma.ZjuLiveSubtitleViewerUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleViewerPayload>
+        }
+        deleteMany: {
+          args: Prisma.ZjuLiveSubtitleViewerDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ZjuLiveSubtitleViewerUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ZjuLiveSubtitleViewerUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleViewerPayload>[]
+        }
+        upsert: {
+          args: Prisma.ZjuLiveSubtitleViewerUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleViewerPayload>
+        }
+        aggregate: {
+          args: Prisma.ZjuLiveSubtitleViewerAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateZjuLiveSubtitleViewer>
+        }
+        groupBy: {
+          args: Prisma.ZjuLiveSubtitleViewerGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuLiveSubtitleViewerGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ZjuLiveSubtitleViewerCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuLiveSubtitleViewerCountAggregateOutputType> | number
+        }
+      }
+    }
+    ZjuLiveSubtitleDailyUsage: {
+      payload: Prisma.$ZjuLiveSubtitleDailyUsagePayload<ExtArgs>
+      fields: Prisma.ZjuLiveSubtitleDailyUsageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleDailyUsagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleDailyUsagePayload>
+        }
+        findFirst: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleDailyUsagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleDailyUsagePayload>
+        }
+        findMany: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleDailyUsagePayload>[]
+        }
+        create: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleDailyUsagePayload>
+        }
+        createMany: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleDailyUsagePayload>[]
+        }
+        delete: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleDailyUsagePayload>
+        }
+        update: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleDailyUsagePayload>
+        }
+        deleteMany: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleDailyUsagePayload>[]
+        }
+        upsert: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleDailyUsagePayload>
+        }
+        aggregate: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateZjuLiveSubtitleDailyUsage>
+        }
+        groupBy: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuLiveSubtitleDailyUsageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ZjuLiveSubtitleDailyUsageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuLiveSubtitleDailyUsageCountAggregateOutputType> | number
+        }
+      }
+    }
+    ZjuLiveSubtitleGrant: {
+      payload: Prisma.$ZjuLiveSubtitleGrantPayload<ExtArgs>
+      fields: Prisma.ZjuLiveSubtitleGrantFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ZjuLiveSubtitleGrantFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleGrantPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ZjuLiveSubtitleGrantFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleGrantPayload>
+        }
+        findFirst: {
+          args: Prisma.ZjuLiveSubtitleGrantFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleGrantPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ZjuLiveSubtitleGrantFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleGrantPayload>
+        }
+        findMany: {
+          args: Prisma.ZjuLiveSubtitleGrantFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleGrantPayload>[]
+        }
+        create: {
+          args: Prisma.ZjuLiveSubtitleGrantCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleGrantPayload>
+        }
+        createMany: {
+          args: Prisma.ZjuLiveSubtitleGrantCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ZjuLiveSubtitleGrantCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleGrantPayload>[]
+        }
+        delete: {
+          args: Prisma.ZjuLiveSubtitleGrantDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleGrantPayload>
+        }
+        update: {
+          args: Prisma.ZjuLiveSubtitleGrantUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleGrantPayload>
+        }
+        deleteMany: {
+          args: Prisma.ZjuLiveSubtitleGrantDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ZjuLiveSubtitleGrantUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ZjuLiveSubtitleGrantUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleGrantPayload>[]
+        }
+        upsert: {
+          args: Prisma.ZjuLiveSubtitleGrantUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ZjuLiveSubtitleGrantPayload>
+        }
+        aggregate: {
+          args: Prisma.ZjuLiveSubtitleGrantAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateZjuLiveSubtitleGrant>
+        }
+        groupBy: {
+          args: Prisma.ZjuLiveSubtitleGrantGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuLiveSubtitleGrantGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ZjuLiveSubtitleGrantCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ZjuLiveSubtitleGrantCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1524,6 +1974,91 @@ export const TwoFactorAccountScalarFieldEnum = {
 } as const
 
 export type TwoFactorAccountScalarFieldEnum = (typeof TwoFactorAccountScalarFieldEnum)[keyof typeof TwoFactorAccountScalarFieldEnum]
+
+
+export const ZjuLiveSubtitleScalarFieldEnum = {
+  id: 'id',
+  lessonKey: 'lessonKey',
+  courseId: 'courseId',
+  subId: 'subId',
+  type: 'type',
+  title: 'title',
+  audioSource: 'audioSource',
+  status: 'status',
+  provider: 'provider',
+  leaseOwner: 'leaseOwner',
+  leaseUntil: 'leaseUntil',
+  generation: 'generation',
+  attempts: 'attempts',
+  revision: 'revision',
+  partial: 'partial',
+  partialStartMs: 'partialStartMs',
+  partialEndMs: 'partialEndMs',
+  error: 'error',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  expiresAt: 'expiresAt',
+  audioMs: 'audioMs',
+  billedAudioMs: 'billedAudioMs',
+  lastSequence: 'lastSequence',
+  timelineMs: 'timelineMs',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ZjuLiveSubtitleScalarFieldEnum = (typeof ZjuLiveSubtitleScalarFieldEnum)[keyof typeof ZjuLiveSubtitleScalarFieldEnum]
+
+
+export const ZjuLiveSubtitleCueScalarFieldEnum = {
+  id: 'id',
+  subtitleId: 'subtitleId',
+  key: 'key',
+  startMs: 'startMs',
+  endMs: 'endMs',
+  text: 'text',
+  revision: 'revision'
+} as const
+
+export type ZjuLiveSubtitleCueScalarFieldEnum = (typeof ZjuLiveSubtitleCueScalarFieldEnum)[keyof typeof ZjuLiveSubtitleCueScalarFieldEnum]
+
+
+export const ZjuLiveSubtitleSegmentScalarFieldEnum = {
+  id: 'id',
+  subtitleId: 'subtitleId',
+  sequence: 'sequence',
+  startMs: 'startMs',
+  durationMs: 'durationMs',
+  observedAt: 'observedAt'
+} as const
+
+export type ZjuLiveSubtitleSegmentScalarFieldEnum = (typeof ZjuLiveSubtitleSegmentScalarFieldEnum)[keyof typeof ZjuLiveSubtitleSegmentScalarFieldEnum]
+
+
+export const ZjuLiveSubtitleViewerScalarFieldEnum = {
+  subtitleId: 'subtitleId',
+  userId: 'userId',
+  clientId: 'clientId',
+  lastSeenAt: 'lastSeenAt'
+} as const
+
+export type ZjuLiveSubtitleViewerScalarFieldEnum = (typeof ZjuLiveSubtitleViewerScalarFieldEnum)[keyof typeof ZjuLiveSubtitleViewerScalarFieldEnum]
+
+
+export const ZjuLiveSubtitleDailyUsageScalarFieldEnum = {
+  day: 'day',
+  audioMs: 'audioMs'
+} as const
+
+export type ZjuLiveSubtitleDailyUsageScalarFieldEnum = (typeof ZjuLiveSubtitleDailyUsageScalarFieldEnum)[keyof typeof ZjuLiveSubtitleDailyUsageScalarFieldEnum]
+
+
+export const ZjuLiveSubtitleGrantScalarFieldEnum = {
+  subtitleId: 'subtitleId',
+  userId: 'userId',
+  authorizedAt: 'authorizedAt'
+} as const
+
+export type ZjuLiveSubtitleGrantScalarFieldEnum = (typeof ZjuLiveSubtitleGrantScalarFieldEnum)[keyof typeof ZjuLiveSubtitleGrantScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1778,6 +2313,12 @@ export type GlobalOmitConfig = {
   webMusicPlaylistSong?: Prisma.WebMusicPlaylistSongOmit
   zjuToolState?: Prisma.ZjuToolStateOmit
   twoFactorAccount?: Prisma.TwoFactorAccountOmit
+  zjuLiveSubtitle?: Prisma.ZjuLiveSubtitleOmit
+  zjuLiveSubtitleCue?: Prisma.ZjuLiveSubtitleCueOmit
+  zjuLiveSubtitleSegment?: Prisma.ZjuLiveSubtitleSegmentOmit
+  zjuLiveSubtitleViewer?: Prisma.ZjuLiveSubtitleViewerOmit
+  zjuLiveSubtitleDailyUsage?: Prisma.ZjuLiveSubtitleDailyUsageOmit
+  zjuLiveSubtitleGrant?: Prisma.ZjuLiveSubtitleGrantOmit
 }
 
 /* Types for Logging */

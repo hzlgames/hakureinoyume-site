@@ -77,3 +77,33 @@ export type ZjuToolState = Prisma.ZjuToolStateModel
  *
  */
 export type TwoFactorAccount = Prisma.TwoFactorAccountModel
+/**
+ * Model ZjuLiveSubtitle
+ *
+ */
+export type ZjuLiveSubtitle = Prisma.ZjuLiveSubtitleModel
+/**
+ * Model ZjuLiveSubtitleCue
+ *
+ */
+export type ZjuLiveSubtitleCue = Prisma.ZjuLiveSubtitleCueModel
+/**
+ * Model ZjuLiveSubtitleSegment
+ *
+ */
+export type ZjuLiveSubtitleSegment = Prisma.ZjuLiveSubtitleSegmentModel
+/**
+ * Model ZjuLiveSubtitleViewer
+ *
+ */
+export type ZjuLiveSubtitleViewer = Prisma.ZjuLiveSubtitleViewerModel
+/**
+ * Model ZjuLiveSubtitleDailyUsage
+ *
+ */
+export type ZjuLiveSubtitleDailyUsage = Prisma.ZjuLiveSubtitleDailyUsageModel
+/**
+ * Model ZjuLiveSubtitleGrant
+ *
+ */
+export type ZjuLiveSubtitleGrant = Prisma.ZjuLiveSubtitleGrantModel

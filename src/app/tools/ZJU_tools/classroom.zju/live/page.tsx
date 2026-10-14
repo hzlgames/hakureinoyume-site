@@ -59,9 +59,12 @@ function LiveContent() {
   async function openLesson(item: LiveLesson) {
     await perform("读取播放链接", async () => {
       setSelected(item); setStreams([]); setStreamIndex(0);
-      if (item.status === "6") {
+      const saved = new URL(window.location.href);
+      saved.searchParams.set("courseId", item.courseId); saved.searchParams.set("subId", item.subId);
+      window.history.replaceState(null, "", saved.pathname + saved.search);
+      if (item.status && item.status !== "1") {
         if (item.playbackUrl) setStreams([{ name: "回放", url: item.playbackUrl }]);
-        else setNotice("该课节暂无回放链接。");
+        else setNotice("该课节已下课，回放尚未就绪；已保存的字幕仍可查看。");
         return;
       }
       const params = new URLSearchParams({ action: "streams", subId: item.subId, courseId: item.courseId, type: item.type });
@@ -70,6 +73,18 @@ function LiveContent() {
       if (!data.streams.length) setNotice("暂无直播画面。仅输入课节 ID 时，可补充课程 ID 后重试。");
     });
   }
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const savedCourse = params.get("courseId") || "", savedSub = params.get("subId") || "";
+    if (!numericId(savedCourse) || !numericId(savedSub)) return;
+    const controller = new AbortController();
+    void fetchJson<{ lessons: LiveLesson[] }>(`${endpoint}?action=lessons&courseId=${savedCourse}`, { signal: controller.signal }).then(data => {
+      const item = data.lessons.find(l => l.subId === savedSub);
+      if (item && !controller.signal.aborted) { setCourseId(savedCourse); setSubId(savedSub); void openLesson(item); }
+    }).catch(() => {});
+    return () => controller.abort();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Poll only this job; serial requests and cleanup prevent stale updates after navigation.
   useEffect(() => {
     if (!job || !["queued", "running"].includes(job.status)) return;
@@ -144,12 +159,12 @@ function LiveContent() {
           <div className="zju-card-heading"><h2>{selected.title}</h2>{selected.status !== "6" ? <button className="button secondary-button compact-button" disabled={disabled} onClick={() => void openLesson(selected)}><RefreshCcw size={16} />刷新播放链接</button> : null}</div>
           {streams.length ? <>
             <label className="tool-form"><span>选择画面</span><select className="tool-select" value={streamIndex} onChange={e => { setStreamIndex(Number(e.target.value)); setNotice(""); }}>{streams.map((s, i) => <option key={`${s.name}-${i}`} value={i}>{s.name}</option>)}</select></label>
-            {stream ? <><Player key={stream.url} url={stream.url} /><div className="tool-action-row">
+            {stream ? <><Player key={stream.url} url={stream.url} lesson={selected ?? undefined} classroom={stream.audioSource === "classroom" || /^(教师|教室)(画面)?$/.test(stream.name)} /><div className="tool-action-row">
               <button className="button secondary-button" onClick={() => void perform("复制链接", async () => { await navigator.clipboard.writeText(stream.url); setNotice("播放链接已复制。"); })}><Copy size={16} />复制链接</button>
               <a className="button secondary-button" href={stream.url} target="_blank" rel="noopener noreferrer"><ExternalLink size={16} />打开链接</a>
             </div></> : null}
             <p className="tool-account-meta">直播链接会过期，可刷新后重试。网页播放受上游跨域、来源校验与浏览器支持影响；无法播放时可复制到外部播放器。</p>
-          </> : <p className="tool-empty">暂无可播放画面。</p>}
+          </> : <><p className="tool-empty">暂无可播放画面。</p><Player url="" lesson={selected} /></>}
         </DashboardCard> : null}
         <DashboardCard className="tool-detail-card">
           <div className="zju-card-heading"><h2>{heading}</h2>{source ? <button className="button secondary-button compact-button" disabled={disabled} onClick={() => void readLessons(source.action, source.courseId, true)}><RefreshCcw size={16} />刷新</button> : null}</div>
