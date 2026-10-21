@@ -12,6 +12,7 @@ ADR 用于记录长期技术选择及其原因。不要为每个小改动写 ADR
 - [0006 使用服务端代理承载网易云播放器](0006-netease-music-proxy.md)
 
 - [0007 使用加密存储和浏览器内存实现 2FA 验证器](0007-two-factor-vault.md)
+- [0008 使用独立服务承载 LUMIÈRE 子目录站点](0008-lumiere-subpath-service.md)
 
 ## 模板
 

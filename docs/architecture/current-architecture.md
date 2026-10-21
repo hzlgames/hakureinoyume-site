@@ -53,7 +53,7 @@
 
 ### Deployment
 
-生产环境由 `deploy/hakureinoyume-site.service` 定义 systemd 服务，在 `/home/ubuntu/hakureinoyume-site` 内执行 `npm run start`。`Caddyfile` 将 `hakureinoyume.com` 反向代理到本机 3000 端口，并把 `www` 跳转到裸域名。
+生产环境由 `deploy/hakureinoyume-site.service` 定义 systemd 服务，在 `/home/ubuntu/hakureinoyume-site` 内执行 `npm run start`。`Caddyfile` 将主站请求反向代理到本机 3000 端口，并把 `www` 跳转到裸域名。`/LUMIEREdisplay/*` 由 Caddy 剥离前缀后转发至独立的 LUMIÈRE 虚仿服务（`/home/ubuntu/lumiere-virtual-lab`、`lumiere-virtual-lab.service`、本机 5180），不经过 Next.js。其页面、资源、AI 接口和 WebSocket 均在该前缀下，与主站 API 分开路由。
 
 ## 路由与接口
 

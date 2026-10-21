@@ -55,10 +55,13 @@ Prisma 配置在 `prisma.config.ts`，schema 在 `prisma/schema.prisma`，迁移
 
 `Caddyfile` 定义公开入口：
 
-- `hakureinoyume.com` 反向代理到 `127.0.0.1:3000`
+- `hakureinoyume.com/LUMIEREdisplay` 跳转到带末尾斜杠的地址；`/LUMIEREdisplay/*` 剥离前缀后反向代理到独立 LUMIÈRE 服务 `127.0.0.1:5180`
+- 其他请求反向代理到主站 `127.0.0.1:3000`
 - 启用 zstd/gzip
 - 设置基础安全响应头
 - `www.hakureinoyume.com` 永久跳转到裸域名
+
+LUMIÈRE 仓库位于 `/home/ubuntu/lumiere-virtual-lab`，由 `lumiere-virtual-lab.service` 独立运行，私有环境文件为 `/etc/lumiere-virtual-lab.env`（root 所有、0600）。前缀 `PUBLIC_BASE_PATH=/LUMIEREdisplay` 必须同时用于该项目的构建和运行时；来源为 `PUBLIC_ORIGINS=https://hakureinoyume.com`。其 AI Key 不与主站共享、不写入仓库。部署与更新步骤见该仓库 `docs/服务器部署.md`。主站部署不需要重建或重启该服务；维护 Caddy 时保留此分流规则，先验证配置再重载。
 
 ## 动态 API 约束
 
