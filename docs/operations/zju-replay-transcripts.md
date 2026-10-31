@@ -71,3 +71,5 @@ ZJU_SUBTITLE_DB_TESTS=1 node --import dotenv/config --import tsx --test --test-c
 真实缓存打包验证通过：两名已有授权用户各自导出的 ZIP 含 93 张智云 PPT、1 个使用火山字幕的 Markdown、SRT 与 TXT，共 96 个文件。包内 SRT 与数据库缓存一致；ASR 调用次数为 0。该验证复用上次 130 秒真实识别片段，证明文档导出链路，不代表完整课程已转写。
 
 下载接口实测：两名用户各自下载的 ZIP 为 6,435,825 字节，返回 200；交叉访问对方任务返回 404。将任务时间设为 30 天前后，ZIP 链接不再列出且直接访问为 410，SRT 仍为 200；随后恢复原任务时间。新版浏览器两种来源共用“导出转录”，桌面/手机与明暗主题通过。
+
+修正实现 `3e97a84` 已于 2026-11-01 快进集成生产主分支并部署，无新增迁移。生产主站与字幕 worker 正常；线上浏览器验证字幕来源选择及共用导出按钮、长期字幕下载与刷新恢复（明确 UI fixture），两名现有用户真实任务接口返回 200，临时会话随后删除。LUMIÈRE 页面哈希、原服务 PID 2403255、Caddy 和 public 清单均未变化。原构建与数据库备份在 `/home/ubuntu/.cache/hakurei-releases/replay-subtitle-source-backup/`。
