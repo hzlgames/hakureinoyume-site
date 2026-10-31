@@ -7,6 +7,7 @@ import prisma from "../../src/lib/prisma";
 import { authorizeReplay } from "../../src/lib/zju/replay-transcripts";
 import { claimReplay, runClaimedReplay } from "../../src/lib/zju/replay-worker";
 import { loadSubtitleKey } from "../../src/lib/zju/subtitle-worker";
+import { exportReplayTranscriptJobs } from "../../src/lib/zju/replay-exports";
 import { replayDuration, replayPcm } from "../../src/lib/zju/replay-media";
 import { submitRecording, pollRecording } from "../../src/lib/zju/asr/recording";
 async function main() {
@@ -23,7 +24,7 @@ async function main() {
   const claimed = await claimReplay(randomUUID()); assert.equal(claimed?.id,row.id);
   let pcmBytes=0, submissions=0;
   await runClaimedReplay(claimed!,await loadSubtitleKey(),signal,{
-    duration: replayDuration,
+    duration: replayDuration, export: exportReplayTranscriptJobs,
     pcm: async(url,start,duration,signal)=>{const pcm=await replayPcm(url,start+startMs,duration,signal);pcmBytes+=pcm.length;return pcm;},
     submit: async options=>{submissions++;await submitRecording(options);}, poll: pollRecording, resolve: async()=>lessons[0].playbackUrl!
   });

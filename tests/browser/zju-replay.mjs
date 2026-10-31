@@ -28,8 +28,8 @@ try{
   return route.fulfill({json:{jobs:[fakeJob()]}});
  });
  await page.goto(base+'/tools/ZJU_tools/classroom.zju',{waitUntil:'domcontentloaded'});await page.getByRole('button',{name:'读取录播',exact:true}).click();
- await page.getByRole('button',{name:'导出智云转录',exact:true}).click();assert.equal(provider,'zhiyun');
- await page.getByLabel('导出转录来源').selectOption('volcengine');await page.getByRole('button',{name:'导出火山字幕',exact:true}).click();assert.equal(provider,'volcengine');checks.push('both export choices send the selected provider');
+ await page.getByRole('button',{name:'导出转录',exact:true}).click();assert.equal(provider,'zhiyun');
+ await page.getByLabel('转录字幕来源').selectOption('volcengine');await page.getByRole('button',{name:'导出转录',exact:true}).click();assert.equal(provider,'volcengine');checks.push('both export choices send the selected provider');
  await page.getByText('共享字幕长期保存',{exact:false}).waitFor();assert.ok(await page.getByRole('link',{name:/课堂字幕.srt/}).count());assert.equal(await page.getByText('文件已到期清理',{exact:false}).count(),0);checks.push('old persistent SRT/TXT remain downloadable without two-day expiry');
  const downloadPromise=page.waitForEvent('download');await page.getByRole('link',{name:/课堂字幕.srt/}).click();const download=await downloadPromise;assert.equal(download.suggestedFilename(),'课堂字幕.srt');checks.push('UTF-8 SRT download filename');
  for(const width of [1280,390]){await page.setViewportSize({width,height:1000});for(const theme of ['light','dark']){await page.evaluate(theme=>{localStorage.setItem('hakurei-color-mode',theme);window.dispatchEvent(new Event('site-theme-change'));},theme);await page.waitForTimeout(250);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:`${output}/${width}-${theme}.png`,fullPage:true});}}

@@ -50,8 +50,7 @@ export async function GET(_request: Request, context: Context) {
       try { await authorizeReplay(user.userId, transcript.courseId, transcript.subId); }
       catch { return zjuJson({ message: "当前账号无法访问此回放字幕。" }, { status: 403 }); }
       const format = fileName === REPLAY_FILES.srt ? "srt" : fileName === REPLAY_FILES.txt ? "txt" : null;
-      if (!format) return zjuJson({ message: "文件不存在。" }, { status: 404 });
-      return new Response(transcript[format], { headers: { "Cache-Control": "private, no-store", "Content-Type": "text/plain; charset=utf-8", "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(fileName)}` } });
+      if (format) return new Response(transcript[format], { headers: { "Cache-Control": "private, no-store", "Content-Type": "text/plain; charset=utf-8", "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(fileName)}` } });
     }
     if (artifactsExpired(job.createdAt)) return zjuJson({ error: "expired", message: "文件已到期清理，请重新创建下载任务。" }, { status: 410 });
     const output = asRecord(job.output);

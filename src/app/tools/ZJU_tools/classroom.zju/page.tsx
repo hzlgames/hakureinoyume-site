@@ -174,7 +174,7 @@ export default function ZjuClassroomPage() {
         backHref="/tools/ZJU_tools"
         backLabel="ZJU 工具"
         eyebrow="智云课堂"
-        lead="读取课堂回放，可使用智云已有字幕导出 PPT 与 Markdown，或使用火山引擎生成 SRT / TXT。同一课节的火山字幕长期保存并共享复用。"
+        lead="读取课堂回放，按原流程导出 PPT 图片与 Markdown，可选择智云字幕或火山转写作为文档字幕。火山转写还附带 SRT / TXT，同一课节共享复用。"
         title="课堂录播"
       >
         <ZjuErrorMessage message={error} />
@@ -223,13 +223,13 @@ export default function ZjuClassroomPage() {
 
             <DashboardCard className="tool-detail-card zju-control-card">
               <label className="tool-form">
-                <span>导出转录来源</span>
-                <select className="tool-select" aria-label="导出转录来源" value={provider} onChange={event => setProvider(event.target.value as "zhiyun" | "volcengine")}>
-                  <option value="zhiyun">智云课堂字幕 · PPT + Markdown</option>
-                  <option value="volcengine">火山引擎转写 · SRT + TXT</option>
+                <span>转录字幕来源</span>
+                <select className="tool-select" aria-label="转录字幕来源" value={provider} onChange={event => setProvider(event.target.value as "zhiyun" | "volcengine")}>
+                  <option value="zhiyun">智云课堂原有字幕</option>
+                  <option value="volcengine">火山引擎转写字幕</option>
                 </select>
               </label>
-              <p className="tool-account-meta">{provider === "zhiyun" ? "保持原有导出方式，文档与图片最多保存两天。" : "与直播共用识别预算；已有结果直接复用。SRT / TXT 长期保存，视频不落盘，音频分段处理后释放。中止后已提交的一分钟以内音频仍可能计费；其他用户的请求继续执行。"}</p>
+              <p className="tool-account-meta">{provider === "zhiyun" ? "保持原有导出方式，文档与图片最多保存两天。" : "仍下载智云 PPT 并导出 Markdown / ZIP，文档使用火山字幕，包内附带 SRT / TXT。字幕长期共享保存，压缩包保留两天，可复用字幕重新打包。识别与直播共用预算；中止后已提交的一分钟以内音频仍可能计费，其他用户的请求继续执行。"}</p>
               <label className="zju-search-field">
                 <Search size={16} />
                 <input
@@ -300,7 +300,7 @@ export default function ZjuClassroomPage() {
                         type="button"
                       >
                         <FileText size={15} />
-                        {loading === `transcript-${video.subId}` ? "创建中" : provider === "volcengine" ? "导出火山字幕" : "导出智云转录"}
+                        {loading === `transcript-${video.subId}` ? "创建中" : "导出转录"}
                       </button>
                     </div>
                   </div>

@@ -2,9 +2,9 @@
 
 ## 导出选择与缓存
 
-课堂录播页有两种转录来源：默认“智云课堂字幕”保持 PPT 图片 + Markdown / ZIP 的导出行为及 47 小时文件期限；“火山引擎转写”使用豆包录音文件识别 2.0 标准版，导出 UTF-8 BOM 的 SRT 和 TXT。
+课堂录播页只切换**字幕来源**，两种来源均走相同的智云 PPT 图片下载、按时间排列的 Markdown 和 ZIP 导出流程。默认“智云课堂原有字幕”使用学校字幕；“火山引擎转写字幕”使用豆包录音文件识别 2.0 标准版，替换 Markdown 内的学校字幕，并在压缩包内附带 UTF-8 BOM 的 SRT / TXT。按钮统一为“导出转录”，不是 PPT 文档与 SRT 文件二选一。
 
-后者以租户、课程和实际课节为唯一缓存身份。`ZjuReplayTranscript`、`ZjuReplayTranscriptChunk` 长期保存文本、时间戳、原提交 ID 和处理进度，不设置七天过期。直播的七天期限保持原样。每个用户持有独立 `ZjuToolJob` 请求，共享结果不属于第一个发起者。后续导出已完成课节直接获得下载文件，不再转写；中途恢复接续已完成分段。
+后者以租户、课程和实际课节为唯一缓存身份。`ZjuReplayTranscript`、`ZjuReplayTranscriptChunk` 长期保存文本、时间戳、原提交 ID 和处理进度，不设置七天过期。直播的七天期限保持原样。每个用户持有独立 `ZjuToolJob` 请求，共享结果不属于第一个发起者。后续导出已完成课节直接复用字幕，仅重新取得 PPT 并打包，不再转写；中途恢复接续已完成分段。PPT / Markdown 压缩包按原工具策略保留 47 小时，SRT / TXT 在包外也可单独下载且长期保留；压缩包过期只隐藏压缩包链接，不隐藏长期字幕。
 
 创建任务与每次文件下载均重新验证调用者自己的 ZJU 绑定和对应回放访问权限。字幕不是公开资源，用户不能读取另一个用户的任务或文件链接。服务器不接收客户端指定的媒体 URL、ASR endpoint、资源 ID 或密钥。创建和中止任务要求同源 Origin。
 
@@ -17,6 +17,8 @@
 每段最多 60 秒、16 kHz 单声道 16-bit PCM，严格以采样数截断；45–60 秒之间优先找至少 300 ms 的低能量停顿，在停顿中间切分，无合适停顿才截到上限。相邻段重叠 1.5 秒，合并时校正实际音频起点并去除边界重复前缀；标题和最近 256 字转写通过官方 `corpus.context`（`dialog_ctx`）传递，辅助专有名词及语境。末段保留完整音频。重叠额外用量也进入同一预算，连续满段约增加 2.6%，短段略高；不保证与整课识别质量等同。最大 1,920,000 字节 PCM，加 WAV 头后以小载荷 `audio.data` 提交。裸 PCM 在本次真实接口验证返回格式错误，WAV 封装验证成功。不把整堂课 base64 上传，不把学校签名 URL 交给火山引擎。视频与音频不写临时文件；仅当前分段存在内存，提交后清零 PCM 并释放引用，等待识别结果时不保留音频。没有需要后续清理的完整媒体文件。
 
 标准接口为 `https://openspeech.bytedance.com/api/v3/auc/bigmodel/{submit,query}`；`X-Api-Key` 来自服务器既有密钥配置，默认 `DOUBAO_ASR_RESOURCE_ID=volc.seedasr.auc`。每段在数据库记录 request ID、资源 ID 和预算预留后才发起提交；查询携带同一 ID、请求体 `{}`。中断、超时或进程接管后查询原任务，不自动重新提交。未知提交结果或明确失败会保留记录并停止后续收费步骤；无法查询的原任务需要维护人员核对，不能盲目重新识别。
+
+`classroom-export.ts` 是两种来源共用的文档导出实现，传入明确的火山字幕数组（包括空数组）时完全跳过学校字幕接口。`replay-exports.ts` 在同一个课节租约内按用户下载 PPT，使用 generation 独立目录避免旧进程覆盖文件；逐秒检查个人取消，单用户打包失败不会破坏共享字幕或触发 ASR 重付。已完成 ASR 但未完成打包的请求，worker 重启后可重新领取，只做文档导出。
 
 官方标准接口文档仅说明提交与查询，未列出可确认的取消接口：[录音文件识别标准版 HTTP](https://docs.volcengine.com/docs/doubao-voice/large-model-recording-file-recognition-standard-version-api?lang=zh)。因此本功能不承诺撤销云端已经接受的音频或返还费用。
 
@@ -41,7 +43,7 @@
 基础与隔离数据库回归：
 
 ```bash
-ZJU_SUBTITLE_DB_TESTS=1 node --import dotenv/config --import tsx --test --test-concurrency=1 tests/zju-subtitles-db.test.ts tests/zju-subtitles.test.ts tests/zju-live.test.ts tests/zju-classroom.test.ts tests/zju-replay-asr.test.ts tests/zju-replay-db.test.ts tests/zju-tools.test.ts
+ZJU_SUBTITLE_DB_TESTS=1 node --import dotenv/config --import tsx --test --test-concurrency=1 tests/zju-classroom-export.test.ts tests/zju-subtitles-db.test.ts tests/zju-subtitles.test.ts tests/zju-live.test.ts tests/zju-classroom.test.ts tests/zju-replay-asr.test.ts tests/zju-replay-db.test.ts tests/zju-tools.test.ts
 ```
 
 数据库必须以 `hakurei_subtitles_regression_` 开头。不同数据库测试文件都包含领取竞争场景，应串行运行，避免彼此领取对方的测试任务。回放验证包括：多用户去重、最后请求取消、直播/回放共享并发、预算不能超支、免配额计数、旧进程写入拦截、接管不重提交，以及解码/云端处理中断后不发送后续段。新增两小时模拟回放，验证连续进度、1.5 秒重叠、上下文传递、单段内存上限和额外预算计数；该测试加速执行，不代表两小时真实运行。
@@ -61,3 +63,11 @@ ZJU_SUBTITLE_DB_TESTS=1 node --import dotenv/config --import tsx --test --test-c
 - 生产浏览器用两名现有授权用户验证课节共享排队、重复请求去重、个人取消、跨用户隔离和跨来源拒绝。验证期间 worker 暂停，排队请求全部取消后恢复，未提交完整课程识别。临时会话和测试请求已删除。页面来源选择、长期下载和刷新行为使用明确 fixture 检查，桌面/手机及明暗主题通过，无浏览器异常。
 - 主站和字幕 worker 运行正常，匿名任务接口 401。LUMIÈRE 页面及 CSS/JS 均 200，服务 PID 2403255 未变化；HTML SHA-256 仍为 `2e0d04382116286e26b3d97cdd827f5ef2fc15cd13bc173d2f5e9279b3db0c97`，Caddy 与全部 public 文件保持原样。
 - 回滚材料在 `/home/ubuntu/.cache/hakurei-releases/replay-asr-backup/`，包含数据库 dump、原构建及原 worker/Caddy 配置。新增数据库字段和表为增量迁移，回滚旧网页无需删除持久字幕数据。
+
+## 字幕来源语义修正
+
+按用户澄清，火山选项也导出智云的完整 PPT + Markdown / ZIP，仅替换字幕来源。新增 ZIP 内容回归验证图片、Markdown 顺序和火山 SRT/TXT，以及原字幕不混入、缓存重新打包不调用 ASR、打包失败与接管恢复、个人取消后其他人仍能导出、压缩包过期但字幕保留；当前针对性回归 42 项通过。`tests/integration/zju-replay-package.ts` 在隔离库复用已有真实字幕，用两名现有授权用户获取学校 PPT 并验证压缩包，禁止调用任何 ASR 操作，不额外提交识别。
+
+真实缓存打包验证通过：两名已有授权用户各自导出的 ZIP 含 93 张智云 PPT、1 个使用火山字幕的 Markdown、SRT 与 TXT，共 96 个文件。包内 SRT 与数据库缓存一致；ASR 调用次数为 0。该验证复用上次 130 秒真实识别片段，证明文档导出链路，不代表完整课程已转写。
+
+下载接口实测：两名用户各自下载的 ZIP 为 6,435,825 字节，返回 200；交叉访问对方任务返回 404。将任务时间设为 30 天前后，ZIP 链接不再列出且直接访问为 410，SRT 仍为 200；随后恢复原任务时间。新版浏览器两种来源共用“导出转录”，桌面/手机与明暗主题通过。

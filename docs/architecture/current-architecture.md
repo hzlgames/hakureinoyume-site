@@ -155,4 +155,4 @@
 
 ## 回放共享转录
 
-`ZjuReplayTranscript` 缓存每个实际课节的长期文本，`ZjuReplayTranscriptChunk` 持久记录标准版 ASR 的分段请求 ID，`ZjuToolJob.replayTranscriptId` 关联用户请求。网页只创建、取消及授权下载；既有字幕 worker 同时处理直播与回放，共享 PostgreSQL 并发和预算锁。回放使用内存 WAV 小分段，已提交任务恢复时只查询原 ID，不保存媒体。下载重验学校课程权限，文本持久期独立于原工具产物清理。详见 [回放运维](../operations/zju-replay-transcripts.md)。
+`ZjuReplayTranscript` 缓存每个实际课节的长期文本，`ZjuReplayTranscriptChunk` 持久记录标准版 ASR 的分段请求 ID，`ZjuToolJob.replayTranscriptId` 关联用户请求。`classroom-export.ts` 统一下载 PPT 并生成 Markdown / ZIP，火山选项只替换字幕来源并附 SRT/TXT。文本长期缓存与两天到期的文档压缩包分别处理；完成 ASR 后的未完成导出仍由课节租约领取，重启/打包失败不会重复调用 ASR。网页只创建、取消及授权下载；既有字幕 worker 同时处理直播与回放，共享 PostgreSQL 并发和预算锁。回放使用内存 WAV 小分段，已提交任务恢复时只查询原 ID，不保存媒体。下载重验学校课程权限，文本持久期独立于原工具产物清理。详见 [回放运维](../operations/zju-replay-transcripts.md)。

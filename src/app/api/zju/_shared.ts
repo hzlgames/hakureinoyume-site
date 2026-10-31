@@ -1,3 +1,4 @@
+import { REPLAY_FILES } from "../../../lib/zju/replay-transcripts";
 import { artifactExpiresAt, artifactsExpired } from "../../../lib/zju/artifacts";
 import { NextResponse } from "next/server";
 import { getCurrentSession } from "../../../lib/admin";
@@ -90,12 +91,18 @@ export function serializeZjuJob<T extends Record<string, unknown>>(job: T) {
   delete result.workDir;
 
   const persistent = typeof job.replayTranscriptId === "string";
+  let output = job.output;
+  if (artifactsExpired(job.createdAt as Date)) {
+    const record = asRecord(output);
+    const files = Array.isArray(record.files) ? record.files : [];
+    output = { ...record, files: persistent ? files.filter(file => Object.values(REPLAY_FILES).some(name => asRecord(file).name === name)) : [] };
+  }
   return {
     ...result,
     persistentFiles: persistent,
     expiresAt: persistent ? null : artifactExpiresAt(job.createdAt as Date).toISOString(),
     filesExpired: !persistent && artifactsExpired(job.createdAt as Date),
-    output: sanitizeZjuJobOutput(!persistent && artifactsExpired(job.createdAt as Date) ? { ...asRecord(job.output), files: [] } : job.output)
+    output: sanitizeZjuJobOutput(output)
   };
 }
 

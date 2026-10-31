@@ -1,11 +1,11 @@
-import { packageArtifacts } from "./artifacts";
+import { buildClassroomTranscript } from "./classroom-export";
 // 智云课堂（classroom.zju）：录播回放链接与 PPT+字幕转录导出任务。
 import prisma from "../prisma";
 import { getZjuSecret } from "./account";
 import { activeJobs, createJobLogger } from "./jobs";
 import { getReplayUrl } from "./live-core";
 import {
-  asRecord, buildClassroomClient, getZjuDataRoot, materialFileName,
+  buildClassroomClient, getZjuDataRoot,
   pathSegment, readNumber, readString, toJsonValue
 } from "./shared";
 import type { ZjuClassroomCourse, ZjuClassroomVideo } from "./types";
@@ -66,14 +66,6 @@ export async function createTranscriptJob(input: {
   return job;
 }
 
-function transcriptTimeTag(seconds: number) {
-  const total = Math.max(0, Math.floor(seconds));
-  const minutes = Math.floor(total / 60);
-  const secs = total % 60;
-  const pad = (value: number) => String(value).padStart(2, "0");
-  return `- [${pad(minutes)}:${pad(secs)}]`;
-}
-
 async function runTranscriptJob(
   jobId: string,
   userId: string,
@@ -84,7 +76,6 @@ async function runTranscriptJob(
   const abort = new AbortController();
   activeJobs.set(jobId, { abort, userId });
   const fs = await import("fs/promises");
-  const fsSync = await import("fs");
   const workDir = `${getZjuDataRoot()}/${pathSegment(userId)}/${pathSegment(jobId)}`;
   const logger = createJobLogger(jobId);
 
@@ -101,85 +92,11 @@ async function runTranscriptJob(
     const client = await buildClassroomClient(await getZjuSecret(userId));
 
     abort.signal.throwIfAborted();
-    // PPT 截图
-    const pptResponse = await client.fetch(`https://classroom.zju.edu.cn/pptnote/v1/schedule/search-ppt?course_id=${encodeURIComponent(courseId)}&sub_id=${encodeURIComponent(subId)}`, { signal: abort.signal });
-    if (!pptResponse.ok) throw new Error(`PPT 读取失败 ${pptResponse.status}`);
-    const pptPayload = await pptResponse.json() as { list?: Array<Record<string, unknown>> };
-    const pptData = (pptPayload.list ?? []).map((item) => {
-      let content: Record<string, unknown> = {};
-      try {
-        content = typeof item.content === "string" ? JSON.parse(item.content) : asRecord(item.content);
-      } catch {
-        content = {};
-      }
-      return { pptimgurl: readString(content.pptimgurl), createdSec: readNumber(item.created_sec) ?? 0 };
-    });
-    logger.log(`获取 ${pptData.length} 张 PPT 截图。`);
-
-    // 字幕转写
-    const subtitleResponse = await client.fetch(`https://yjapi.cmc.zju.edu.cn/courseapi/v3/web-socket/search-trans-result?sub_id=${encodeURIComponent(subId)}&format=json`, { signal: abort.signal });
-    if (!subtitleResponse.ok) throw new Error(`字幕读取失败 ${subtitleResponse.status}`);
-    const subtitlePayload = await subtitleResponse.json() as { list?: Array<Record<string, unknown>> };
-    const subtitleData: Array<{ beginSec: number; text: string }> = [];
-    for (const item of subtitlePayload.list ?? []) {
-      const allContent = Array.isArray(item.all_content) ? item.all_content : [];
-      for (const entry of allContent) {
-        const record = asRecord(entry);
-        subtitleData.push({ beginSec: readNumber(record.BeginSec) ?? 0, text: readString(record.Text) });
-      }
-    }
-    logger.log(`获取 ${subtitleData.length} 条字幕。`);
-
-    if (!pptData.length && !subtitleData.length) {
-      logger.log("该课堂没有可导出的 PPT 或字幕。");
-      await logger.flush();
-      await prisma.zjuToolJob.updateMany({
-        where: { id: jobId, status: "running" },
-        data: { status: "succeeded", exitCode: 0, finishedAt: new Date(), output: toJsonValue({ files: [] }) }
-      });
-      return;
-    }
-
-    const files: Array<{ name: string; path: string; size: number }> = [];
-    const lines: Array<{ line: string; time: number }> = [];
-
-    for (let index = 0; index < pptData.length; index += 1) {
-      if (abort.signal.aborted) throw new Error("任务已取消。");
-      const ppt = pptData[index];
-      const fileName = `ppt_${String(index + 1).padStart(3, "0")}.png`;
-      lines.push({ line: `- ![](${fileName})`, time: ppt.createdSec });
-      if (!ppt.pptimgurl) continue;
-      try {
-        const imageResponse = await client.fetch(ppt.pptimgurl, { signal: abort.signal });
-        if (!imageResponse.ok) continue;
-        const buffer = Buffer.from(await imageResponse.arrayBuffer());
-        const targetPath = `${workDir}/${fileName}`;
-        await fs.writeFile(targetPath, buffer);
-        files.push({ name: fileName, path: targetPath, size: buffer.byteLength });
-      } catch {
-        // 单张图片失败不影响整体导出
-      }
-    }
-    logger.log(`下载 ${files.length} 张 PPT 截图完成。`);
-
-    for (const entry of subtitleData) {
-      lines.push({ line: `${transcriptTimeTag(entry.beginSec)}${entry.text}`, time: entry.beginSec });
-    }
-
-    abort.signal.throwIfAborted();
-    const markdown = lines.sort((left, right) => left.time - right.time).map((item) => item.line).join("\n");
-    const mdName = `${materialFileName(title || `course_${courseId}_sub_${subId}`)}.md`;
-    const mdPath = `${workDir}/${mdName}`;
-    await fs.writeFile(mdPath, markdown, "utf-8");
-    files.unshift({ name: mdName, path: mdPath, size: Buffer.byteLength(markdown, "utf-8") });
-    void fsSync;
-
-    abort.signal.throwIfAborted();
-    logger.log("Markdown 转录文件生成完成。");
+    const output = await buildClassroomTranscript({ client, courseId, subId, title, workDir, signal: abort.signal, log: message => logger.log(message) });
     await logger.flush();
     await prisma.zjuToolJob.updateMany({
       where: { id: jobId, status: "running" },
-      data: { status: "succeeded", exitCode: 0, finishedAt: new Date(), output: toJsonValue(await packageArtifacts(workDir, files, `${materialFileName(title || "课堂转录")}.zip`)) }
+      data: { status: "succeeded", exitCode: 0, finishedAt: new Date(), output: toJsonValue(output) }
     });
   } catch (error) {
     const cancelled = abort.signal.aborted;

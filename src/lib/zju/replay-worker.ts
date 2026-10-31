@@ -7,6 +7,7 @@ import { loadSubtitleKey } from "./subtitle-worker";
 import { authorizeReplay, synchronizeReplayJobs } from "./replay-transcripts";
 import { replayDuration, replayPcm } from "./replay-media";
 import { pollRecording, submitRecording, recordingExports, RECORDING_RESOURCE, type RecordingCue } from "./asr/recording";
+import { exportReplayTranscriptJobs } from "./replay-exports";
 import { pauseAlignedPcm, REPLAY_OVERLAP_MS, mergeReplayCues } from "./replay-chunks";
 const ACTIVE = ["queued","running"];
 const LEASE_MS = 30000;
@@ -16,7 +17,7 @@ export async function claimReplay(owner: string) {
     const now = new Date();
     const [live, replay] = await Promise.all([tx.zjuLiveSubtitle.count({ where: { status: "running", leaseUntil: { gt: now } } }),tx.zjuReplayTranscript.count({ where: { status: "running", leaseUntil: { gt: now } } })]);
     if (live + replay >= asrConcurrency()) return null;
-    const row = await tx.zjuReplayTranscript.findFirst({ where: { OR: [{ status: "queued" },{ status: "running", leaseUntil: { lt: now } }], jobs: { some: { status: { in: ACTIVE } } } }, orderBy: { createdAt: "asc" } });
+    const row = await tx.zjuReplayTranscript.findFirst({ where: { OR: [{ status: "queued" },{ status: "succeeded" },{ status: "running", leaseUntil: { lt: now } }], jobs: { some: { status: { in: ACTIVE } } } }, orderBy: { createdAt: "asc" } });
     if (!row) return null;
     return tx.zjuReplayTranscript.update({ where: { id: row.id }, data: { status: "running", generation: { increment: 1 }, leaseOwner: owner, leaseUntil: new Date(Date.now()+LEASE_MS), error: null } });
   });
@@ -53,8 +54,8 @@ export async function commitReplayChunk(row: ZjuReplayTranscript, chunkId: strin
     return tx.zjuReplayTranscript.update({ where: { id: row.id }, data: { processedMs: chunk.audioStartMs+chunk.durationMs, ...exports } });
   });
 }
-export type ReplayDependencies = { duration: typeof replayDuration; pcm: typeof replayPcm; submit: typeof submitRecording; poll: typeof pollRecording; resolve: (row: ZjuReplayTranscript, signal: AbortSignal) => Promise<string> };
-const defaults: ReplayDependencies = { duration: replayDuration, pcm: replayPcm, submit: submitRecording, poll: pollRecording, resolve: async (row, signal) => {
+export type ReplayDependencies = { duration: typeof replayDuration; pcm: typeof replayPcm; submit: typeof submitRecording; poll: typeof pollRecording; export: (row: ZjuReplayTranscript, signal: AbortSignal) => Promise<void>; resolve: (row: ZjuReplayTranscript, signal: AbortSignal) => Promise<string> };
+const defaults: ReplayDependencies = { duration: replayDuration, pcm: replayPcm, submit: submitRecording, poll: pollRecording, export: exportReplayTranscriptJobs, resolve: async (row, signal) => {
   const jobs = await prisma.zjuToolJob.findMany({ where: { replayTranscriptId: row.id, status: { in: ACTIVE } }, select: { userId: true }, orderBy: { createdAt: "asc" } });
   for (const {userId} of jobs) {
     signal.throwIfAborted();
@@ -83,7 +84,7 @@ export async function runClaimedReplay(initial: ZjuReplayTranscript, apiKey: str
       row = { ...row, durationMs };
     }
     await synchronizeReplayJobs(row);
-    while (row.processedMs < row.durationMs) {
+    while (row.processedMs < row.durationMs-100) {
       signal.throwIfAborted();
       const pending = await prisma.zjuReplayTranscriptChunk.findUnique({ where: { transcriptId_startMs: { transcriptId: row.id, startMs: row.processedMs } } });
       let chunk = pending;
@@ -112,6 +113,7 @@ ${row.txt.replace(/^\ufeff/,"").slice(-256)}` });
       // Small differences between container duration and decoded PCM are common.
       if (row.durationMs - row.processedMs < 100) break;
     }
+    await dependencies.export(row,signal);
     outcome = "succeeded";
   } catch (e) {
     if (!signal.aborted && !(e instanceof Error && e.name === "AbortError")) {
