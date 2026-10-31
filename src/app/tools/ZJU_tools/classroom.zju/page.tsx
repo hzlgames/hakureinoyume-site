@@ -229,7 +229,7 @@ export default function ZjuClassroomPage() {
                   <option value="volcengine">火山引擎转写字幕</option>
                 </select>
               </label>
-              <p className="tool-account-meta">{provider === "zhiyun" ? "保持原有导出方式，文档与图片最多保存两天。" : "仍下载智云 PPT 并导出 Markdown / ZIP，文档使用火山字幕，包内附带 SRT / TXT。字幕长期共享保存，压缩包保留两天，可复用字幕重新打包。识别与直播共用预算；中止后已提交的一分钟以内音频仍可能计费，其他用户的请求继续执行。"}</p>
+              <p className="tool-account-meta">{provider === "zhiyun" ? "直接使用智云已有字幕，导出 PPT 图片和 Markdown 文档。下载包保留两天，请及时保存。" : "使用 AI 转写字幕，导出 PPT 图片、Markdown 文档及 SRT/TXT。字幕长期保存，下载包保留两天。首次转写需要等待，并消耗识别额度。"}</p>
               <label className="zju-search-field">
                 <Search size={16} />
                 <input
