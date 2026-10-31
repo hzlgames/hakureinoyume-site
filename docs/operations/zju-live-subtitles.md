@@ -80,3 +80,13 @@ node --import dotenv/config --import tsx --test tests/zju-subtitles.test.ts test
 ```bash
 RUN_PAID_SUBTITLE_TEST=1 SUBTITLE_REPLAY_MANIFEST=/absolute/private/manifest.json node --env-file=/absolute/private/review.env --import tsx tests/integration/zju-subtitles-replay.ts
 ```
+
+## 2026-10-31 生产部署
+
+- 从当时生产版本 `bd4a565` 集成字幕分支 `413e86d`，应用版本为 `12d9225`。保留已有 2FA 功能、LUMIÈRE ADR 和 `/LUMIEREdisplay/*` Caddy 分流；字幕 ADR 顺延为 0009。
+- 生产已应用三项字幕迁移，启用 `zju-live-subtitles.service` 和 `zju-live-subtitle-cleanup.timer`，手动清理成功。密钥文件为服务器上的 `/etc/hakureinoyume-subtitles.env`（服务用户所有、0600），由 `/etc/hakureinoyume-site.env` 的 `DOUBAO_ASR_KEY_ENV` 指向。保留默认全站并发 2、每天总音频 120 分钟、单课节 240 分钟上限。
+- 发布前在隔离工作目录完成 lint、TypeScript 和 webpack 生产构建。19 项字幕/智云回归（含隔离数据库并发、租约接管、旧进程写入拦截、历史恢复、七天清理及两小时加速模拟）和 6 项 2FA 回归通过。
+- 预览站与线上浏览器均使用明确的字幕/媒体 fixture 检查开关、暂停、全屏、单轨道、F5 恢复及桌面/手机明暗主题，无页面异常。线上另用两个现有用户的临时会话实际读取《证据法学》课节字幕 API，均为 200，未登录为 401、跨来源写入为 403；临时会话已删除。该旧课节生产库无字幕，未从测试库导入历史。
+- 真实火山引擎连接使用 3 秒静音验证密钥与资源权限，收到最终响应；它仅证明云端连接可用，长时间真实语音与故障恢复证据仍见 2026-10-14 的验证记录，未在此次发布重跑整节直播。
+- 主站与直播页面返回 200；LUMIÈRE 首页内容 SHA-256 与发布前一致，CSS/JS 返回 200。Caddy 文件未改变，LUMIÈRE 服务 PID 和启动时间未改变。
+- 数据库与旧构建、依赖保存在服务器私有目录 `/home/ubuntu/.cache/hakurei-releases/live-subtitles-backup/`。回滚应用时先停止字幕 worker，恢复旧代码、构建和依赖；新增字幕表为独立附加数据，不通过回滚迁移删除用户数据。
