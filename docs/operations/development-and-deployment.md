@@ -125,3 +125,8 @@ PLAYWRIGHT_MODULE=/path/to/playwright CHROMIUM_PATH=/path/to/chrome MUSIC_TEST_U
 ## 直播共享字幕后台
 
 新增迁移 `0010_live_subtitles`、`0011_subtitle_access_grants`、`0012_subtitle_partial_timing`；安装后台进程和字幕清理定时器前，按 [共享字幕运维说明](zju-live-subtitles.md) 配置服务端 ASR 密钥、FFmpeg 和预算。后台识别由独立服务执行，不能只启动 Next.js。测试使用独立数据库和站内会话，不修改生产用户、任务或服务。部署脚本安装并启用 `zju-live-subtitles.service` 和 `zju-live-subtitle-cleanup.timer`；更新后重启字幕 worker，租约和已确定字幕保留。主站部署保持 Caddy 的 `/LUMIEREdisplay/*` 分流及独立 LUMIÈRE 服务。
+
+
+## 回放火山转录
+
+迁移 `0013_replay_transcripts` 新增长期字幕缓存、分段请求记录及账户级 ASR 免配额标志。`zju-live-subtitles.service` 同时执行直播与回放，共享并发和每日预算；上线前确认标准版 `volc.seedasr.auc` 资源权限、FFprobe 与指定用户的配额设置。部署、取消边界及验证方法见 [回放转录运维](zju-replay-transcripts.md)。

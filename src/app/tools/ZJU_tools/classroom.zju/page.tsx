@@ -51,6 +51,7 @@ export default function ZjuClassroomPage() {
   const [copied, setCopied] = useState("");
   const [loading, setLoading] = useState("");
   const [error, setError] = useState("");
+  const [provider, setProvider] = useState<"zhiyun" | "volcengine">("zhiyun");
 
   const loadCourses = useCallback(async () => {
     setLoading("courses");
@@ -137,6 +138,7 @@ export default function ZjuClassroomPage() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           tool: "classroom.zju/transcript",
+          provider,
           courseId: video.courseId || selectedCourseId,
           subId: video.subId,
           title: video.title
@@ -172,7 +174,7 @@ export default function ZjuClassroomPage() {
         backHref="/tools/ZJU_tools"
         backLabel="ZJU 工具"
         eyebrow="智云课堂"
-        lead="读取智云课堂录播，复制回放链接在外部播放器打开，或导出 PPT 截图与字幕组成的 Markdown 转录。文档与图片一起打包，文件最多保留两天，请尽快下载。"
+        lead="读取课堂回放，可使用智云已有字幕导出 PPT 与 Markdown，或使用火山引擎生成 SRT / TXT。同一课节的火山字幕长期保存并共享复用。"
         title="课堂录播"
       >
         <ZjuErrorMessage message={error} />
@@ -220,6 +222,14 @@ export default function ZjuClassroomPage() {
             </DashboardCard>
 
             <DashboardCard className="tool-detail-card zju-control-card">
+              <label className="tool-form">
+                <span>导出转录来源</span>
+                <select className="tool-select" aria-label="导出转录来源" value={provider} onChange={event => setProvider(event.target.value as "zhiyun" | "volcengine")}>
+                  <option value="zhiyun">智云课堂字幕 · PPT + Markdown</option>
+                  <option value="volcengine">火山引擎转写 · SRT + TXT</option>
+                </select>
+              </label>
+              <p className="tool-account-meta">{provider === "zhiyun" ? "保持原有导出方式，文档与图片最多保存两天。" : "与直播共用识别预算；已有结果直接复用。SRT / TXT 长期保存，视频不落盘，音频分段处理后释放。中止后已提交的一分钟以内音频仍可能计费；其他用户的请求继续执行。"}</p>
               <label className="zju-search-field">
                 <Search size={16} />
                 <input
@@ -290,7 +300,7 @@ export default function ZjuClassroomPage() {
                         type="button"
                       >
                         <FileText size={15} />
-                        {loading === `transcript-${video.subId}` ? "创建中" : "导出转录"}
+                        {loading === `transcript-${video.subId}` ? "创建中" : provider === "volcengine" ? "导出火山字幕" : "导出智云转录"}
                       </button>
                     </div>
                   </div>
@@ -320,7 +330,7 @@ export default function ZjuClassroomPage() {
                           <span>{formatFullDateTime(job.createdAt)}</span>
                         </div>
                         {active ? (
-                          <button className="icon-action-button" onClick={() => void cancelJob(job.id)} title="取消任务" type="button">
+                          <button className="icon-action-button" onClick={() => void cancelJob(job.id)} title="中止我的转录请求" aria-label="中止我的转录请求" type="button">
                             <XCircle size={17} />
                           </button>
                         ) : null}

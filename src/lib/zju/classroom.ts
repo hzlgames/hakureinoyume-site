@@ -90,14 +90,17 @@ async function runTranscriptJob(
 
   try {
     await fs.mkdir(workDir, { recursive: true });
-    await prisma.zjuToolJob.update({
-      where: { id: jobId },
+    const started = await prisma.zjuToolJob.updateMany({
+      where: { id: jobId, status: "queued" },
       data: { status: "running", startedAt: new Date(), workDir }
     });
+    if (!started.count) return;
+    abort.signal.throwIfAborted();
 
     logger.log(`导出课堂转录：${title || `course ${courseId} / sub ${subId}`}`);
     const client = await buildClassroomClient(await getZjuSecret(userId));
 
+    abort.signal.throwIfAborted();
     // PPT 截图
     const pptResponse = await client.fetch(`https://classroom.zju.edu.cn/pptnote/v1/schedule/search-ppt?course_id=${encodeURIComponent(courseId)}&sub_id=${encodeURIComponent(subId)}`, { signal: abort.signal });
     if (!pptResponse.ok) throw new Error(`PPT 读取失败 ${pptResponse.status}`);
@@ -130,8 +133,8 @@ async function runTranscriptJob(
     if (!pptData.length && !subtitleData.length) {
       logger.log("该课堂没有可导出的 PPT 或字幕。");
       await logger.flush();
-      await prisma.zjuToolJob.update({
-        where: { id: jobId },
+      await prisma.zjuToolJob.updateMany({
+        where: { id: jobId, status: "running" },
         data: { status: "succeeded", exitCode: 0, finishedAt: new Date(), output: toJsonValue({ files: [] }) }
       });
       return;
@@ -163,6 +166,7 @@ async function runTranscriptJob(
       lines.push({ line: `${transcriptTimeTag(entry.beginSec)}${entry.text}`, time: entry.beginSec });
     }
 
+    abort.signal.throwIfAborted();
     const markdown = lines.sort((left, right) => left.time - right.time).map((item) => item.line).join("\n");
     const mdName = `${materialFileName(title || `course_${courseId}_sub_${subId}`)}.md`;
     const mdPath = `${workDir}/${mdName}`;
@@ -170,18 +174,19 @@ async function runTranscriptJob(
     files.unshift({ name: mdName, path: mdPath, size: Buffer.byteLength(markdown, "utf-8") });
     void fsSync;
 
+    abort.signal.throwIfAborted();
     logger.log("Markdown 转录文件生成完成。");
     await logger.flush();
-    await prisma.zjuToolJob.update({
-      where: { id: jobId },
+    await prisma.zjuToolJob.updateMany({
+      where: { id: jobId, status: "running" },
       data: { status: "succeeded", exitCode: 0, finishedAt: new Date(), output: toJsonValue(await packageArtifacts(workDir, files, `${materialFileName(title || "课堂转录")}.zip`)) }
     });
   } catch (error) {
     const cancelled = abort.signal.aborted;
     logger.log(cancelled ? "任务已取消。" : `任务失败：${error instanceof Error ? error.message : "未知错误"}`);
     await logger.flush();
-    await prisma.zjuToolJob.update({
-      where: { id: jobId },
+    await prisma.zjuToolJob.updateMany({
+      where: { id: jobId, status: "running" },
       data: {
         status: cancelled ? "cancelled" : "failed",
         exitCode: cancelled ? null : 1,

@@ -16,6 +16,8 @@ ADR 用于记录长期技术选择及其原因。不要为每个小改动写 ADR
 
 - [0009 使用独立后台进程和 PostgreSQL 保存共享直播字幕](0009-shared-live-subtitles.md)
 
+- [0010 以持久分段任务共享回放字幕](0010-shared-replay-transcripts.md)
+
 ## 模板
 
 新 ADR 使用递增编号，文件名格式为 `NNNN-short-title.md`。

@@ -90,3 +90,8 @@ RUN_PAID_SUBTITLE_TEST=1 SUBTITLE_REPLAY_MANIFEST=/absolute/private/manifest.jso
 - 真实火山引擎连接使用 3 秒静音验证密钥与资源权限，收到最终响应；它仅证明云端连接可用，长时间真实语音与故障恢复证据仍见 2026-10-14 的验证记录，未在此次发布重跑整节直播。
 - 主站与直播页面返回 200；LUMIÈRE 首页内容 SHA-256 与发布前一致，CSS/JS 返回 200。Caddy 文件未改变，LUMIÈRE 服务 PID 和启动时间未改变。
 - 数据库与旧构建、依赖保存在服务器私有目录 `/home/ubuntu/.cache/hakurei-releases/live-subtitles-backup/`。回滚应用时先停止字幕 worker，恢复旧代码、构建和依赖；新增字幕表为独立附加数据，不通过回滚迁移删除用户数据。
+
+
+## 与回放共享识别预算
+
+回放标准版识别与直播共用同一 worker、并发锁和北京时间每日预算。账户级 `asrQuotaExempt` 请求在场时，后续音频用量单独记录，不消耗普通预算且豁免直播单课节时长上限；并发和资源限制继续生效。直播字幕仍只保留七天，回放 SRT/TXT 长期保存。具体配置和中止边界见 [回放转录运维](zju-replay-transcripts.md)。

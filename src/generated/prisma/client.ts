@@ -131,3 +131,13 @@ export type ZjuLiveSubtitleDailyUsage = Prisma.ZjuLiveSubtitleDailyUsageModel
  *
  */
 export type ZjuLiveSubtitleGrant = Prisma.ZjuLiveSubtitleGrantModel
+/**
+ * Model ZjuReplayTranscript
+ *
+ */
+export type ZjuReplayTranscript = Prisma.ZjuReplayTranscriptModel
+/**
+ * Model ZjuReplayTranscriptChunk
+ *
+ */
+export type ZjuReplayTranscriptChunk = Prisma.ZjuReplayTranscriptChunkModel

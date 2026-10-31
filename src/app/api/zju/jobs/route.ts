@@ -1,3 +1,4 @@
+import { createReplayTranscriptJob } from "../../../../lib/zju/replay-transcripts";
 import prisma from "../../../../lib/prisma";
 import { createLiveScanJob } from "../../../../lib/zju/live";
 import { createAutoplayJob, createMaterialDownloadJob, createQuizAnswersJob, createTranscriptJob, createWebplusArchiveJob } from "../../../../lib/zju";
@@ -23,6 +24,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (request.headers.get("origin") !== new URL(process.env.BETTER_AUTH_URL || request.url).origin || request.headers.get("sec-fetch-site") === "cross-site") return zjuJson({ message: "请求来源无效。" }, { status: 403 });
   const user = await requireValidZjuAccount();
   if (!user.ok) return user.response;
   const body = await readJsonBody(request);
@@ -46,7 +48,11 @@ export async function POST(request: Request) {
       if (!courseId || !subId) {
         return zjuJson({ error: "invalid_job", message: "缺少课堂信息。" }, { status: 400 });
       }
-      const job = await createTranscriptJob({ userId: user.userId, courseId, subId, title });
+      const provider = body.provider ?? "zhiyun";
+      if (!["zhiyun", "volcengine"].includes(String(provider))) return zjuJson({ message: "转录来源无效。" }, { status: 400 });
+      const job = provider === "volcengine"
+        ? await createReplayTranscriptJob({ userId: user.userId, courseId, subId })
+        : await createTranscriptJob({ userId: user.userId, courseId, subId, title });
       return zjuJson({ job: serializeZjuJob(job) }, { status: 201 });
     }
 

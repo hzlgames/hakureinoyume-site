@@ -28,50 +28,60 @@ export type AggregateZjuLiveSubtitleDailyUsage = {
 
 export type ZjuLiveSubtitleDailyUsageAvgAggregateOutputType = {
   audioMs: number | null
+  exemptAudioMs: number | null
 }
 
 export type ZjuLiveSubtitleDailyUsageSumAggregateOutputType = {
   audioMs: number | null
+  exemptAudioMs: number | null
 }
 
 export type ZjuLiveSubtitleDailyUsageMinAggregateOutputType = {
   day: string | null
   audioMs: number | null
+  exemptAudioMs: number | null
 }
 
 export type ZjuLiveSubtitleDailyUsageMaxAggregateOutputType = {
   day: string | null
   audioMs: number | null
+  exemptAudioMs: number | null
 }
 
 export type ZjuLiveSubtitleDailyUsageCountAggregateOutputType = {
   day: number
   audioMs: number
+  exemptAudioMs: number
   _all: number
 }
 
 
 export type ZjuLiveSubtitleDailyUsageAvgAggregateInputType = {
   audioMs?: true
+  exemptAudioMs?: true
 }
 
 export type ZjuLiveSubtitleDailyUsageSumAggregateInputType = {
   audioMs?: true
+  exemptAudioMs?: true
 }
 
 export type ZjuLiveSubtitleDailyUsageMinAggregateInputType = {
   day?: true
   audioMs?: true
+  exemptAudioMs?: true
 }
 
 export type ZjuLiveSubtitleDailyUsageMaxAggregateInputType = {
   day?: true
   audioMs?: true
+  exemptAudioMs?: true
 }
 
 export type ZjuLiveSubtitleDailyUsageCountAggregateInputType = {
   day?: true
   audioMs?: true
+  exemptAudioMs?: true
   _all?: true
 }
 
@@ -164,6 +174,7 @@ export type ZjuLiveSubtitleDailyUsageGroupByArgs<ExtArgs extends runtime.Types.E
 export type ZjuLiveSubtitleDailyUsageGroupByOutputType = {
   day: string
   audioMs: number
+  exemptAudioMs: number
   _count: ZjuLiveSubtitleDailyUsageCountAggregateOutputType | null
   _avg: ZjuLiveSubtitleDailyUsageAvgAggregateOutputType | null
   _sum: ZjuLiveSubtitleDailyUsageSumAggregateOutputType | null
@@ -192,11 +203,13 @@ export type ZjuLiveSubtitleDailyUsageWhereInput = {
   NOT?: Prisma.ZjuLiveSubtitleDailyUsageWhereInput | Prisma.ZjuLiveSubtitleDailyUsageWhereInput[]
   day?: Prisma.StringFilter<"ZjuLiveSubtitleDailyUsage"> | string
   audioMs?: Prisma.IntFilter<"ZjuLiveSubtitleDailyUsage"> | number
+  exemptAudioMs?: Prisma.IntFilter<"ZjuLiveSubtitleDailyUsage"> | number
 }
 
 export type ZjuLiveSubtitleDailyUsageOrderByWithRelationInput = {
   day?: Prisma.SortOrder
   audioMs?: Prisma.SortOrder
+  exemptAudioMs?: Prisma.SortOrder
 }
 
 export type ZjuLiveSubtitleDailyUsageWhereUniqueInput = Prisma.AtLeast<{
@@ -205,11 +218,13 @@ export type ZjuLiveSubtitleDailyUsageWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.ZjuLiveSubtitleDailyUsageWhereInput[]
   NOT?: Prisma.ZjuLiveSubtitleDailyUsageWhereInput | Prisma.ZjuLiveSubtitleDailyUsageWhereInput[]
   audioMs?: Prisma.IntFilter<"ZjuLiveSubtitleDailyUsage"> | number
+  exemptAudioMs?: Prisma.IntFilter<"ZjuLiveSubtitleDailyUsage"> | number
 }, "day">
 
 export type ZjuLiveSubtitleDailyUsageOrderByWithAggregationInput = {
   day?: Prisma.SortOrder
   audioMs?: Prisma.SortOrder
+  exemptAudioMs?: Prisma.SortOrder
   _count?: Prisma.ZjuLiveSubtitleDailyUsageCountOrderByAggregateInput
   _avg?: Prisma.ZjuLiveSubtitleDailyUsageAvgOrderByAggregateInput
   _max?: Prisma.ZjuLiveSubtitleDailyUsageMaxOrderByAggregateInput
@@ -223,64 +238,77 @@ export type ZjuLiveSubtitleDailyUsageScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ZjuLiveSubtitleDailyUsageScalarWhereWithAggregatesInput | Prisma.ZjuLiveSubtitleDailyUsageScalarWhereWithAggregatesInput[]
   day?: Prisma.StringWithAggregatesFilter<"ZjuLiveSubtitleDailyUsage"> | string
   audioMs?: Prisma.IntWithAggregatesFilter<"ZjuLiveSubtitleDailyUsage"> | number
+  exemptAudioMs?: Prisma.IntWithAggregatesFilter<"ZjuLiveSubtitleDailyUsage"> | number
 }
 
 export type ZjuLiveSubtitleDailyUsageCreateInput = {
   day: string
   audioMs?: number
+  exemptAudioMs?: number
 }
 
 export type ZjuLiveSubtitleDailyUsageUncheckedCreateInput = {
   day: string
   audioMs?: number
+  exemptAudioMs?: number
 }
 
 export type ZjuLiveSubtitleDailyUsageUpdateInput = {
   day?: Prisma.StringFieldUpdateOperationsInput | string
   audioMs?: Prisma.IntFieldUpdateOperationsInput | number
+  exemptAudioMs?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ZjuLiveSubtitleDailyUsageUncheckedUpdateInput = {
   day?: Prisma.StringFieldUpdateOperationsInput | string
   audioMs?: Prisma.IntFieldUpdateOperationsInput | number
+  exemptAudioMs?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ZjuLiveSubtitleDailyUsageCreateManyInput = {
   day: string
   audioMs?: number
+  exemptAudioMs?: number
 }
 
 export type ZjuLiveSubtitleDailyUsageUpdateManyMutationInput = {
   day?: Prisma.StringFieldUpdateOperationsInput | string
   audioMs?: Prisma.IntFieldUpdateOperationsInput | number
+  exemptAudioMs?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ZjuLiveSubtitleDailyUsageUncheckedUpdateManyInput = {
   day?: Prisma.StringFieldUpdateOperationsInput | string
   audioMs?: Prisma.IntFieldUpdateOperationsInput | number
+  exemptAudioMs?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ZjuLiveSubtitleDailyUsageCountOrderByAggregateInput = {
   day?: Prisma.SortOrder
   audioMs?: Prisma.SortOrder
+  exemptAudioMs?: Prisma.SortOrder
 }
 
 export type ZjuLiveSubtitleDailyUsageAvgOrderByAggregateInput = {
   audioMs?: Prisma.SortOrder
+  exemptAudioMs?: Prisma.SortOrder
 }
 
 export type ZjuLiveSubtitleDailyUsageMaxOrderByAggregateInput = {
   day?: Prisma.SortOrder
   audioMs?: Prisma.SortOrder
+  exemptAudioMs?: Prisma.SortOrder
 }
 
 export type ZjuLiveSubtitleDailyUsageMinOrderByAggregateInput = {
   day?: Prisma.SortOrder
   audioMs?: Prisma.SortOrder
+  exemptAudioMs?: Prisma.SortOrder
 }
 
 export type ZjuLiveSubtitleDailyUsageSumOrderByAggregateInput = {
   audioMs?: Prisma.SortOrder
+  exemptAudioMs?: Prisma.SortOrder
 }
 
 
@@ -288,24 +316,28 @@ export type ZjuLiveSubtitleDailyUsageSumOrderByAggregateInput = {
 export type ZjuLiveSubtitleDailyUsageSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   day?: boolean
   audioMs?: boolean
+  exemptAudioMs?: boolean
 }, ExtArgs["result"]["zjuLiveSubtitleDailyUsage"]>
 
 export type ZjuLiveSubtitleDailyUsageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   day?: boolean
   audioMs?: boolean
+  exemptAudioMs?: boolean
 }, ExtArgs["result"]["zjuLiveSubtitleDailyUsage"]>
 
 export type ZjuLiveSubtitleDailyUsageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   day?: boolean
   audioMs?: boolean
+  exemptAudioMs?: boolean
 }, ExtArgs["result"]["zjuLiveSubtitleDailyUsage"]>
 
 export type ZjuLiveSubtitleDailyUsageSelectScalar = {
   day?: boolean
   audioMs?: boolean
+  exemptAudioMs?: boolean
 }
 
-export type ZjuLiveSubtitleDailyUsageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"day" | "audioMs", ExtArgs["result"]["zjuLiveSubtitleDailyUsage"]>
+export type ZjuLiveSubtitleDailyUsageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"day" | "audioMs" | "exemptAudioMs", ExtArgs["result"]["zjuLiveSubtitleDailyUsage"]>
 
 export type $ZjuLiveSubtitleDailyUsagePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ZjuLiveSubtitleDailyUsage"
@@ -313,6 +345,7 @@ export type $ZjuLiveSubtitleDailyUsagePayload<ExtArgs extends runtime.Types.Exte
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     day: string
     audioMs: number
+    exemptAudioMs: number
   }, ExtArgs["result"]["zjuLiveSubtitleDailyUsage"]>
   composites: {}
 }
@@ -738,6 +771,7 @@ export interface Prisma__ZjuLiveSubtitleDailyUsageClient<T, Null = never, ExtArg
 export interface ZjuLiveSubtitleDailyUsageFieldRefs {
   readonly day: Prisma.FieldRef<"ZjuLiveSubtitleDailyUsage", 'String'>
   readonly audioMs: Prisma.FieldRef<"ZjuLiveSubtitleDailyUsage", 'Int'>
+  readonly exemptAudioMs: Prisma.FieldRef<"ZjuLiveSubtitleDailyUsage", 'Int'>
 }
 
 

@@ -8,6 +8,7 @@ datasource db {
 }
 
 model User {
+  asrQuotaExempt Boolean @default(false)
   liveSubtitleViewers ZjuLiveSubtitleViewer[]
   liveSubtitleGrants ZjuLiveSubtitleGrant[]
   twoFactorAccounts TwoFactorAccount[]
@@ -137,6 +138,8 @@ model ZjuAccount {
 }
 
 model ZjuToolJob {
+  replayTranscriptId String?
+  replayTranscript ZjuReplayTranscript? @relation(fields: [replayTranscriptId], references: [id], onDelete: SetNull)
   id          String    @id @default(cuid())
   userId      String
   tool        String
@@ -155,6 +158,7 @@ model ZjuToolJob {
 
   @@index([userId])
   @@index([tool])
+  @@index([replayTranscriptId, status])
   @@index([status])
   @@index([createdAt])
 }
@@ -293,6 +297,7 @@ model ZjuLiveSubtitleViewer {
 model ZjuLiveSubtitleDailyUsage {
   day     String @id
   audioMs Int @default(0)
+  exemptAudioMs Int @default(0)
 }
 
 model ZjuLiveSubtitleGrant {
@@ -302,4 +307,42 @@ model ZjuLiveSubtitleGrant {
   subtitle ZjuLiveSubtitle @relation(fields: [subtitleId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@id([subtitleId, userId])
+}
+
+// Permanent text cache; media and signed URLs are never persisted here.
+model ZjuReplayTranscript {
+  id String @id @default(cuid())
+  lessonKey String @unique
+  courseId String
+  subId String
+  title String
+  status String @default("queued")
+  leaseOwner String?
+  leaseUntil DateTime?
+  generation Int @default(0)
+  durationMs Int @default(0)
+  processedMs Int @default(0)
+  error String?
+  srt String @default("")
+  txt String @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  jobs ZjuToolJob[]
+  chunks ZjuReplayTranscriptChunk[]
+  @@index([status, leaseUntil])
+}
+
+model ZjuReplayTranscriptChunk {
+  audioStartMs Int @default(0)
+  id String @id @default(cuid())
+  transcriptId String
+  startMs Int
+  durationMs Int
+  requestId String @unique
+  resourceId String
+  status String @default("submitting")
+  cues Json?
+  submittedAt DateTime @default(now())
+  transcript ZjuReplayTranscript @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
+  @@unique([transcriptId, startMs])
 }

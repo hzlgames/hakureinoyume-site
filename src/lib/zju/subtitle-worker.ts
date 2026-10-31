@@ -6,6 +6,7 @@ import { getLiveApi } from "./live";
 import { transcribeLive, type AsrEvent } from "./asr/stream.mjs";
 import { createClassroomAudio } from "./subtitle-audio";
 import { audioToMedia, SUBTITLE_TTL_MS, VIEWER_TTL_MS, IDLE_GRACE_MS, type AudioAnchor } from "./subtitle-core";
+import { ASR_QUEUE_LOCK, asrConcurrency, reserveAsrBudget } from "./asr-budget";
 import { isClassroomStream } from "./subtitles";
 
 const LEASE_MS = 20000;
@@ -20,10 +21,11 @@ export async function loadSubtitleKey() {
 }
 export async function claimSubtitle(owner: string) {
   return prisma.$transaction(async tx => {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(876012034)`;
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${ASR_QUEUE_LOCK})`;
     const now = new Date();
-    const max = configInt("ZJU_SUBTITLE_MAX_CONCURRENT", 2, 1, 8);
-    if (await tx.zjuLiveSubtitle.count({ where: { status: "running", leaseUntil: { gt: now } } }) >= max) return null;
+    const max = asrConcurrency();
+    const replays = await tx.zjuReplayTranscript.count({ where: { status: "running", leaseUntil: { gt: now } } });
+    if (await tx.zjuLiveSubtitle.count({ where: { status: "running", leaseUntil: { gt: now } } }) + replays >= max) return null;
     const row = await tx.zjuLiveSubtitle.findFirst({ where: {
       expiresAt: { gt: now }, attempts: { lt: 4 },
       OR: [{ status: "queued" }, { status: "running", leaseUntil: { lt: now } }],
@@ -84,18 +86,17 @@ export async function runClaimedSubtitle(row: NonNullable<Awaited<ReturnType<typ
   const maxTotal = configInt("ZJU_SUBTITLE_MAX_LESSON_MINUTES", 240, 1, 480) * 60000;
   const runId = randomUUID();
   const source = sourceFactory({ resolveUrl, signal, lastSequence: row.lastSequence, timelineMs: row.timelineMs, audioBaseMs: row.audioMs,
-    maxAudioMs: Math.max(0, maxTotal - row.audioMs),
+    maxAudioMs: Number.MAX_SAFE_INTEGER,
     onSegment: async (segment, startMs, audioEndMs, observedAt, gap) => {
       await prisma.$transaction(async tx => {
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(876012035)`;
         await tx.$queryRaw`SELECT id FROM "ZjuLiveSubtitle" WHERE id = ${row.id} FOR UPDATE`;
         const current = await tx.zjuLiveSubtitle.findFirst({ where: fence });
         if (!current || !current.leaseUntil || current.leaseUntil <= new Date()) throw new Error("字幕任务租约已失效。");
-        const day = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai" }).format(new Date());
-        const used = await tx.zjuLiveSubtitleDailyUsage.upsert({ where: { day }, create: { day }, update: {} });
+        const exempt = await tx.zjuLiveSubtitleViewer.count({ where: { subtitleId: row.id, lastSeenAt: { gt: new Date(Date.now() - VIEWER_TTL_MS) }, user: { asrQuotaExempt: true } } }) > 0;
         const delta = Math.round(audioEndMs - finalAudioMs);
-        if (used.audioMs + delta > configInt("ZJU_SUBTITLE_DAILY_MINUTES", 120, 1, 14400) * 60000) { status = "limited"; throw new Error("今日字幕音频预算已用完。"); }
-        await tx.zjuLiveSubtitleDailyUsage.update({ where: { day }, data: { audioMs: { increment: delta } } });
+        if (!exempt && audioEndMs > maxTotal) { status = "limited"; message = "该课节识别已达到时长上限。"; throw new Error(message); }
+        try { await reserveAsrBudget(tx,delta,exempt); } catch (error) { status = "limited"; message = "今日直播与回放共用的识别预算已用完。"; throw error; }
         await tx.zjuLiveSubtitleSegment.upsert({ where: { subtitleId_sequence: { subtitleId: row.id, sequence: segment.sequence } },
           create: { subtitleId: row.id, sequence: segment.sequence, startMs, durationMs: Math.round(segment.durationMs), observedAt }, update: {} });
         await tx.zjuLiveSubtitle.update({ where: { id: row.id }, data: { billedAudioMs: { increment: delta },
@@ -105,10 +106,9 @@ export async function runClaimedSubtitle(row: NonNullable<Awaited<ReturnType<typ
     }
   });
   try {
-    if (row.audioMs >= maxTotal) { status = "limited"; message = "该课节识别已达到时长上限。"; return; }
     const seconds = configInt("ZJU_SUBTITLE_SESSION_SECONDS", 300, 10, 600);
     for await (const event of transcribeLive({ apiKey, signal, audio: source.audio, sessionSeconds: seconds,
-      duration: (maxTotal - row.audioMs) / 1000, resourceId: process.env.DOUBAO_ASR_STREAM_RESOURCE_ID || "volc.seedasr.sauc.duration", uid: row.id,
+      duration: 0, resourceId: process.env.DOUBAO_ASR_STREAM_RESOURCE_ID || "volc.seedasr.sauc.duration", uid: row.id,
       request: { enable_nonstream: true, show_utterances: true, result_type: "full" } })) {
       if (event.type !== "response" || !event.result) continue;
       lastSession = event.session ?? lastSession;
@@ -120,12 +120,12 @@ export async function runClaimedSubtitle(row: NonNullable<Awaited<ReturnType<typ
       for (const u of changed) seen.set(`${event.session}:${u.start_time ?? 0}`, JSON.stringify(u));
       lastPartialAt = Date.now();
     }
-    if (!signal.aborted && status !== "completed") { status = finalAudioMs >= maxTotal ? "limited" : "completed"; }
+    if (!signal.aborted && status !== "completed") { status = "completed"; }
   } catch (error) {
     if (!signal.aborted) {
       if (status !== "limited") status = !(error as { fatal?: boolean }).fatal && row.attempts < 4 ? "queued" : "failed";
       // Media URLs, headers, keys and upstream raw responses are never stored as error messages.
-      message = status === "limited" ? "今日字幕音频预算已用完。" : "直播识别中断，请稍后重试或检查后台日志。";
+      message = status === "limited" ? message || "今日直播与回放共用的识别预算已用完。" : "直播识别中断，请稍后重试或检查后台日志。";
       console.error("Live subtitle worker failed", { lesson: row.lessonKey, generation: row.generation, session: lastSession, kind: error instanceof Error ? error.name : "unknown", code: (error as { code?: string }).code });
     }
   } finally {

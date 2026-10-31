@@ -113,6 +113,7 @@ export async function saveStoredZjuAccount(input: {
       await prisma.zjuToolState.deleteMany({ where: { userId: input.userId } });
       await prisma.zjuLiveSubtitleGrant.deleteMany({ where: { userId: input.userId } });
       await prisma.zjuLiveSubtitleViewer.deleteMany({ where: { userId: input.userId } });
+      await prisma.zjuToolJob.updateMany({ where: { userId: input.userId, replayTranscriptId: { not: null }, status: { in: ["queued", "running"] } }, data: { status: "cancelled", finishedAt: new Date() } });
     }
     await prisma.zjuAccount.update({
       where: { userId: input.userId },
@@ -154,6 +155,7 @@ export async function saveStoredZjuAccount(input: {
 }
 
 export async function deleteStoredZjuAccount(userId: string) {
+  await prisma.zjuToolJob.updateMany({ where: { userId, replayTranscriptId: { not: null }, status: { in: ["queued", "running"] } }, data: { status: "cancelled", finishedAt: new Date() } });
   await prisma.zjuLiveSubtitleGrant.deleteMany({ where: { userId } });
   await prisma.zjuLiveSubtitleViewer.deleteMany({ where: { userId } });
   await prisma.zjuToolState.deleteMany({ where: { userId } });

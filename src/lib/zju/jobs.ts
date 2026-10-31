@@ -41,6 +41,10 @@ export async function cancelZjuJob(userId: string, jobId: string) {
   });
 
   if (!job) return false;
+  if (job.replayTranscriptId) {
+    const { cancelReplayJob } = await import("./replay-transcripts");
+    return cancelReplayJob(userId,jobId);
+  }
   activeJobs.get(jobId)?.abort.abort();
 
   if (!["succeeded", "failed", "cancelled"].includes(job.status)) {

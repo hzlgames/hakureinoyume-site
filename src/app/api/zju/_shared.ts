@@ -89,11 +89,13 @@ export function serializeZjuJob<T extends Record<string, unknown>>(job: T) {
   const result = { ...job };
   delete result.workDir;
 
+  const persistent = typeof job.replayTranscriptId === "string";
   return {
     ...result,
-    expiresAt: artifactExpiresAt(job.createdAt as Date).toISOString(),
-    filesExpired: artifactsExpired(job.createdAt as Date),
-    output: sanitizeZjuJobOutput(artifactsExpired(job.createdAt as Date) ? { ...asRecord(job.output), files: [] } : job.output)
+    persistentFiles: persistent,
+    expiresAt: persistent ? null : artifactExpiresAt(job.createdAt as Date).toISOString(),
+    filesExpired: !persistent && artifactsExpired(job.createdAt as Date),
+    output: sanitizeZjuJobOutput(!persistent && artifactsExpired(job.createdAt as Date) ? { ...asRecord(job.output), files: [] } : job.output)
   };
 }
 

@@ -13,6 +13,8 @@
 
 - 智云直播字幕：读 [共享字幕运维说明](operations/zju-live-subtitles.md) 和 [验证记录](operations/zju-live-subtitles-validation.md)。
 
+- 维护回放转录与共享识别预算：读 [回放转录运维](operations/zju-replay-transcripts.md)。
+
 ## 文档地图
 
 - `architecture/`：系统结构、运行时边界、C4 视图、关键数据流。

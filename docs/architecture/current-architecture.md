@@ -151,3 +151,8 @@
 ## 智云共享直播字幕
 
 直播页支持按实际课节共享教室音源识别、播放器字幕开关、刷新恢复与七天历史。`GET|POST /api/zju/classroom/live/subtitles` 提供已授权用户的增量字幕、窗口心跳与订阅，管理员可停止识别。独立后台进程通过 PostgreSQL 租约和代次协调，最多同时识别两节课；网页进程不运行 FFmpeg。数据模型、访问记录、下课转码过渡、预算和清理服务见 [共享字幕说明](../operations/zju-live-subtitles.md)。
+
+
+## 回放共享转录
+
+`ZjuReplayTranscript` 缓存每个实际课节的长期文本，`ZjuReplayTranscriptChunk` 持久记录标准版 ASR 的分段请求 ID，`ZjuToolJob.replayTranscriptId` 关联用户请求。网页只创建、取消及授权下载；既有字幕 worker 同时处理直播与回放，共享 PostgreSQL 并发和预算锁。回放使用内存 WAV 小分段，已提交任务恢复时只查询原 ID，不保存媒体。下载重验学校课程权限，文本持久期独立于原工具产物清理。详见 [回放运维](../operations/zju-replay-transcripts.md)。

@@ -9,7 +9,8 @@
     "deploy": "bash scripts/deploy.sh",
     "start": "next start",
     "subtitles:worker": "node --import tsx scripts/zju-subtitle-worker.ts",
-    "subtitles:cleanup": "node --import tsx scripts/zju-subtitle-worker.ts --cleanup-only"
+    "subtitles:cleanup": "node --import tsx scripts/zju-subtitle-worker.ts --cleanup-only",
+    "asr:quota": "node --import tsx scripts/asr-quota.ts"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.6.15",

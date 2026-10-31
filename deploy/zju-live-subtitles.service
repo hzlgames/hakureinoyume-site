@@ -1,5 +1,5 @@
 [Unit]
-Description=Shared ZJU live subtitle worker
+Description=Shared ZJU live and replay ASR worker
 After=network.target postgresql.service
 
 [Service]

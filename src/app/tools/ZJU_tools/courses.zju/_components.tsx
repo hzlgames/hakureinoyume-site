@@ -17,7 +17,8 @@ export type Course = {
 
 export type Job = {
   id: string;
-  expiresAt?: string;
+  expiresAt?: string | null;
+  persistentFiles?: boolean;
   filesExpired?: boolean;
   createdAt: string;
   error: string | null;
@@ -347,7 +348,7 @@ export function ZjuDownloads({ job }: { job: Job }) {
   if (job.filesExpired) return <p className="tool-account-meta">文件已到期清理，需要时请重新创建下载任务。</p>;
   if (!files.length) return null;
   return <div>
-    <p className="tool-account-meta">文件最多保留两天，请尽快下载。{job.expiresAt ? `到期时间：${formatFullDateTime(job.expiresAt)}` : ""}</p>
+    <p className="tool-account-meta">{job.persistentFiles ? "共享字幕长期保存；未完成的任务可下载已识别部分，重新导出会继续处理。" : "文件最多保留两天，请尽快下载。"}{job.expiresAt ? `到期时间：${formatFullDateTime(job.expiresAt)}` : ""}</p>
     <div className="zju-file-links">{files.map((file) => <a href={`/api/zju/jobs/${job.id}/files/${encodeURIComponent(file.name)}`} key={file.name}>{file.name} · {formatSize(file.size)}</a>)}</div>
   </div>;
 }

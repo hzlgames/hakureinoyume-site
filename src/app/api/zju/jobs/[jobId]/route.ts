@@ -34,7 +34,8 @@ export async function GET(_request: Request, context: Context) {
   }
 }
 
-export async function DELETE(_request: Request, context: Context) {
+export async function DELETE(request: Request, context: Context) {
+  if (request.headers.get("origin") !== new URL(process.env.BETTER_AUTH_URL || request.url).origin || request.headers.get("sec-fetch-site") === "cross-site") return zjuJson({ message: "请求来源无效。" }, { status: 403 });
   const user = await requireValidZjuAccount();
   if (!user.ok) return user.response;
   const { jobId } = await context.params;
