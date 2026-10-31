@@ -62,7 +62,13 @@ export const ModelName = {
   WebMusicPlaylist: 'WebMusicPlaylist',
   WebMusicPlaylistSong: 'WebMusicPlaylistSong',
   ZjuToolState: 'ZjuToolState',
-  TwoFactorAccount: 'TwoFactorAccount'
+  TwoFactorAccount: 'TwoFactorAccount',
+  ZjuLiveSubtitle: 'ZjuLiveSubtitle',
+  ZjuLiveSubtitleCue: 'ZjuLiveSubtitleCue',
+  ZjuLiveSubtitleSegment: 'ZjuLiveSubtitleSegment',
+  ZjuLiveSubtitleViewer: 'ZjuLiveSubtitleViewer',
+  ZjuLiveSubtitleDailyUsage: 'ZjuLiveSubtitleDailyUsage',
+  ZjuLiveSubtitleGrant: 'ZjuLiveSubtitleGrant'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -263,6 +269,91 @@ export const TwoFactorAccountScalarFieldEnum = {
 } as const
 
 export type TwoFactorAccountScalarFieldEnum = (typeof TwoFactorAccountScalarFieldEnum)[keyof typeof TwoFactorAccountScalarFieldEnum]
+
+
+export const ZjuLiveSubtitleScalarFieldEnum = {
+  id: 'id',
+  lessonKey: 'lessonKey',
+  courseId: 'courseId',
+  subId: 'subId',
+  type: 'type',
+  title: 'title',
+  audioSource: 'audioSource',
+  status: 'status',
+  provider: 'provider',
+  leaseOwner: 'leaseOwner',
+  leaseUntil: 'leaseUntil',
+  generation: 'generation',
+  attempts: 'attempts',
+  revision: 'revision',
+  partial: 'partial',
+  partialStartMs: 'partialStartMs',
+  partialEndMs: 'partialEndMs',
+  error: 'error',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  expiresAt: 'expiresAt',
+  audioMs: 'audioMs',
+  billedAudioMs: 'billedAudioMs',
+  lastSequence: 'lastSequence',
+  timelineMs: 'timelineMs',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ZjuLiveSubtitleScalarFieldEnum = (typeof ZjuLiveSubtitleScalarFieldEnum)[keyof typeof ZjuLiveSubtitleScalarFieldEnum]
+
+
+export const ZjuLiveSubtitleCueScalarFieldEnum = {
+  id: 'id',
+  subtitleId: 'subtitleId',
+  key: 'key',
+  startMs: 'startMs',
+  endMs: 'endMs',
+  text: 'text',
+  revision: 'revision'
+} as const
+
+export type ZjuLiveSubtitleCueScalarFieldEnum = (typeof ZjuLiveSubtitleCueScalarFieldEnum)[keyof typeof ZjuLiveSubtitleCueScalarFieldEnum]
+
+
+export const ZjuLiveSubtitleSegmentScalarFieldEnum = {
+  id: 'id',
+  subtitleId: 'subtitleId',
+  sequence: 'sequence',
+  startMs: 'startMs',
+  durationMs: 'durationMs',
+  observedAt: 'observedAt'
+} as const
+
+export type ZjuLiveSubtitleSegmentScalarFieldEnum = (typeof ZjuLiveSubtitleSegmentScalarFieldEnum)[keyof typeof ZjuLiveSubtitleSegmentScalarFieldEnum]
+
+
+export const ZjuLiveSubtitleViewerScalarFieldEnum = {
+  subtitleId: 'subtitleId',
+  userId: 'userId',
+  clientId: 'clientId',
+  lastSeenAt: 'lastSeenAt'
+} as const
+
+export type ZjuLiveSubtitleViewerScalarFieldEnum = (typeof ZjuLiveSubtitleViewerScalarFieldEnum)[keyof typeof ZjuLiveSubtitleViewerScalarFieldEnum]
+
+
+export const ZjuLiveSubtitleDailyUsageScalarFieldEnum = {
+  day: 'day',
+  audioMs: 'audioMs'
+} as const
+
+export type ZjuLiveSubtitleDailyUsageScalarFieldEnum = (typeof ZjuLiveSubtitleDailyUsageScalarFieldEnum)[keyof typeof ZjuLiveSubtitleDailyUsageScalarFieldEnum]
+
+
+export const ZjuLiveSubtitleGrantScalarFieldEnum = {
+  subtitleId: 'subtitleId',
+  userId: 'userId',
+  authorizedAt: 'authorizedAt'
+} as const
+
+export type ZjuLiveSubtitleGrantScalarFieldEnum = (typeof ZjuLiveSubtitleGrantScalarFieldEnum)[keyof typeof ZjuLiveSubtitleGrantScalarFieldEnum]
 
 
 export const SortOrder = {

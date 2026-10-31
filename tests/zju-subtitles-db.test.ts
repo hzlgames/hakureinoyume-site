@@ -1,0 +1,48 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import prisma from "../src/lib/prisma";
+import { claimSubtitle, cleanupLiveSubtitles, persistSubtitleResponse } from "../src/lib/zju/subtitle-worker";
+import { deleteStoredZjuAccount } from "../src/lib/zju/account";
+import { SUBTITLE_TTL_MS } from "../src/lib/zju/subtitle-core";
+const enabled = process.env.ZJU_SUBTITLE_DB_TESTS === "1";
+if (enabled && !new URL(process.env.DATABASE_URL!).pathname.startsWith("/hakurei_subtitles_regression_")) throw new Error("Use an isolated subtitle regression database.");
+test("database lease races, stale writer fencing, history persistence and seven-day expiry", { skip: !enabled }, async () => {
+  const now = new Date(), userId = randomUUID(), secondUserId = randomUUID();
+  await prisma.user.create({ data: { id: userId, name: "Subtitle regression", email: `${userId}@example.invalid`, emailVerified: true, createdAt: now, updatedAt: now } });
+  const row = await prisma.zjuLiveSubtitle.create({ data: { lessonKey: `test:${userId}`, courseId: "1", subId: "2", type: "course_live", title: "Regression", expiresAt: new Date(now.getTime() + SUBTITLE_TTL_MS), viewers: { create: { userId, clientId: randomUUID() } } } });
+  try {
+    const contenders = await Promise.all(Array.from({ length: 8 }, () => claimSubtitle(randomUUID())));
+    const claimed = contenders.filter(Boolean); assert.equal(claimed.length, 1);
+    const original = claimed[0]!;
+    const anchors = [{ audioStartMs: 0, audioEndMs: 1000, mediaStartMs: 0, mediaDurationMs: 1000 }];
+    const fence = { id: row.id, leaseOwner: original.leaseOwner, generation: original.generation, status: "running" };
+    const event = { type: "response", session: 1, result: { utterances: [{ definite: true, start_time: 0, end_time: 1000, text: "已保存的真实结构字幕" }] } };
+    await persistSubtitleResponse(fence, "run1", 0, event, anchors);
+    await persistSubtitleResponse(fence, "run1", 0, { ...event, result: { utterances: [{ ...event.result.utterances[0], text: "修订后的字幕" }] } }, anchors);
+    const cues = await prisma.zjuLiveSubtitleCue.findMany({ where: { subtitleId: row.id } });
+    assert.equal(cues.length, 1); assert.equal(cues[0].text, "修订后的字幕");
+    await persistSubtitleResponse(fence, "run1", 0, { type: "response", audioSentMs: 900, result: { utterances: [{ definite: false, start_time: 200, end_time: 900, text: "尚在修订的句尾" }] } }, anchors);
+    const partial = await prisma.zjuLiveSubtitle.findUniqueOrThrow({ where: { id: row.id } });
+    assert.equal(partial.partial, "尚在修订的句尾"); assert.equal(partial.partialStartMs, 200); assert.equal(partial.partialEndMs, 900);
+    const expires = (await prisma.zjuLiveSubtitle.findUniqueOrThrow({ where: { id: row.id } })).expiresAt;
+    await prisma.zjuLiveSubtitle.update({ where: { id: row.id }, data: { leaseUntil: new Date(Date.now() - 1000) } });
+    const replacement = await claimSubtitle(randomUUID()); assert.equal(replacement?.generation, original.generation + 1);
+    await assert.rejects(persistSubtitleResponse(fence, "stale", 0, event, anchors), /租约/);
+    assert.equal(await prisma.zjuLiveSubtitleCue.count({ where: { subtitleId: row.id } }), 1);
+    assert.equal((await prisma.zjuLiveSubtitle.findUniqueOrThrow({ where: { id: row.id } })).expiresAt.getTime(), expires.getTime());
+    await prisma.user.create({ data: { id: secondUserId, name: "Other viewer", email: `${secondUserId}@example.invalid`, emailVerified: true, createdAt: now, updatedAt: now } });
+    await prisma.zjuAccount.create({ data: { userId, username: "test-binding", passwordCiphertext: "test", passwordIv: "test", passwordTag: "test" } });
+    await prisma.zjuLiveSubtitleGrant.createMany({ data: [{ subtitleId: row.id, userId }, { subtitleId: row.id, userId: secondUserId }] });
+    await prisma.zjuLiveSubtitleViewer.create({ data: { subtitleId: row.id, userId: secondUserId, clientId: randomUUID() } });
+    await deleteStoredZjuAccount(userId);
+    assert.equal(await prisma.zjuLiveSubtitleGrant.count({ where: { subtitleId: row.id, userId } }), 0);
+    assert.equal(await prisma.zjuLiveSubtitleViewer.count({ where: { subtitleId: row.id, userId } }), 0);
+    assert.equal(await prisma.zjuLiveSubtitleGrant.count({ where: { subtitleId: row.id, userId: secondUserId } }), 1);
+    assert.equal(await prisma.zjuLiveSubtitleCue.count({ where: { subtitleId: row.id } }), 1);
+    await prisma.zjuLiveSubtitle.update({ where: { id: row.id }, data: { expiresAt: new Date(Date.now() - 1) } });
+    assert.equal(await cleanupLiveSubtitles(), 1);
+    assert.equal(await prisma.zjuLiveSubtitleCue.count({ where: { subtitleId: row.id } }), 0);
+    assert.equal(await prisma.zjuLiveSubtitleViewer.count({ where: { subtitleId: row.id } }), 0);
+  } finally { await prisma.zjuLiveSubtitle.deleteMany({ where: { id: row.id } }); await prisma.user.deleteMany({ where: { id: { in: [userId, secondUserId] } } }); await prisma.$disconnect(); }
+});

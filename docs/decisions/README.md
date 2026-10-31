@@ -14,6 +14,8 @@ ADR 用于记录长期技术选择及其原因。不要为每个小改动写 ADR
 - [0007 使用加密存储和浏览器内存实现 2FA 验证器](0007-two-factor-vault.md)
 - [0008 使用独立服务承载 LUMIÈRE 子目录站点](0008-lumiere-subpath-service.md)
 
+- [0009 使用独立后台进程和 PostgreSQL 保存共享直播字幕](0009-shared-live-subtitles.md)
+
 ## 模板
 
 新 ADR 使用递增编号，文件名格式为 `NNNN-short-title.md`。

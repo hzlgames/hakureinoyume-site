@@ -121,3 +121,7 @@ PLAYWRIGHT_MODULE=/path/to/playwright CHROMIUM_PATH=/path/to/chrome MUSIC_TEST_U
 - `BETTER_AUTH_URL` 必须匹配对外访问的 origin，写接口会检查请求来源。摄像头要求 HTTPS 或 localhost。
 - 保持服务器时间准确；页面用接口返回的服务器时间校准本地 TOTP。API 响应禁止缓存；不要在代理、APM 或调试日志中采集此接口的请求/响应正文。
 - 验证命令：`npx tsx --test tests/two-factor.test.ts`、`npm run lint`、`npm run build`。实际保存、跨用户隔离及二维码浏览器行为应在隔离数据库与测试账号上验证。
+
+## 直播共享字幕后台
+
+新增迁移 `0010_live_subtitles`、`0011_subtitle_access_grants`、`0012_subtitle_partial_timing`；安装后台进程和字幕清理定时器前，按 [共享字幕运维说明](zju-live-subtitles.md) 配置服务端 ASR 密钥、FFmpeg 和预算。后台识别由独立服务执行，不能只启动 Next.js。测试使用独立数据库和站内会话，不修改生产用户、任务或服务。部署脚本安装并启用 `zju-live-subtitles.service` 和 `zju-live-subtitle-cleanup.timer`；更新后重启字幕 worker，租约和已确定字幕保留。主站部署保持 Caddy 的 `/LUMIEREdisplay/*` 分流及独立 LUMIÈRE 服务。

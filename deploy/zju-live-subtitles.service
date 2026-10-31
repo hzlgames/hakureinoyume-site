@@ -1,0 +1,22 @@
+[Unit]
+Description=Shared ZJU live subtitle worker
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/hakureinoyume-site
+Environment=NODE_ENV=production
+EnvironmentFile=/etc/hakureinoyume-site.env
+ExecStart=/usr/local/bin/npm run subtitles:worker
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=25
+KillMode=control-group
+MemoryMax=400M
+CPUQuota=100%
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

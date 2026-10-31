@@ -1,0 +1,11 @@
+[Unit]
+Description=Remove expired ZJU live subtitle records
+After=postgresql.service
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/hakureinoyume-site
+EnvironmentFile=/etc/hakureinoyume-site.env
+ExecStart=/usr/local/bin/npm run subtitles:cleanup
+NoNewPrivileges=true
